@@ -23,12 +23,12 @@ function parseTriggeredBy(value: string | undefined): IngestTriggeredBy {
   }
 
   throw new Error(
-    `Invalid INGEST_TRIGGERED_BY value "${value}". Expected seed, manual, or scheduled.`,
+    `Invalid INGEST_TRIGGERED_BY value "${value}". Expected seed, manual, or scheduled.`
   );
 }
 
 function parseReasoningEffort(
-  value: string | undefined,
+  value: string | undefined
 ): IngestConfig["openAiReasoningEffort"] {
   if (!value) {
     return "minimal";
@@ -45,7 +45,7 @@ function parseReasoningEffort(
   }
 
   throw new Error(
-    `Invalid INGEST_OPENAI_REASONING_EFFORT value "${value}". Expected minimal, low, medium, high, or xhigh.`,
+    `Invalid INGEST_OPENAI_REASONING_EFFORT value "${value}". Expected minimal, low, medium, high, or xhigh.`
   );
 }
 
@@ -56,7 +56,7 @@ function parseBrowserApiConfig(env: NodeJS.ProcessEnv) {
 
   if ((username && !password) || (!username && password)) {
     throw new Error(
-      "BRIGHT_DATA_BROWSER_USERNAME and BRIGHT_DATA_BROWSER_PASSWORD must be set together.",
+      "BRIGHT_DATA_BROWSER_USERNAME and BRIGHT_DATA_BROWSER_PASSWORD must be set together."
     );
   }
 
@@ -68,7 +68,9 @@ function parseBrowserApiConfig(env: NodeJS.ProcessEnv) {
 }
 
 function readSchoolSlugFromArgs(argv: string[]) {
-  const explicitFlag = argv.find((argument) => argument.startsWith("--school="));
+  const explicitFlag = argv.find((argument) =>
+    argument.startsWith("--school=")
+  );
   if (explicitFlag) {
     return explicitFlag.slice("--school=".length).trim();
   }
@@ -83,9 +85,10 @@ function readSchoolSlugFromArgs(argv: string[]) {
 
 export function loadIngestConfig(
   env: NodeJS.ProcessEnv = process.env,
-  argv: string[] = process.argv.slice(2),
+  argv: string[] = process.argv.slice(2)
 ): IngestConfig {
-  const schoolSlug = readSchoolSlugFromArgs(argv) || env.INGEST_SCHOOL_SLUG?.trim() || null;
+  const schoolSlug =
+    readSchoolSlugFromArgs(argv) || env.INGEST_SCHOOL_SLUG?.trim() || null;
   const browserApiConfig = parseBrowserApiConfig(env);
 
   return {
@@ -97,7 +100,9 @@ export function loadIngestConfig(
     brightDataBrowserWSEndpoint: browserApiConfig.websocketEndpoint,
     openAiApiKey: getEnvValue(env, "OPENAI_API_KEY"),
     openAiModel: env.INGEST_OPENAI_MODEL?.trim() || "gpt-5-nano",
-    openAiReasoningEffort: parseReasoningEffort(env.INGEST_OPENAI_REASONING_EFFORT),
+    openAiReasoningEffort: parseReasoningEffort(
+      env.INGEST_OPENAI_REASONING_EFFORT
+    ),
     triggeredBy: parseTriggeredBy(env.INGEST_TRIGGERED_BY),
     schoolSlug,
   };

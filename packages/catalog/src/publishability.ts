@@ -23,7 +23,9 @@ function hasNonEmptyArray(value: unknown) {
 }
 
 function hasObjectEntries(value: unknown) {
-  return typeof value === "object" && value !== null && Object.keys(value).length > 0;
+  return (
+    typeof value === "object" && value !== null && Object.keys(value).length > 0
+  );
 }
 
 function hasValidDate(value: unknown) {
@@ -32,7 +34,7 @@ function hasValidDate(value: unknown) {
 
 function hasFieldValue(
   record: NormalizedUniversityCatalogRecord,
-  field: CatalogRequiredField,
+  field: CatalogRequiredField
 ) {
   switch (field) {
     case "schoolName":
@@ -62,13 +64,13 @@ function hasFieldValue(
 function buildReason(
   code: UniversityValidationReason["code"],
   field: CatalogRequiredField,
-  message: string,
+  message: string
 ): UniversityValidationReason {
   return { code, field, message };
 }
 
 export function validateRequiredUniversityFields(
-  record: NormalizedUniversityCatalogRecord,
+  record: NormalizedUniversityCatalogRecord
 ) {
   return catalogRequiredFields.flatMap((field) =>
     hasFieldValue(record, field)
@@ -77,15 +79,15 @@ export function validateRequiredUniversityFields(
           buildReason(
             "missing_required_field",
             field,
-            `The catalog field "${field}" is required before a university can be reviewed as publishable.`,
+            `The catalog field "${field}" is required before a university can be reviewed as publishable.`
           ),
-        ],
+        ]
   );
 }
 
 export function evaluateUniversityPublishability(
   record: NormalizedUniversityCatalogRecord,
-  provenance: UniversityFieldProvenance[],
+  provenance: UniversityFieldProvenance[]
 ): UniversityPublishabilityResult {
   const reasons: UniversityValidationReason[] = [
     ...validateRequiredUniversityFields(record),
@@ -100,7 +102,7 @@ export function evaluateUniversityPublishability(
       (source) =>
         source.fieldKey === field &&
         hasNonEmptyString(source.sourceUrl) &&
-        hasValidDate(source.lastVerifiedAt),
+        hasValidDate(source.lastVerifiedAt)
     );
 
     if (!hasSupportingSource) {
@@ -108,8 +110,8 @@ export function evaluateUniversityPublishability(
         buildReason(
           "missing_source_provenance",
           field,
-          `The catalog field "${field}" requires at least one verified source record.`,
-        ),
+          `The catalog field "${field}" requires at least one verified source record.`
+        )
       );
     }
   }

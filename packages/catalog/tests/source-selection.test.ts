@@ -55,7 +55,10 @@ test("source selection chooses the expected official source kinds", () => {
 
   assert.equal(result.selectedSources.length, 6);
   assert.deepEqual(
-    result.selectedSources.map((source) => [source.fieldKey, source.sourceKind]),
+    result.selectedSources.map((source) => [
+      source.fieldKey,
+      source.sourceKind,
+    ]),
     [
       ["schoolName", "official_admissions"],
       ["tuitionAnnualUsd", "official_tuition"],
@@ -63,7 +66,7 @@ test("source selection chooses the expected official source kinds", () => {
       ["livingCostEstimateUsd", "official_cost_of_attendance"],
       ["scholarshipAvailabilityFlag", "official_scholarship"],
       ["scholarshipNotes", "official_scholarship"],
-    ],
+    ]
   );
 });
 
@@ -82,7 +85,7 @@ test("source selection reports missing required candidates", () => {
     result.issues.some(
       (issue) =>
         issue.code === "missing_source_candidate" &&
-        issue.fieldKey === "tuitionAnnualUsd",
-    ),
+        issue.fieldKey === "tuitionAnnualUsd"
+    )
   );
 });

@@ -7,9 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admission.ucla.edu/apply/international-applicants"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,

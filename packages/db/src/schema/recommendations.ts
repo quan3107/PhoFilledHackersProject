@@ -25,34 +25,40 @@ import {
   type RecommendationScoringConfigSnapshot,
   type ScoreComponentBreakdown,
 } from "./types.js";
-import { studentProfileSnapshots, studentProfiles } from "./student-profiles.js";
+import {
+  studentProfileSnapshots,
+  studentProfiles,
+} from "./student-profiles.js";
 import { universities } from "./universities.js";
 
 export const recommendationRunStatusEnum = pgEnum(
   "recommendation_run_status",
-  recommendationRunStatuses,
+  recommendationRunStatuses
 );
 
 export const recommendationTierEnum = pgEnum(
   "recommendation_tier",
-  recommendationTiers,
+  recommendationTiers
 );
 
-export const outlookLabelEnum = pgEnum("recommendation_outlook_label", outlookLabels);
+export const outlookLabelEnum = pgEnum(
+  "recommendation_outlook_label",
+  outlookLabels
+);
 
 export const budgetFitLabelEnum = pgEnum(
   "recommendation_budget_fit_label",
-  budgetFitLabels,
+  budgetFitLabels
 );
 
 export const deadlinePressureLabelEnum = pgEnum(
   "recommendation_deadline_pressure_label",
-  deadlinePressureLabels,
+  deadlinePressureLabels
 );
 
 export const confidenceLevelEnum = pgEnum(
   "recommendation_confidence_level",
-  confidenceLevels,
+  confidenceLevels
 );
 
 export const recommendationRuns = pgTable(
@@ -69,7 +75,7 @@ export const recommendationRuns = pgTable(
       .notNull()
       .references(() => studentProfileSnapshots.id),
     projectedSnapshotId: uuid("projected_snapshot_id").references(
-      () => studentProfileSnapshots.id,
+      () => studentProfileSnapshots.id
     ),
     runStatus: recommendationRunStatusEnum("run_status")
       .notNull()
@@ -93,12 +99,12 @@ export const recommendationRuns = pgTable(
   (table) => ({
     userIdIdx: index("recommendation_runs_user_id_idx").on(table.userId),
     studentProfileIdIdx: index("recommendation_runs_student_profile_id_idx").on(
-      table.studentProfileId,
+      table.studentProfileId
     ),
     createdAtIdx: index("recommendation_runs_created_at_idx").on(
-      table.createdAt,
+      table.createdAt
     ),
-  }),
+  })
 );
 
 export const recommendationResults = pgTable(
@@ -122,8 +128,9 @@ export const recommendationResults = pgTable(
     currentScoreBreakdown: jsonb("current_score_breakdown")
       .$type<ScoreComponentBreakdown>()
       .notNull(),
-    projectedScoreBreakdown: jsonb("projected_score_breakdown")
-      .$type<ScoreComponentBreakdown | null>(),
+    projectedScoreBreakdown: jsonb(
+      "projected_score_breakdown"
+    ).$type<ScoreComponentBreakdown | null>(),
     projectedAssumptionDelta: jsonb("projected_assumption_delta")
       .$type<string[]>()
       .notNull()
@@ -135,16 +142,16 @@ export const recommendationResults = pgTable(
   },
   (table) => ({
     runIdIdx: index("recommendation_results_run_id_idx").on(
-      table.recommendationRunId,
+      table.recommendationRunId
     ),
     runRankIdx: uniqueIndex("recommendation_results_run_rank_idx").on(
       table.recommendationRunId,
-      table.rankOrder,
+      table.rankOrder
     ),
     runUniversityIdx: uniqueIndex(
-      "recommendation_results_run_university_idx",
+      "recommendation_results_run_university_idx"
     ).on(table.recommendationRunId, table.universityId),
-  }),
+  })
 );
 
 export const recommendationShortlists = pgTable(
@@ -158,7 +165,7 @@ export const recommendationShortlists = pgTable(
     promptVersion: text("prompt_version").notNull(),
     systemPrompt: text("system_prompt").notNull(),
     shortlistedRecommendationResultIds: jsonb(
-      "shortlisted_recommendation_result_ids",
+      "shortlisted_recommendation_result_ids"
     )
       .$type<string[]>()
       .notNull()
@@ -173,9 +180,9 @@ export const recommendationShortlists = pgTable(
   },
   (table) => ({
     runIdIdx: uniqueIndex("recommendation_shortlists_run_id_idx").on(
-      table.recommendationRunId,
+      table.recommendationRunId
     ),
-  }),
+  })
 );
 
 export const recommendationExplanations = pgTable(
@@ -208,18 +215,19 @@ export const recommendationExplanations = pgTable(
       .$type<string[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
-    explanationConfidence: confidenceLevelEnum("explanation_confidence")
-      .notNull(),
+    explanationConfidence: confidenceLevelEnum(
+      "explanation_confidence"
+    ).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => ({
     shortlistIdIdx: index("recommendation_explanations_shortlist_id_idx").on(
-      table.recommendationShortlistId,
+      table.recommendationShortlistId
     ),
     resultIdIdx: uniqueIndex("recommendation_explanations_result_id_idx").on(
-      table.recommendationResultId,
+      table.recommendationResultId
     ),
-  }),
+  })
 );

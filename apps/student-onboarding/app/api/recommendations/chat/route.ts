@@ -17,7 +17,9 @@ interface RecommendationChatRequestBody {
   messages?: unknown;
 }
 
-function parseTranscript(value: unknown): RecommendationChatTranscriptMessage[] {
+function parseTranscript(
+  value: unknown
+): RecommendationChatTranscriptMessage[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -38,7 +40,9 @@ function parseTranscript(value: unknown): RecommendationChatTranscriptMessage[] 
         text: typeof record.text === "string" ? record.text : "",
       };
     })
-    .filter((entry): entry is RecommendationChatTranscriptMessage => Boolean(entry));
+    .filter((entry): entry is RecommendationChatTranscriptMessage =>
+      Boolean(entry)
+    );
 }
 
 function parseBody(value: unknown) {
@@ -81,7 +85,7 @@ export async function POST(request: Request) {
             ? error.message
             : "Unable to answer the recommendation question.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -6,7 +6,8 @@
     "dev": "next dev --webpack --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@etest/auth": "*",

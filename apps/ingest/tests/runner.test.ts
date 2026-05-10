@@ -149,7 +149,7 @@ test("runner executes the one-school flow without network access", async () => {
       brightData,
       openAi,
       now: () => new Date("2025-01-01T00:00:00.000Z"),
-    },
+    }
   );
 
   assert.equal(result.runId, "run_1");
@@ -167,12 +167,10 @@ test("runner executes the one-school flow without network access", async () => {
 });
 
 test("runner persists a stage-specific failure code on extraction errors", async () => {
-  let persistedFailure:
-    | {
-        failureCode: string;
-        failureMessage: string;
-      }
-    | null = null;
+  let persistedFailure: {
+    failureCode: string;
+    failureMessage: string;
+  } | null = null;
 
   const repository: IngestRepository = {
     async createImportRun() {
@@ -229,8 +227,8 @@ test("runner persists a stage-specific failure code on extraction errors", async
           },
         },
         now: () => new Date("2025-01-01T00:00:00.000Z"),
-      },
-    ),
+      }
+    )
   );
 
   assert.deepEqual(persistedFailure, {

@@ -19,7 +19,7 @@ import { createCatalogTestDatabase } from "../../db/src/testing/pglite.js";
 import { runRecommendationEngineForUser } from "../src/recommendation-engine.js";
 
 test.todo(
-  "intentional unknown or declined readiness fields are treated as caveated rather than missing",
+  "intentional unknown or declined readiness fields are treated as caveated rather than missing"
 );
 
 test("engine persists a failed run when recommendation-blocking profile gaps remain", async () => {
@@ -75,17 +75,16 @@ test("engine persists a failed run when recommendation-blocking profile gaps rem
 
     assert.equal(result.run.runStatus, "failed");
     assert.equal(result.run.candidateSchoolCount, 0);
-    assert.equal(
-      result.run.scoringConfigSnapshot.tierThresholds.safetyMin,
-      80,
-    );
+    assert.equal(result.run.scoringConfigSnapshot.tierThresholds.safetyMin, 80);
     assert.deepEqual(result.run.missingProfileFields, [
       "current.academic.classRankPercent",
       "projected.assumptions",
     ]);
     assert.deepEqual(result.results, []);
 
-    const storedResults = await database.db.select().from(recommendationResults);
+    const storedResults = await database.db
+      .select()
+      .from(recommendationResults);
     assert.equal(storedResults.length, 0);
   } finally {
     await database.close();
@@ -148,25 +147,22 @@ test("engine scores only publishable schools and persists deterministic rank ord
 
     assert.equal(result.run.runStatus, "succeeded");
     assert.equal(result.run.candidateSchoolCount, 2);
-    assert.equal(
-      result.run.scoringConfigSnapshot.tierThresholds.safetyMin,
-      80,
-    );
+    assert.equal(result.run.scoringConfigSnapshot.tierThresholds.safetyMin, 80);
     assert.equal(result.results.length, 2);
     assert.deepEqual(
       result.results.map((row) => row.rankOrder),
-      [1, 2],
+      [1, 2]
     );
     assert.ok(result.results[0].currentScore >= result.results[1].currentScore);
     assert.ok(result.results.every((row) => row.projectedScore !== null));
     assert.ok(
-      result.results.every(
-        (row) => row.projectedAssumptionDelta.length === 2,
-      ),
+      result.results.every((row) => row.projectedAssumptionDelta.length === 2)
     );
 
     const storedRuns = await database.db.select().from(recommendationRuns);
-    const storedResults = await database.db.select().from(recommendationResults);
+    const storedResults = await database.db
+      .select()
+      .from(recommendationResults);
 
     assert.equal(storedRuns.length, 1);
     assert.equal(storedResults.length, 2);
@@ -240,15 +236,15 @@ test("engine scoring config overrides can change tiers and outlooks", async () =
     assert.equal(strictResult.results.length, 1);
     assert.notEqual(
       defaultResult.results[0].tier,
-      strictResult.results[0].tier,
+      strictResult.results[0].tier
     );
     assert.notEqual(
       defaultResult.results[0].currentOutlook,
-      strictResult.results[0].currentOutlook,
+      strictResult.results[0].currentOutlook
     );
     assert.equal(
       strictResult.run.scoringConfigSnapshot.tierThresholds.safetyMin,
-      95,
+      95
     );
   } finally {
     await database.close();
@@ -276,24 +272,24 @@ test("engine scores region-based location preferences through the extension", as
       .insert(universities)
       .values([
         buildUniversityInsert({
-        schoolName: "East Coast Match",
-        validationStatus: "publishable",
-        admissionRateOverall: 0.42,
-        satAverageOverall: 1290,
-        annualCost: 52000,
-        averageNetPriceUsd: 32000,
-        programFitTags: ["computer_science", "engineering"],
-        state: "MA",
+          schoolName: "East Coast Match",
+          validationStatus: "publishable",
+          admissionRateOverall: 0.42,
+          satAverageOverall: 1290,
+          annualCost: 52000,
+          averageNetPriceUsd: 32000,
+          programFitTags: ["computer_science", "engineering"],
+          state: "MA",
         }),
         buildUniversityInsert({
-        schoolName: "West Coast Miss",
-        validationStatus: "publishable",
-        admissionRateOverall: 0.42,
-        satAverageOverall: 1290,
-        annualCost: 52000,
-        averageNetPriceUsd: 32000,
-        programFitTags: ["computer_science", "engineering"],
-        state: "CA",
+          schoolName: "West Coast Miss",
+          validationStatus: "publishable",
+          admissionRateOverall: 0.42,
+          satAverageOverall: 1290,
+          annualCost: 52000,
+          averageNetPriceUsd: 32000,
+          programFitTags: ["computer_science", "engineering"],
+          state: "CA",
         }),
       ])
       .returning();
@@ -327,7 +323,7 @@ async function seedProfileState(
     currentProfile: StudentProfileRecord;
     projectedProfile: StudentProfileRecord;
     projectedAssumptions: string[];
-  },
+  }
 ) {
   await db.insert(users).values({
     id: input.userId,
@@ -445,8 +441,7 @@ function buildSnapshotProfile(input: {
     preferences: {
       intendedMajors: ["computer_science"],
       preferredStates: input.preferredStates ?? ["CA", "MA"],
-      preferredLocationPreferences:
-        input.preferredLocationPreferences ?? [],
+      preferredLocationPreferences: input.preferredLocationPreferences ?? [],
       preferredCampusLocale: ["urban", "suburban"],
       preferredSchoolControl: ["public", "private_nonprofit"],
       preferredUndergraduateSize: "medium",
@@ -496,7 +491,8 @@ function buildUniversityInsert(input: {
     estimatedCostOfAttendanceUsd: input.annualCost,
     livingCostEstimateUsd: 16000,
     scholarshipAvailabilityFlag: true,
-    scholarshipNotes: "Merit scholarships available for international applicants.",
+    scholarshipNotes:
+      "Merit scholarships available for international applicants.",
     recommendationInputs: {
       admissionRateOverall: input.admissionRateOverall,
       satAverageOverall: input.satAverageOverall,

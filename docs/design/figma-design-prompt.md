@@ -206,6 +206,7 @@ Avoid:
 Design these screens in a way that feels like ETEST's website evolved into a product:
 
 1. Landing page
+
 - Match the energy of the current homepage
 - Brand-first hero
 - Burgundy-led visual hierarchy
@@ -213,34 +214,40 @@ Design these screens in a way that feels like ETEST's website evolved into a pro
 - Strong consultation CTA
 
 2. Onboarding / profile builder
+
 - More refined than the public website
 - Clear progress steps
 - Warm, supportive, counselor-like tone
 - Branded accents from the ETEST palette
 
 3. Recommendation results
+
 - Combine product clarity with ETEST-style achievement framing
 - Reach / Target / Safety should feel polished and premium
 - Budget, blockers, and outlook states must be easy to scan
 - School rows can include logos and credibility cues
 
 4. Compare mode
+
 - Clean table-like comparison
 - Strong use of emphasis and contrast
 - ETEST brand colors used for action and highlights only
 
 5. Chat assistant
+
 - Feels like a trusted ETEST advisor, not a generic chatbot
 - Helpful, factual, reassuring
 - Strong integration with profile and recommendations
 
 6. Counselor handoff / booking
+
 - High trust
 - Strong conversion intent
 - Use the tone of the website's consultation CTA sections
 - Confirmation should feel premium and reassuring
 
 7. Admin / counselor console
+
 - More neutral operational layer
 - Still branded with burgundy accents
 - Dense but readable

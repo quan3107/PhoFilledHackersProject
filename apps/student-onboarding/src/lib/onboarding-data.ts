@@ -83,7 +83,12 @@ export const sectionFields: Array<{
   },
   {
     key: "preferences",
-    fields: ["annualBudget", "scholarshipNeed", "geographyPreferences", "campusSize"],
+    fields: [
+      "annualBudget",
+      "scholarshipNeed",
+      "geographyPreferences",
+      "campusSize",
+    ],
   },
 ];
 
@@ -98,9 +103,18 @@ export const profileLabels: Record<ProfileField, Record<Locale, string>> = {
   intendedMajors: { en: "Intended Major(s)", vi: "Ngành học dự định" },
   extracurriculars: { en: "Extracurriculars", vi: "Hoạt động ngoại khóa" },
   wantsEarlyRound: { en: "Wants Early Round", vi: "Có muốn nộp vòng sớm" },
-  teacherRecommendationsReady: { en: "Has Teacher Recommendations Ready", vi: "Đã có thư giáo viên sẵn sàng" },
-  counselorDocumentsReady: { en: "Has Counselor Documents Ready", vi: "Đã có hồ sơ counselor sẵn sàng" },
-  essayDraftsStarted: { en: "Has Essay Drafts Started", vi: "Đã bắt đầu bản nháp bài luận" },
+  teacherRecommendationsReady: {
+    en: "Has Teacher Recommendations Ready",
+    vi: "Đã có thư giáo viên sẵn sàng",
+  },
+  counselorDocumentsReady: {
+    en: "Has Counselor Documents Ready",
+    vi: "Đã có hồ sơ counselor sẵn sàng",
+  },
+  essayDraftsStarted: {
+    en: "Has Essay Drafts Started",
+    vi: "Đã bắt đầu bản nháp bài luận",
+  },
   annualBudget: { en: "Annual Budget", vi: "Ngân sách hàng năm" },
   scholarshipNeed: { en: "Scholarship Need", vi: "Nhu cầu học bổng" },
   geographyPreferences: { en: "Location Preference", vi: "Khu vực mong muốn" },
@@ -113,9 +127,18 @@ export const quickReplyLabels: Record<string, Record<Locale, string>> = {
   "Grade 11": { en: "Grade 11", vi: "Lớp 11" },
   "Grade 12": { en: "Grade 12", vi: "Lớp 12" },
   "Gap Year": { en: "Gap Year", vi: "Gap Year" },
-  "Vietnamese National": { en: "Vietnamese National", vi: "Chương trình Quốc gia" },
-  "IB (International Baccalaureate)": { en: "IB (International Baccalaureate)", vi: "IB (Tú tài Quốc tế)" },
-  "AP (Advanced Placement)": { en: "AP (Advanced Placement)", vi: "AP (Advanced Placement)" },
+  "Vietnamese National": {
+    en: "Vietnamese National",
+    vi: "Chương trình Quốc gia",
+  },
+  "IB (International Baccalaureate)": {
+    en: "IB (International Baccalaureate)",
+    vi: "IB (Tú tài Quốc tế)",
+  },
+  "AP (Advanced Placement)": {
+    en: "AP (Advanced Placement)",
+    vi: "AP (Advanced Placement)",
+  },
   "A-Levels": { en: "A-Levels", vi: "A-Levels" },
   Other: { en: "Other", vi: "Khác" },
   "Not yet taken": { en: "Not yet taken", vi: "Chưa thi" },
@@ -126,7 +149,10 @@ export const quickReplyLabels: Record<string, Record<Locale, string>> = {
   "TOEFL 80-90": { en: "TOEFL 80-90", vi: "TOEFL 80-90" },
   "TOEFL 90-100": { en: "TOEFL 90-100", vi: "TOEFL 90-100" },
   "TOEFL 100+": { en: "TOEFL 100+", vi: "TOEFL 100+" },
-  "Not planning to take": { en: "Not planning to take", vi: "Không dự định thi" },
+  "Not planning to take": {
+    en: "Not planning to take",
+    vi: "Không dự định thi",
+  },
   "Planning to take": { en: "Planning to take", vi: "Dự định thi" },
   "SAT 1200-1350": { en: "SAT 1200-1350", vi: "SAT 1200-1350" },
   "SAT 1350-1500": { en: "SAT 1350-1500", vi: "SAT 1350-1500" },
@@ -139,17 +165,29 @@ export const quickReplyLabels: Record<string, Record<Locale, string>> = {
   "Medicine/Pre-Med": { en: "Medicine/Pre-Med", vi: "Y khoa/Tiền Y" },
   "Liberal Arts": { en: "Liberal Arts", vi: "Khoa học Xã hội" },
   Undecided: { en: "Undecided", vi: "Chưa quyết định" },
-  "Yes - planning early": { en: "Yes - planning early", vi: "Có - dự định nộp sớm" },
-  "No - regular rounds": { en: "No - regular rounds", vi: "Không - nộp vòng thường" },
-  "Yes": { en: "Yes", vi: "Có" },
-  "No": { en: "No", vi: "Không" },
+  "Yes - planning early": {
+    en: "Yes - planning early",
+    vi: "Có - dự định nộp sớm",
+  },
+  "No - regular rounds": {
+    en: "No - regular rounds",
+    vi: "Không - nộp vòng thường",
+  },
+  Yes: { en: "Yes", vi: "Có" },
+  No: { en: "No", vi: "Không" },
   "Under $20,000": { en: "Under $20,000", vi: "Dưới $20,000" },
   "$20,000 - $40,000": { en: "$20,000 - $40,000", vi: "$20,000 - $40,000" },
   "$40,000 - $60,000": { en: "$40,000 - $60,000", vi: "$40,000 - $60,000" },
   "$60,000+": { en: "$60,000+", vi: "$60,000+" },
   Flexible: { en: "Flexible", vi: "Linh hoạt" },
-  "Essential - can't attend without it": { en: "Essential - can't attend without it", vi: "Rất cần thiết" },
-  "Important but not critical": { en: "Important but not critical", vi: "Quan trọng nhưng không bắt buộc" },
+  "Essential - can't attend without it": {
+    en: "Essential - can't attend without it",
+    vi: "Rất cần thiết",
+  },
+  "Important but not critical": {
+    en: "Important but not critical",
+    vi: "Quan trọng nhưng không bắt buộc",
+  },
   "Nice to have": { en: "Nice to have", vi: "Có thì tốt" },
   "Not needed": { en: "Not needed", vi: "Không cần" },
   "US - East Coast": { en: "US - East Coast", vi: "Mỹ - Bờ Đông" },
@@ -160,7 +198,10 @@ export const quickReplyLabels: Record<string, Record<Locale, string>> = {
   Canada: { en: "Canada", vi: "Canada" },
   UK: { en: "UK", vi: "Vương quốc Anh" },
   "Small (under 5,000)": { en: "Small (under 5,000)", vi: "Nhỏ (dưới 5,000)" },
-  "Medium (5,000-15,000)": { en: "Medium (5,000-15,000)", vi: "Vừa (5,000-15,000)" },
+  "Medium (5,000-15,000)": {
+    en: "Medium (5,000-15,000)",
+    vi: "Vừa (5,000-15,000)",
+  },
   "Large (15,000+)": { en: "Large (15,000+)", vi: "Lớn (trên 15,000)" },
 };
 
@@ -447,8 +488,18 @@ export const onboardingSteps: ChatStep[] = [
       vi: "Bạn thích quy mô khuôn viên trường như thế nào?",
     },
     quickReplies: {
-      en: ["Small (under 5,000)", "Medium (5,000-15,000)", "Large (15,000+)", "No preference"],
-      vi: ["Small (under 5,000)", "Medium (5,000-15,000)", "Large (15,000+)", "No preference"],
+      en: [
+        "Small (under 5,000)",
+        "Medium (5,000-15,000)",
+        "Large (15,000+)",
+        "No preference",
+      ],
+      vi: [
+        "Small (under 5,000)",
+        "Medium (5,000-15,000)",
+        "Large (15,000+)",
+        "No preference",
+      ],
     },
   },
 ];

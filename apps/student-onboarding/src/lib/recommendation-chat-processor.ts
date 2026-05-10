@@ -38,7 +38,7 @@ const recommendationChatSystemPrompt = [
 ].join(" ");
 
 export async function runRecommendationChatTurn(
-  input: RecommendationChatTurnInput,
+  input: RecommendationChatTurnInput
 ): Promise<RecommendationChatTurnResult> {
   const transcript = normalizeTranscript(input.transcript, input.latestMessage);
   const context = await loadRecommendationChatContextForUser({
@@ -79,16 +79,18 @@ function buildRecommendationChatPrompt(input: {
       latestRecommendationRun: input.context.latestRecommendationRun,
     },
     null,
-    2,
+    2
   );
 }
 
 function normalizeTranscript(
   transcript: RecommendationChatTranscriptMessage[],
-  latestMessage: string | null,
+  latestMessage: string | null
 ) {
   const cleaned = transcript
-    .filter((message) => message.role === "assistant" || message.role === "student")
+    .filter(
+      (message) => message.role === "assistant" || message.role === "student"
+    )
     .map((message) => ({
       role: message.role,
       text: message.text.trim(),
@@ -108,7 +110,9 @@ function normalizeTranscript(
     return cleaned.slice(-12);
   }
 
-  return [...cleaned, { role: "student" as const, text: latestText }].slice(-12);
+  return [...cleaned, { role: "student" as const, text: latestText }].slice(
+    -12
+  );
 }
 
 function normalizeAssistantMessage(message: string) {
@@ -126,7 +130,7 @@ function normalizeSuggestedReplies(replies: string[]) {
       replies
         .map((reply) => reply.trim())
         .filter(Boolean)
-        .slice(0, 3),
-    ),
+        .slice(0, 3)
+    )
   );
 }

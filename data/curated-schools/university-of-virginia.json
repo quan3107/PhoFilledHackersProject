@@ -7,11 +7,7 @@
     "state": "VA",
     "officialAdmissionsUrl": "https://admission.virginia.edu/admission/deadlines-instructions"
   },
-  "applicationRounds": [
-    "early_action",
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2025-11-01",
     "early_decision": "2025-11-01",
@@ -53,10 +49,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": null,

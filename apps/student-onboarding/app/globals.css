@@ -127,9 +127,21 @@
     min-height: 100vh;
     background-color: var(--background);
     background-image:
-      radial-gradient(circle at 18% 18%, color-mix(in oklab, var(--accent) 16%, transparent) 0, transparent 34%),
-      radial-gradient(circle at 82% 10%, color-mix(in oklab, var(--primary) 12%, transparent) 0, transparent 30%),
-      linear-gradient(180deg, var(--background), color-mix(in oklab, var(--background) 92%, white 8%));
+      radial-gradient(
+        circle at 18% 18%,
+        color-mix(in oklab, var(--accent) 16%, transparent) 0,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 82% 10%,
+        color-mix(in oklab, var(--primary) 12%, transparent) 0,
+        transparent 30%
+      ),
+      linear-gradient(
+        180deg,
+        var(--background),
+        color-mix(in oklab, var(--background) 92%, white 8%)
+      );
     background-attachment: fixed;
     color: var(--foreground);
     font-family: var(--font-manrope), system-ui, sans-serif;

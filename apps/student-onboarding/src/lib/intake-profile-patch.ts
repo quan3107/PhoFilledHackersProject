@@ -10,8 +10,14 @@ import {
   preferredUndergraduateSizeOptions,
   type StudentProfileDocument,
 } from "@/lib/student-profile";
-import { cloneStudentProfileDocument, syncProjectedBase } from "@/lib/student-onboarding";
-import { locationPreferenceKinds, locationPreferenceLabels } from "@/lib/location-preferences";
+import {
+  cloneStudentProfileDocument,
+  syncProjectedBase,
+} from "@/lib/student-onboarding";
+import {
+  locationPreferenceKinds,
+  locationPreferenceLabels,
+} from "@/lib/location-preferences";
 
 function toTrimmedStringArray(value: unknown) {
   return Array.isArray(value)
@@ -53,7 +59,10 @@ function normalizeFreeTextField(value: unknown) {
   return normalized;
 }
 
-function normalizeEnum<T extends readonly string[]>(value: unknown, allowed: T) {
+function normalizeEnum<T extends readonly string[]>(
+  value: unknown,
+  allowed: T
+) {
   return typeof value === "string" && allowed.includes(value as T[number])
     ? (value as T[number])
     : null;
@@ -64,18 +73,28 @@ function normalizeLocationPreferences(value: unknown) {
     locationPreferenceKinds.map((kind) => [
       locationPreferenceLabels[kind].toLowerCase(),
       kind,
-    ]),
+    ])
   );
 
   return toTrimmedStringArray(value)
-    .map((item) => labelsByLowercase.get(item.toLowerCase()) ?? (locationPreferenceKinds.includes(item as (typeof locationPreferenceKinds)[number]) ? item : null))
-    .filter((item): item is (typeof locationPreferenceKinds)[number] => item !== null);
+    .map(
+      (item) =>
+        labelsByLowercase.get(item.toLowerCase()) ??
+        (locationPreferenceKinds.includes(
+          item as (typeof locationPreferenceKinds)[number]
+        )
+          ? item
+          : null)
+    )
+    .filter(
+      (item): item is (typeof locationPreferenceKinds)[number] => item !== null
+    );
 }
 
 function normalizeSchoolControl(value: unknown) {
   return toTrimmedStringArray(value).filter(
     (item): item is "public" | "private_nonprofit" =>
-      item === "public" || item === "private_nonprofit",
+      item === "public" || item === "private_nonprofit"
   );
 }
 
@@ -89,22 +108,30 @@ function normalizeStates(value: unknown) {
     .filter((item) => /^[A-Z]{2}$/.test(item));
 }
 
-function patchProfile(target: StudentProfileDocument["current"]["profile"], patch: Record<string, unknown>) {
-  const academic = patch.academic && typeof patch.academic === "object"
-    ? (patch.academic as Record<string, unknown>)
-    : null;
-  const testing = patch.testing && typeof patch.testing === "object"
-    ? (patch.testing as Record<string, unknown>)
-    : null;
-  const preferences = patch.preferences && typeof patch.preferences === "object"
-    ? (patch.preferences as Record<string, unknown>)
-    : null;
-  const budget = patch.budget && typeof patch.budget === "object"
-    ? (patch.budget as Record<string, unknown>)
-    : null;
-  const readiness = patch.readiness && typeof patch.readiness === "object"
-    ? (patch.readiness as Record<string, unknown>)
-    : null;
+function patchProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  patch: Record<string, unknown>
+) {
+  const academic =
+    patch.academic && typeof patch.academic === "object"
+      ? (patch.academic as Record<string, unknown>)
+      : null;
+  const testing =
+    patch.testing && typeof patch.testing === "object"
+      ? (patch.testing as Record<string, unknown>)
+      : null;
+  const preferences =
+    patch.preferences && typeof patch.preferences === "object"
+      ? (patch.preferences as Record<string, unknown>)
+      : null;
+  const budget =
+    patch.budget && typeof patch.budget === "object"
+      ? (patch.budget as Record<string, unknown>)
+      : null;
+  const readiness =
+    patch.readiness && typeof patch.readiness === "object"
+      ? (patch.readiness as Record<string, unknown>)
+      : null;
 
   const citizenshipCountry = normalizeFreeTextField(patch.citizenshipCountry);
   if (citizenshipCountry) {
@@ -124,12 +151,15 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
 
     const projectedGpa100 = normalizeNumber(academic.projectedGpa100);
     if (projectedGpa100 !== null) {
-      target.academic.projectedGpa100 = Math.max(0, Math.min(100, projectedGpa100));
+      target.academic.projectedGpa100 = Math.max(
+        0,
+        Math.min(100, projectedGpa100)
+      );
     }
 
     const curriculumStrength = normalizeEnum(
       academic.curriculumStrength,
-      curriculumStrengthOptions,
+      curriculumStrengthOptions
     );
     if (curriculumStrength) {
       target.academic.curriculumStrength = curriculumStrength;
@@ -137,7 +167,10 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
 
     const classRankPercent = normalizeNumber(academic.classRankPercent);
     if (classRankPercent !== null) {
-      target.academic.classRankPercent = Math.max(0, Math.min(100, classRankPercent));
+      target.academic.classRankPercent = Math.max(
+        0,
+        Math.min(100, classRankPercent)
+      );
     }
   }
 
@@ -154,7 +187,7 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
 
     const englishExamType = normalizeEnum(
       testing.englishExamType,
-      englishExamTypeOptions,
+      englishExamTypeOptions
     );
     if (englishExamType) {
       target.testing.englishExamType = englishExamType;
@@ -182,21 +215,22 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
     }
 
     const preferredLocationPreferences = normalizeLocationPreferences(
-      preferences.preferredLocationPreferences,
+      preferences.preferredLocationPreferences
     );
     if (preferredLocationPreferences.length > 0) {
-      target.preferences.preferredLocationPreferences = preferredLocationPreferences;
+      target.preferences.preferredLocationPreferences =
+        preferredLocationPreferences;
     }
 
     const preferredCampusLocale = normalizeCampusLocale(
-      preferences.preferredCampusLocale,
+      preferences.preferredCampusLocale
     );
     if (preferredCampusLocale.length > 0) {
       target.preferences.preferredCampusLocale = preferredCampusLocale;
     }
 
     const preferredSchoolControl = normalizeSchoolControl(
-      preferences.preferredSchoolControl,
+      preferences.preferredSchoolControl
     );
     if (preferredSchoolControl.length > 0) {
       target.preferences.preferredSchoolControl = preferredSchoolControl;
@@ -204,10 +238,11 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
 
     const preferredUndergraduateSize = normalizeEnum(
       preferences.preferredUndergraduateSize,
-      preferredUndergraduateSizeOptions,
+      preferredUndergraduateSizeOptions
     );
     if (preferredUndergraduateSize) {
-      target.preferences.preferredUndergraduateSize = preferredUndergraduateSize;
+      target.preferences.preferredUndergraduateSize =
+        preferredUndergraduateSize;
     }
   }
 
@@ -229,7 +264,7 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
 
     const budgetFlexibility = normalizeEnum(
       budget.budgetFlexibility,
-      budgetFlexibilityOptions,
+      budgetFlexibilityOptions
     );
     if (budgetFlexibility) {
       target.budget.budgetFlexibility = budgetFlexibility;
@@ -243,21 +278,22 @@ function patchProfile(target: StudentProfileDocument["current"]["profile"], patc
     }
 
     const hasTeacherRecommendationsReady = normalizeBoolean(
-      readiness.hasTeacherRecommendationsReady,
+      readiness.hasTeacherRecommendationsReady
     );
     if (hasTeacherRecommendationsReady !== null) {
-      target.readiness.hasTeacherRecommendationsReady = hasTeacherRecommendationsReady;
+      target.readiness.hasTeacherRecommendationsReady =
+        hasTeacherRecommendationsReady;
     }
 
     const hasCounselorDocumentsReady = normalizeBoolean(
-      readiness.hasCounselorDocumentsReady,
+      readiness.hasCounselorDocumentsReady
     );
     if (hasCounselorDocumentsReady !== null) {
       target.readiness.hasCounselorDocumentsReady = hasCounselorDocumentsReady;
     }
 
     const hasEssayDraftsStarted = normalizeBoolean(
-      readiness.hasEssayDraftsStarted,
+      readiness.hasEssayDraftsStarted
     );
     if (hasEssayDraftsStarted !== null) {
       target.readiness.hasEssayDraftsStarted = hasEssayDraftsStarted;
@@ -281,7 +317,10 @@ export function applyIntakeProfilePatches(input: {
   syncProjectedBase(next);
   patchProfile(next.projected.profile, input.projectedProfilePatch);
 
-  if (Array.isArray(input.projectedAssumptions) && input.projectedAssumptions.length > 0) {
+  if (
+    Array.isArray(input.projectedAssumptions) &&
+    input.projectedAssumptions.length > 0
+  ) {
     next.projected.assumptions = input.projectedAssumptions
       .map((item) => item.trim())
       .filter(Boolean);

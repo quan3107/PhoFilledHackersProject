@@ -7,10 +7,7 @@
     "state": "IN",
     "officialAdmissionsUrl": "https://admissions.nd.edu/apply/"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": null,
@@ -49,10 +46,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Notre Dame says the SAT should be taken prior to January of the year you intend to enroll, and encourages students to take the exam at least twice if possible.",

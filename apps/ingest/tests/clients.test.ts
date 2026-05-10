@@ -111,7 +111,7 @@ test("loadIngestConfig parses env and cli values", () => {
       INGEST_TRIGGERED_BY: "manual",
       INGEST_SCHOOL_SLUG: "stanford",
     },
-    ["--school=stanford"],
+    ["--school=stanford"]
   );
 
   assert.equal(config.databaseUrl, "postgres://example");
@@ -134,7 +134,7 @@ test("loadIngestConfig rejects partial Browser API credentials", () => {
         BRIGHT_DATA_BROWSER_USERNAME: "browser-user",
         OPENAI_API_KEY: "openai-key",
       }),
-    /BRIGHT_DATA_BROWSER_USERNAME and BRIGHT_DATA_BROWSER_PASSWORD must be set together/,
+    /BRIGHT_DATA_BROWSER_USERNAME and BRIGHT_DATA_BROWSER_PASSWORD must be set together/
   );
 });
 
@@ -177,7 +177,7 @@ test("Bright Data client posts the Unlocker request shape", async () => {
           },
         });
       },
-    },
+    }
   );
 
   const page = await client.fetchPage({
@@ -191,7 +191,7 @@ test("Bright Data client posts the Unlocker request shape", async () => {
   assert.equal(
     requests[0]?.init.headers &&
       (requests[0].init.headers as Record<string, string>).Authorization,
-    "Bearer bright-key",
+    "Bearer bright-key"
   );
   assert.equal(page.statusCode, 200);
   assert.equal(page.body, "<html>ok</html>");
@@ -212,7 +212,7 @@ test("Bright Data client accepts raw HTML responses from Unlocker", async () => 
             "content-type": "text/html; charset=utf-8",
           },
         }),
-    },
+    }
   );
 
   const page = await client.fetchPage({
@@ -241,14 +241,15 @@ test("Bright Data client falls back to Browser API for blocked pages", async () 
       fetchImpl: async () =>
         new Response(
           JSON.stringify({
-            error: "Request Failed (bad_endpoint): Requested site is not available for immediate access mode in accordance with robots.txt",
+            error:
+              "Request Failed (bad_endpoint): Requested site is not available for immediate access mode in accordance with robots.txt",
           }),
           {
             status: 400,
             headers: {
               "content-type": "application/json",
             },
-          },
+          }
         ),
       fetchWithBrowserApiImpl: async (_config, input) => {
         requests.push(input.sourceUrl);
@@ -261,7 +262,7 @@ test("Bright Data client falls back to Browser API for blocked pages", async () 
           fetchedAt: new Date(),
         };
       },
-    },
+    }
   );
 
   const page = await client.fetchPage({
@@ -308,9 +309,9 @@ test("OpenAI client posts a structured Responses API request", async () => {
           headers: {
             "content-type": "application/json",
           },
-        },
+        }
       );
-    },
+    }
   );
 
   const draft = await client.extractSchoolDraft({
@@ -322,9 +323,11 @@ test("OpenAI client posts a structured Responses API request", async () => {
       officialAdmissionsUrl: "https://admission.stanford.edu/",
       sourceUrls: {
         admissions: "https://admission.stanford.edu/",
-        tuition: "https://studentservices.stanford.edu/my-finances/tuition-fees",
+        tuition:
+          "https://studentservices.stanford.edu/my-finances/tuition-fees",
         costOfAttendance: "https://financialaid.stanford.edu/undergrad/budget/",
-        scholarship: "https://financialaid.stanford.edu/undergrad/types/index.html",
+        scholarship:
+          "https://financialaid.stanford.edu/undergrad/types/index.html",
       },
     },
     pages: [

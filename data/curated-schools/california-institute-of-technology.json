@@ -7,10 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://www.admissions.caltech.edu/apply/first-year-applicants"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2025-11-01",
     "early_decision": null,
@@ -53,10 +50,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Before November 30, 2025 for Restrictive Early Action; before December 31, 2025 for Regular Decision.",
@@ -81,9 +75,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "restrictive_early_action"
-    ]
+    "applicationStrategyTags": ["restrictive_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",

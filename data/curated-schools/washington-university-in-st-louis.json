@@ -7,10 +7,7 @@
     "state": "MO",
     "officialAdmissionsUrl": "https://admissions.wustl.edu/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2026-11-01",
@@ -50,10 +47,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "WashU's published deadlines place the final application/test-score cadence in early January for Regular Decision. The reviewed materials do not publish a hard SAT test-date cutoff, so this field is left as a timing note instead of a minimum score rule.",

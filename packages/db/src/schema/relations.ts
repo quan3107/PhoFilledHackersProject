@@ -4,10 +4,7 @@
 
 import { relations } from "drizzle-orm";
 
-import {
-  catalogImportItems,
-  catalogImportRuns,
-} from "./imports.js";
+import { catalogImportItems, catalogImportRuns } from "./imports.js";
 import {
   accounts,
   sessions,
@@ -39,7 +36,7 @@ export const universitySourcesRelations = relations(
       fields: [universitySources.universityId],
       references: [universities.id],
     }),
-  }),
+  })
 );
 
 export const catalogImportRunsRelations = relations(
@@ -50,7 +47,7 @@ export const catalogImportRunsRelations = relations(
       references: [universities.id],
     }),
     items: many(catalogImportItems),
-  }),
+  })
 );
 
 export const catalogImportItemsRelations = relations(
@@ -64,7 +61,7 @@ export const catalogImportItemsRelations = relations(
       fields: [catalogImportItems.universityId],
       references: [universities.id],
     }),
-  }),
+  })
 );
 
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -105,7 +102,7 @@ export const studentProfilesRelations = relations(
     }),
     snapshots: many(studentProfileSnapshots),
     recommendationRuns: many(recommendationRuns),
-  }),
+  })
 );
 
 export const studentProfileSnapshotsRelations = relations(
@@ -115,7 +112,7 @@ export const studentProfileSnapshotsRelations = relations(
       fields: [studentProfileSnapshots.studentProfileId],
       references: [studentProfiles.id],
     }),
-  }),
+  })
 );
 
 export const studentIntakeSessionsRelations = relations(
@@ -125,7 +122,7 @@ export const studentIntakeSessionsRelations = relations(
       fields: [studentIntakeSessions.userId],
       references: [users.id],
     }),
-  }),
+  })
 );
 
 export const recommendationRunsRelations = relations(
@@ -145,7 +142,7 @@ export const recommendationRunsRelations = relations(
     }),
     results: many(recommendationResults),
     shortlists: many(recommendationShortlists),
-  }),
+  })
 );
 
 export const recommendationResultsRelations = relations(
@@ -159,7 +156,7 @@ export const recommendationResultsRelations = relations(
       fields: [recommendationResults.universityId],
       references: [universities.id],
     }),
-  }),
+  })
 );
 
 export const recommendationShortlistsRelations = relations(
@@ -170,7 +167,7 @@ export const recommendationShortlistsRelations = relations(
       references: [recommendationRuns.id],
     }),
     explanations: many(recommendationExplanations),
-  }),
+  })
 );
 
 export const recommendationExplanationsRelations = relations(
@@ -184,5 +181,5 @@ export const recommendationExplanationsRelations = relations(
       fields: [recommendationExplanations.recommendationResultId],
       references: [recommendationResults.id],
     }),
-  }),
+  })
 );

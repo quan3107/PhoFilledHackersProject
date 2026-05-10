@@ -16,7 +16,7 @@ export type RecommendationCatalogReadDb = PgDatabase<
 >;
 
 export async function listRecommendationCandidateSchools(
-  db: RecommendationCatalogReadDb,
+  db: RecommendationCatalogReadDb
 ): Promise<RecommendationCandidateSchool[]> {
   const schools = await db.query.universities.findMany({
     where: eq(universities.validationStatus, "publishable"),

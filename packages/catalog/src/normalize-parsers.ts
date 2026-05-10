@@ -23,7 +23,10 @@ const validRounds: ApplicationRound[] = [
 ];
 
 export type SelectedSourceMap = Partial<
-  Record<Exclude<CatalogRequiredField, "lastVerifiedAt">, SelectedCatalogFieldSource>
+  Record<
+    Exclude<CatalogRequiredField, "lastVerifiedAt">,
+    SelectedCatalogFieldSource
+  >
 >;
 
 export function buildSourceMap(selectedSources: SelectedCatalogFieldSource[]) {
@@ -35,7 +38,7 @@ export function buildSourceMap(selectedSources: SelectedCatalogFieldSource[]) {
 
 function pushMissingSourceIssue(
   fieldKey: CatalogRequiredField,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   issues.push({
     code: "missing_selected_source",
@@ -47,7 +50,7 @@ function pushMissingSourceIssue(
 function readSource(
   fieldKey: Exclude<CatalogRequiredField, "lastVerifiedAt">,
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = sourceMap[fieldKey];
   if (!source) {
@@ -61,7 +64,7 @@ function readSource(
 export function parseRequiredString(
   fieldKey: Exclude<CatalogRequiredField, "lastVerifiedAt">,
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource(fieldKey, sourceMap, issues);
   if (!source) {
@@ -81,9 +84,12 @@ export function parseRequiredString(
 }
 
 export function parsePositiveInteger(
-  fieldKey: "tuitionAnnualUsd" | "estimatedCostOfAttendanceUsd" | "livingCostEstimateUsd",
+  fieldKey:
+    | "tuitionAnnualUsd"
+    | "estimatedCostOfAttendanceUsd"
+    | "livingCostEstimateUsd",
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource(fieldKey, sourceMap, issues);
   if (!source) {
@@ -109,7 +115,7 @@ export function parsePositiveInteger(
 
 export function parseRounds(
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource("applicationRounds", sourceMap, issues);
   if (!source) {
@@ -128,14 +134,15 @@ export function parseRounds(
   const rounds = source.value.filter(
     (value): value is ApplicationRound =>
       typeof value === "string" &&
-      validRounds.includes(value as ApplicationRound),
+      validRounds.includes(value as ApplicationRound)
   );
 
   if (rounds.length === 0) {
     issues.push({
       code: "invalid_field_value",
       fieldKey: "applicationRounds",
-      message: 'The selected value for "applicationRounds" must contain valid rounds.',
+      message:
+        'The selected value for "applicationRounds" must contain valid rounds.',
     });
     return null;
   }
@@ -145,7 +152,7 @@ export function parseRounds(
 
 export function parseDeadlines(
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource("deadlinesByRound", sourceMap, issues);
   if (!source) {
@@ -172,14 +179,15 @@ export function parseDeadlines(
       }
       return result;
     },
-    {},
+    {}
   );
 
   if (Object.keys(deadlines).length === 0) {
     issues.push({
       code: "invalid_field_value",
       fieldKey: "deadlinesByRound",
-      message: 'The selected value for "deadlinesByRound" must contain at least one deadline.',
+      message:
+        'The selected value for "deadlinesByRound" must contain at least one deadline.',
     });
     return null;
   }
@@ -189,7 +197,7 @@ export function parseDeadlines(
 
 export function parseEnglishRequirements(
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource("englishRequirements", sourceMap, issues);
   if (!source) {
@@ -200,7 +208,8 @@ export function parseEnglishRequirements(
     issues.push({
       code: "invalid_field_value",
       fieldKey: "englishRequirements",
-      message: 'The selected value for "englishRequirements" must be an object.',
+      message:
+        'The selected value for "englishRequirements" must be an object.',
     });
     return null;
   }
@@ -229,7 +238,8 @@ export function parseEnglishRequirements(
     issues.push({
       code: "invalid_field_value",
       fieldKey: "englishRequirements",
-      message: 'The selected value for "englishRequirements" must contain at least one populated field.',
+      message:
+        'The selected value for "englishRequirements" must contain at least one populated field.',
     });
     return null;
   }
@@ -239,7 +249,7 @@ export function parseEnglishRequirements(
 
 export function parseRequiredMaterials(
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource("requiredMaterials", sourceMap, issues);
   if (!source) {
@@ -257,14 +267,15 @@ export function parseRequiredMaterials(
 
   const values = source.value.filter(
     (value): value is string =>
-      typeof value === "string" && value.trim().length > 0,
+      typeof value === "string" && value.trim().length > 0
   );
 
   if (values.length === 0) {
     issues.push({
       code: "invalid_field_value",
       fieldKey: "requiredMaterials",
-      message: 'The selected value for "requiredMaterials" must contain at least one string.',
+      message:
+        'The selected value for "requiredMaterials" must contain at least one string.',
     });
     return null;
   }
@@ -274,7 +285,7 @@ export function parseRequiredMaterials(
 
 export function parseScholarshipFlag(
   sourceMap: SelectedSourceMap,
-  issues: CatalogNormalizationResult["issues"],
+  issues: CatalogNormalizationResult["issues"]
 ) {
   const source = readSource("scholarshipAvailabilityFlag", sourceMap, issues);
   if (!source) {
@@ -285,7 +296,8 @@ export function parseScholarshipFlag(
     issues.push({
       code: "invalid_field_value",
       fieldKey: "scholarshipAvailabilityFlag",
-      message: 'The selected value for "scholarshipAvailabilityFlag" must be a boolean.',
+      message:
+        'The selected value for "scholarshipAvailabilityFlag" must be a boolean.',
     });
     return null;
   }

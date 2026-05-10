@@ -56,7 +56,10 @@ export async function PUT(request: Request) {
 
   const body = (await request.json().catch(() => null)) as unknown;
   if (!isIntakePayload(body)) {
-    return NextResponse.json({ error: "Invalid intake payload." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid intake payload." },
+      { status: 400 }
+    );
   }
 
   const intakeState = await saveStudentIntakeStateForUser({

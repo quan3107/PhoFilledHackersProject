@@ -2,8 +2,15 @@
 // Thin Bright Data Unlocker client for the runner's one-school fetch step.
 // Uses a direct REST call so the ingest slice stays simple and testable.
 
-import { fetchWithBrowserApi, type BrowserApiConfig } from "./bright-data-browser.js";
-import type { BrightDataClient, BrightDataPage, BrightDataSourceKind } from "./types.js";
+import {
+  fetchWithBrowserApi,
+  type BrowserApiConfig,
+} from "./bright-data-browser.js";
+import type {
+  BrightDataClient,
+  BrightDataPage,
+  BrightDataSourceKind,
+} from "./types.js";
 
 interface BrightDataRequestBody {
   zone: string;
@@ -20,7 +27,7 @@ interface BrightDataApiResponse {
 }
 
 function normalizeHeaders(
-  headers: Record<string, string | number | boolean> | undefined,
+  headers: Record<string, string | number | boolean> | undefined
 ) {
   const normalized: Record<string, string> = {};
   for (const [key, value] of Object.entries(headers ?? {})) {
@@ -47,7 +54,7 @@ async function readApiResponse(response: Response) {
   const responseText = await response.text();
   if (!response.ok) {
     throw new Error(
-      `Bright Data Unlocker request failed with HTTP ${response.status}: ${responseText}`,
+      `Bright Data Unlocker request failed with HTTP ${response.status}: ${responseText}`
     );
   }
 
@@ -70,7 +77,7 @@ async function fetchWithUnlocker(
     sourceKind: BrightDataSourceKind;
     sourceUrl: string;
   },
-  fetchImpl: typeof fetch,
+  fetchImpl: typeof fetch
 ): Promise<BrightDataPage> {
   const body: BrightDataRequestBody = {
     zone: input.zone,
@@ -117,11 +124,12 @@ export function createBrightDataClient(
   deps: {
     fetchImpl?: typeof fetch;
     fetchWithBrowserApiImpl?: typeof fetchWithBrowserApi;
-  } = {},
+  } = {}
 ): BrightDataClient {
   const endpoint = input.endpoint ?? "https://api.brightdata.com/request";
   const fetchImpl = deps.fetchImpl ?? fetch;
-  const fetchWithBrowserApiImpl = deps.fetchWithBrowserApiImpl ?? fetchWithBrowserApi;
+  const fetchWithBrowserApiImpl =
+    deps.fetchWithBrowserApiImpl ?? fetchWithBrowserApi;
 
   return {
     async fetchPage({ sourceKind, sourceUrl }): Promise<BrightDataPage> {
@@ -134,7 +142,7 @@ export function createBrightDataClient(
             sourceKind,
             sourceUrl,
           },
-          fetchImpl,
+          fetchImpl
         );
       } catch (error) {
         if (!input.browserApi || !shouldUseBrowserFallback(error)) {

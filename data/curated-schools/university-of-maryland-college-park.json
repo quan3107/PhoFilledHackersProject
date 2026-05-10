@@ -7,9 +7,7 @@
     "state": "MD",
     "officialAdmissionsUrl": "https://admissions.umd.edu/"
   },
-  "applicationRounds": [
-    "early_action"
-  ],
+  "applicationRounds": ["early_action"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": null,
@@ -49,10 +47,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "UMD is test-optional through the Spring and Fall 2027 application cycles; if you submit scores, they should be sent by the application deadline and may not be considered if received late.",
@@ -70,13 +65,9 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "research_intensive"
-    ],
+    "programFitTags": ["research_intensive"],
     "programAdmissionModel": "capacity_limited",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "moderately_selective",

@@ -7,10 +7,7 @@
     "state": "IL",
     "officialAdmissionsUrl": "https://admissions.northwestern.edu/apply/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2025-11-01",
@@ -51,10 +48,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": null,
@@ -80,9 +74,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "binding_early_decision"
-    ]
+    "applicationStrategyTags": ["binding_early_decision"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "highly_selective",

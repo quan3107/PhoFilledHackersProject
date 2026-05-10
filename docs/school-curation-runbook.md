@@ -4,9 +4,9 @@ Use this runbook when a Codex session with `gpt-5.4-mini` at medium reasoning is
 
 ## Model settings
 
-* Model: `gpt-5.4-mini`
-* Reasoning: `medium`
-* Working mode: one school per run
+- Model: `gpt-5.4-mini`
+- Reasoning: `medium`
+- Working mode: one school per run
 
 ## Non-negotiable workflow
 
@@ -21,10 +21,10 @@ Use this runbook when a Codex session with `gpt-5.4-mini` at medium reasoning is
 
 Use the local curation CLI to keep the process one-school-at-a-time:
 
-* `npm --workspace @phofilledhackers/ingest run curate next`
-* `npm --workspace @phofilledhackers/ingest run curate -- prompt --school=<school-slug>`
-* `npm --workspace @phofilledhackers/ingest run curate -- validate --school=<school-slug>`
-* `npm --workspace @phofilledhackers/ingest run curate -- validate`
+- `npm --workspace @phofilledhackers/ingest run curate next`
+- `npm --workspace @phofilledhackers/ingest run curate -- prompt --school=<school-slug>`
+- `npm --workspace @phofilledhackers/ingest run curate -- validate --school=<school-slug>`
+- `npm --workspace @phofilledhackers/ingest run curate -- validate`
 
 ## System prompt
 
@@ -190,26 +190,26 @@ Use the enum and tag vocabularies defined in `packages/db/src/schema/types.ts`.
 
 Key constrained fields:
 
-* `testPolicy`: `required`, `test_optional`, `test_flexible`, `test_blind`, `unknown`
-* `schoolControl`: `public`, `private_nonprofit`, `private_for_profit`, `unknown`
-* `internationalAidPolicy`: `meets_full_demonstrated_need_if_eligible`, `need_based_aid_available`, `merit_aid_available`, `need_and_merit_available`, `limited_or_unclear`, `unknown`
-* `programFitTags`: `computer_science`, `engineering`, `business`, `economics`, `life_sciences`, `health_pre_med`, `humanities`, `social_sciences`, `arts_design`, `public_policy`, `research_intensive`
-* `programAdmissionModel`: `open`, `direct_admit`, `separate_school_application`, `capacity_limited`, `portfolio_or_audition`, `unknown`
-* `applicationStrategyTags`: `non_binding_early_action`, `restrictive_early_action`, `single_choice_early_action`, `binding_early_decision`, `multiple_early_rounds`, `rolling_or_extended_timeline`
-* `testingRequirements.acceptedExams`: `sat`, `act`
-* `testingRequirements.superscorePolicy`: `sat_only`, `act_only`, `both`, `none`, `unknown`
-* `testingRequirements.writingEssayPolicy`: `required`, `optional`, `not_considered`, `unknown`
-* `testingRequirements.scoreReportingPolicy`: `self_report_allowed`, `official_required_upfront`, `official_required_after_admit`, `unknown`
-* `academicSelectivityBand`: `ultra_selective`, `highly_selective`, `selective`, `moderately_selective`, `broad_access`, `unknown`
-* `testingExpectation`: `high_scores_expected`, `scores_considered`, `tests_not_required`, `tests_not_considered`, `unknown`
-* `englishPolicySummary`: `minimum_scores_required`, `english_fluency_required_no_exam_minimum_listed`, `waiver_possible`, `not_clearly_stated`, `unknown`
-* `aidModel`: `need_based_only`, `merit_available`, `need_and_merit`, `limited_aid`, `unknown`
-* `applicationComplexity`: `low`, `medium`, `high`, `unknown`
+- `testPolicy`: `required`, `test_optional`, `test_flexible`, `test_blind`, `unknown`
+- `schoolControl`: `public`, `private_nonprofit`, `private_for_profit`, `unknown`
+- `internationalAidPolicy`: `meets_full_demonstrated_need_if_eligible`, `need_based_aid_available`, `merit_aid_available`, `need_and_merit_available`, `limited_or_unclear`, `unknown`
+- `programFitTags`: `computer_science`, `engineering`, `business`, `economics`, `life_sciences`, `health_pre_med`, `humanities`, `social_sciences`, `arts_design`, `public_policy`, `research_intensive`
+- `programAdmissionModel`: `open`, `direct_admit`, `separate_school_application`, `capacity_limited`, `portfolio_or_audition`, `unknown`
+- `applicationStrategyTags`: `non_binding_early_action`, `restrictive_early_action`, `single_choice_early_action`, `binding_early_decision`, `multiple_early_rounds`, `rolling_or_extended_timeline`
+- `testingRequirements.acceptedExams`: `sat`, `act`
+- `testingRequirements.superscorePolicy`: `sat_only`, `act_only`, `both`, `none`, `unknown`
+- `testingRequirements.writingEssayPolicy`: `required`, `optional`, `not_considered`, `unknown`
+- `testingRequirements.scoreReportingPolicy`: `self_report_allowed`, `official_required_upfront`, `official_required_after_admit`, `unknown`
+- `academicSelectivityBand`: `ultra_selective`, `highly_selective`, `selective`, `moderately_selective`, `broad_access`, `unknown`
+- `testingExpectation`: `high_scores_expected`, `scores_considered`, `tests_not_required`, `tests_not_considered`, `unknown`
+- `englishPolicySummary`: `minimum_scores_required`, `english_fluency_required_no_exam_minimum_listed`, `waiver_possible`, `not_clearly_stated`, `unknown`
+- `aidModel`: `need_based_only`, `merit_available`, `need_and_merit`, `limited_aid`, `unknown`
+- `applicationComplexity`: `low`, `medium`, `high`, `unknown`
 
 ## Review rule
 
 If any required catalog field is missing, the artifact is still written, but:
 
-* `quality.status` must be `needs_review`
-* `quality.missingFields` must list the exact field names
-* the next school should not begin until the current artifact has been written
+- `quality.status` must be `needs_review`
+- `quality.missingFields` must list the exact field names
+- the next school should not begin until the current artifact has been written

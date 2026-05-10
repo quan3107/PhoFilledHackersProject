@@ -24,13 +24,13 @@ interface RecommendationChatPanelProps {
   sessionKey: string;
   onSubmitTurn: (
     message: string | null,
-    messages: RecommendationChatMessage[],
+    messages: RecommendationChatMessage[]
   ) => Promise<RecommendationChatTurnResult>;
 }
 
 function createMessage(
   role: RecommendationChatMessage["role"],
-  text: string,
+  text: string
 ): RecommendationChatMessage {
   return {
     id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -76,7 +76,7 @@ export function RecommendationChatPanel({
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to start the recommendations assistant.",
+            : "Unable to start the recommendations assistant."
         );
       })
       .finally(() => {
@@ -90,7 +90,7 @@ export function RecommendationChatPanel({
 
   const canSubmit = useMemo(
     () => inputValue.trim().length > 0 && !loading,
-    [inputValue, loading],
+    [inputValue, loading]
   );
 
   async function submitTurn(message: string) {
@@ -121,7 +121,7 @@ export function RecommendationChatPanel({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Unable to continue the recommendations conversation.",
+          : "Unable to continue the recommendations conversation."
       );
     } finally {
       setLoading(false);
@@ -136,7 +136,8 @@ export function RecommendationChatPanel({
             Ask about fit, tradeoffs, shortlist logic, or what to do next.
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            This assistant is grounded in your saved profile and latest recommendation run.
+            This assistant is grounded in your saved profile and latest
+            recommendation run.
           </p>
         </div>
 

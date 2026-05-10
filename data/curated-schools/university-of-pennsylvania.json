@@ -7,10 +7,7 @@
     "state": "PA",
     "officialAdmissionsUrl": "https://admissions.upenn.edu/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2025-11-01",
@@ -53,10 +50,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "November 2025 for Early Decision; December 2025 for Regular Decision; March 2026 for Transfer.",
@@ -83,9 +77,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "separate_school_application",
-    "applicationStrategyTags": [
-      "binding_early_decision"
-    ]
+    "applicationStrategyTags": ["binding_early_decision"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",

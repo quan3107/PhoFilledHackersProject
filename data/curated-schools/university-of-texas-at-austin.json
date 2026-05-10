@@ -7,10 +7,7 @@
     "state": "TX",
     "officialAdmissionsUrl": "https://admissions.utexas.edu/apply/freshman/"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2025-10-15",
     "early_decision": null,
@@ -49,10 +46,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "For Early Action, official scores from the testing agency must be received by October 22, 2025. For Regular Decision, official scores from the testing agency must be received by December 10, 2025.",
@@ -70,15 +64,9 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "engineering",
-      "business",
-      "research_intensive"
-    ],
+    "programFitTags": ["engineering", "business", "research_intensive"],
     "programAdmissionModel": "capacity_limited",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "selective",

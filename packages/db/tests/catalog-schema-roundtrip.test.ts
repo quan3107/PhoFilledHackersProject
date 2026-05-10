@@ -7,10 +7,7 @@ import test from "node:test";
 
 import { eq } from "drizzle-orm";
 
-import {
-  universities,
-  universitySources,
-} from "../src/index.js";
+import { universities, universitySources } from "../src/index.js";
 import { createCatalogTestDatabase } from "../src/testing/pglite.js";
 
 test("universities and university_sources round-trip through the catalog schema", async () => {
@@ -37,7 +34,8 @@ test("universities and university_sources round-trip through the catalog schema"
         estimatedCostOfAttendanceUsd: 71000,
         livingCostEstimateUsd: 16000,
         scholarshipAvailabilityFlag: true,
-        scholarshipNotes: "Merit scholarships available for international applicants.",
+        scholarshipNotes:
+          "Merit scholarships available for international applicants.",
         recommendationInputs: {
           admissionRateOverall: 0.45,
           satAverageOverall: 1280,
@@ -49,7 +47,11 @@ test("universities and university_sources round-trip through the catalog schema"
           internationalAidPolicy: "need_and_merit_available",
           hasNeedBasedAid: true,
           hasMeritAid: true,
-          programFitTags: ["engineering", "computer_science", "research_intensive"],
+          programFitTags: [
+            "engineering",
+            "computer_science",
+            "research_intensive",
+          ],
           programAdmissionModel: "direct_admit",
           applicationStrategyTags: ["binding_early_decision"],
           testingRequirements: {
@@ -116,32 +118,34 @@ test("universities and university_sources round-trip through the catalog schema"
     assert.equal(storedUniversity.validationStatus, "publishable");
     assert.equal(
       storedUniversity.recommendationInputs.internationalAidPolicy,
-      "need_and_merit_available",
+      "need_and_merit_available"
     );
     assert.equal(
       storedUniversity.recommendationInputs.averageNetPriceUsd,
-      24000,
+      24000
     );
-    assert.deepEqual(
-      storedUniversity.recommendationInputs.programFitTags,
-      ["engineering", "computer_science", "research_intensive"],
-    );
+    assert.deepEqual(storedUniversity.recommendationInputs.programFitTags, [
+      "engineering",
+      "computer_science",
+      "research_intensive",
+    ]);
     assert.equal(
-      storedUniversity.recommendationInputs.testingRequirements.superscorePolicy,
-      "both",
+      storedUniversity.recommendationInputs.testingRequirements
+        .superscorePolicy,
+      "both"
     );
     assert.equal(
       storedUniversity.explanationInputs.applicationComplexity,
-      "medium",
+      "medium"
     );
     assert.equal(storedUniversity.universitySources.length, 1);
     assert.equal(
       storedUniversity.universitySources[0]?.fieldKey,
-      "officialAdmissionsUrl",
+      "officialAdmissionsUrl"
     );
     assert.equal(
       storedUniversity.universitySources[0]?.sourceUrl,
-      "https://example.edu/admissions",
+      "https://example.edu/admissions"
     );
   } finally {
     await database.close();

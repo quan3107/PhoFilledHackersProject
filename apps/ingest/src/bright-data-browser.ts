@@ -29,7 +29,7 @@ export async function fetchWithBrowserApi(
   input: {
     sourceKind: BrightDataSourceKind;
     sourceUrl: string;
-  },
+  }
 ): Promise<BrightDataPage> {
   const wsEndpoint = buildBrowserWSEndpoint(config);
   if (!wsEndpoint) {
@@ -49,9 +49,9 @@ export async function fetchWithBrowserApi(
         timeout: 60_000,
       });
 
-      await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(
-        () => undefined,
-      );
+      await page
+        .waitForLoadState("networkidle", { timeout: 10_000 })
+        .catch(() => undefined);
 
       const body = await page.content();
       const headers = response

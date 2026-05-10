@@ -24,7 +24,9 @@ const envCandidates = [
   path.join(process.cwd(), "..", "..", ".env"),
 ];
 
-const repoRootEnvPath = envCandidates.find((candidate) => existsSync(candidate));
+const repoRootEnvPath = envCandidates.find((candidate) =>
+  existsSync(candidate)
+);
 
 if (repoRootEnvPath) {
   loadEnvFile(repoRootEnvPath);
@@ -77,8 +79,7 @@ function getTrustedOrigins() {
     .filter(Boolean)
     .map((value) => (value!.startsWith("http") ? value! : `https://${value}`));
   const configuredOrigins =
-    process.env.BETTER_AUTH_TRUSTED_ORIGINS
-      ?.split(",")
+    process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",")
       .map((value) => value.trim())
       .filter(Boolean) ?? [];
 
@@ -168,7 +169,7 @@ export async function getAuthDb() {
     authDbPromise = Promise.resolve(
       drizzle(getSqlClient(), {
         schema: dbSchema,
-      }),
+      })
     );
   }
 

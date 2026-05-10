@@ -35,11 +35,9 @@ import { getAuthDb } from "./auth.js";
 export type StudentIntakeFieldResolutionKind =
   DbStudentIntakeFieldResolutionKind;
 
-export type StudentIntakeExplicitFieldState =
-  DbStudentIntakeExplicitFieldState;
+export type StudentIntakeExplicitFieldState = DbStudentIntakeExplicitFieldState;
 
-export type StudentIntakeFieldStatusRecord =
-  DbStudentIntakeFieldStatusRecord;
+export type StudentIntakeFieldStatusRecord = DbStudentIntakeFieldStatusRecord;
 
 export type StudentIntakeFieldStatusMap = DbStudentIntakeFieldStatusMap;
 
@@ -113,7 +111,7 @@ export interface StudentProfileReadinessEvaluation {
 }
 
 function toStudentIntakeStateRecord(
-  row: typeof studentIntakeSessions.$inferSelect,
+  row: typeof studentIntakeSessions.$inferSelect
 ): StudentIntakeStateRecord {
   return {
     userId: row.userId,
@@ -131,29 +129,29 @@ function toStudentIntakeStateRecord(
 }
 
 function isStudentIntakeFieldResolutionKind(
-  value: unknown,
+  value: unknown
 ): value is StudentIntakeFieldResolutionKind {
   return (
     typeof value === "string" &&
     studentIntakeFieldResolutionKinds.includes(
-      value as StudentIntakeFieldResolutionKind,
+      value as StudentIntakeFieldResolutionKind
     )
   );
 }
 
 function isStudentIntakeExplicitFieldState(
-  value: unknown,
+  value: unknown
 ): value is StudentIntakeExplicitFieldState {
   return (
     typeof value === "string" &&
     studentIntakeExplicitFieldStates.includes(
-      value as StudentIntakeExplicitFieldState,
+      value as StudentIntakeExplicitFieldState
     )
   );
 }
 
 function normalizeStudentIntakeFieldStatuses(
-  value: unknown,
+  value: unknown
 ): StudentIntakeFieldStatusMap {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return {};
@@ -161,8 +159,15 @@ function normalizeStudentIntakeFieldStatuses(
 
   const statuses: StudentIntakeFieldStatusMap = {};
 
-  for (const [path, rawStatus] of Object.entries(value as Record<string, unknown>)) {
-    if (!path.trim() || !rawStatus || typeof rawStatus !== "object" || Array.isArray(rawStatus)) {
+  for (const [path, rawStatus] of Object.entries(
+    value as Record<string, unknown>
+  )) {
+    if (
+      !path.trim() ||
+      !rawStatus ||
+      typeof rawStatus !== "object" ||
+      Array.isArray(rawStatus)
+    ) {
       continue;
     }
 
@@ -201,30 +206,51 @@ function normalizeCount(value: unknown): number {
 }
 
 function normalizeStudentPreferenceProfile(
-  value: Partial<StudentPreferenceProfile> | null | undefined,
+  value: Partial<StudentPreferenceProfile> | null | undefined
 ): StudentPreferenceProfile {
   const intendedMajors = Array.isArray(value?.intendedMajors)
-    ? value.intendedMajors.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0).map((entry) => entry.trim())
+    ? value.intendedMajors
+        .filter(
+          (entry): entry is string =>
+            typeof entry === "string" && entry.trim().length > 0
+        )
+        .map((entry) => entry.trim())
     : [...defaultStudentPreferenceProfile.intendedMajors];
   const preferredStates = Array.isArray(value?.preferredStates)
-    ? value.preferredStates.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0).map((entry) => entry.trim().toUpperCase())
+    ? value.preferredStates
+        .filter(
+          (entry): entry is string =>
+            typeof entry === "string" && entry.trim().length > 0
+        )
+        .map((entry) => entry.trim().toUpperCase())
     : [...defaultStudentPreferenceProfile.preferredStates];
-  const preferredLocationPreferences = Array.isArray(value?.preferredLocationPreferences)
+  const preferredLocationPreferences = Array.isArray(
+    value?.preferredLocationPreferences
+  )
     ? value.preferredLocationPreferences.filter(
-        (entry): entry is StudentPreferenceProfile["preferredLocationPreferences"][number] =>
+        (
+          entry
+        ): entry is StudentPreferenceProfile["preferredLocationPreferences"][number] =>
           typeof entry === "string" &&
           studentLocationPreferenceKinds.includes(
-            entry as (typeof studentLocationPreferenceKinds)[number],
-          ),
+            entry as (typeof studentLocationPreferenceKinds)[number]
+          )
       )
     : [...defaultStudentPreferenceProfile.preferredLocationPreferences];
   const preferredCampusLocale = Array.isArray(value?.preferredCampusLocale)
-    ? value.preferredCampusLocale.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0).map((entry) => entry.trim())
+    ? value.preferredCampusLocale
+        .filter(
+          (entry): entry is string =>
+            typeof entry === "string" && entry.trim().length > 0
+        )
+        .map((entry) => entry.trim())
     : [...defaultStudentPreferenceProfile.preferredCampusLocale];
   const preferredSchoolControl = Array.isArray(value?.preferredSchoolControl)
     ? value.preferredSchoolControl.filter(
-        (entry): entry is StudentPreferenceProfile["preferredSchoolControl"][number] =>
-          entry === "public" || entry === "private_nonprofit",
+        (
+          entry
+        ): entry is StudentPreferenceProfile["preferredSchoolControl"][number] =>
+          entry === "public" || entry === "private_nonprofit"
       )
     : [...defaultStudentPreferenceProfile.preferredSchoolControl];
 
@@ -236,21 +262,23 @@ function normalizeStudentPreferenceProfile(
     preferredSchoolControl,
     preferredUndergraduateSize:
       value?.preferredUndergraduateSize &&
-      ["small", "medium", "large", "unknown"].includes(value.preferredUndergraduateSize)
+      ["small", "medium", "large", "unknown"].includes(
+        value.preferredUndergraduateSize
+      )
         ? value.preferredUndergraduateSize
         : defaultStudentPreferenceProfile.preferredUndergraduateSize,
   };
 }
 
 function sanitizeStudentIntakeMessages(
-  messages: StudentIntakeMessageInput[],
+  messages: StudentIntakeMessageInput[]
 ): StudentIntakeMessageRecord[] {
   return messages
     .filter(
       (message) =>
         (message.role === "assistant" || message.role === "student") &&
         message.id.trim().length > 0 &&
-        message.text.trim().length > 0,
+        message.text.trim().length > 0
     )
     .map((message) => ({
       id: message.id.trim(),
@@ -266,11 +294,15 @@ function toIsoString(value: Date | string) {
 
 function isKnownRequiredText(value: string) {
   const normalized = value.trim().toLowerCase();
-  return normalized.length > 0 && normalized !== "unknown" && normalized !== "declined";
+  return (
+    normalized.length > 0 &&
+    normalized !== "unknown" &&
+    normalized !== "declined"
+  );
 }
 
 function toStudentProfileRecord(
-  row: typeof studentProfiles.$inferSelect,
+  row: typeof studentProfiles.$inferSelect
 ): StudentProfileRecord {
   return {
     id: row.id,
@@ -300,7 +332,7 @@ export function getDefaultStudentProfileInput(): StudentProfileInput {
 }
 
 export function buildStudentProfileDocumentFromState(
-  state: Pick<StudentProfileState, "profile" | "snapshots">,
+  state: Pick<StudentProfileState, "profile" | "snapshots">
 ): StudentProfileDocument {
   const profile = state.profile
     ? {
@@ -326,7 +358,8 @@ export function buildStudentProfileDocumentFromState(
     : profile;
   const projectedSnapshotProfile = state.snapshots.projected.profile
     ? {
-        citizenshipCountry: state.snapshots.projected.profile.citizenshipCountry,
+        citizenshipCountry:
+          state.snapshots.projected.profile.citizenshipCountry,
         targetEntryTerm: state.snapshots.projected.profile.targetEntryTerm,
         academic: state.snapshots.projected.profile.academic,
         testing: state.snapshots.projected.profile.testing,
@@ -355,7 +388,7 @@ export function buildStudentProfileDocumentFromState(
 }
 
 export function evaluateMissingStudentProfileFields(
-  profile: StudentProfileInput,
+  profile: StudentProfileInput
 ): StudentProfileMissingField[] {
   return evaluateRecommendationMissingFields({
     currentProfile: profile,
@@ -377,7 +410,7 @@ export function evaluateRecommendationMissingFields(input: {
     snapshotKind: StudentProfileSnapshotKind,
     path: string,
     message: string,
-    missing: boolean,
+    missing: boolean
   ) => {
     if (!missing) {
       return;
@@ -395,37 +428,37 @@ export function evaluateRecommendationMissingFields(input: {
     "current",
     "citizenshipCountry",
     "Citizenship country is required.",
-    !isKnownRequiredText(current.citizenshipCountry),
+    !isKnownRequiredText(current.citizenshipCountry)
   );
   add(
     "current",
     "targetEntryTerm",
     "Target entry term is required.",
-    !isKnownRequiredText(current.targetEntryTerm),
+    !isKnownRequiredText(current.targetEntryTerm)
   );
   add(
     "current",
     "academic.currentGpa100",
     "Current GPA is required.",
-    current.academic.currentGpa100 === null,
+    current.academic.currentGpa100 === null
   );
   add(
     "current",
     "academic.curriculumStrength",
     "Curriculum strength is required.",
-    current.academic.curriculumStrength === "unknown",
+    current.academic.curriculumStrength === "unknown"
   );
   add(
     "current",
     "academic.classRankPercent",
     "Class rank percentile is required.",
-    current.academic.classRankPercent === null,
+    current.academic.classRankPercent === null
   );
   add(
     "current",
     "testing.willSubmitTests",
     "Test submission intent is required.",
-    current.testing.willSubmitTests === null,
+    current.testing.willSubmitTests === null
   );
   add(
     "current",
@@ -434,13 +467,13 @@ export function evaluateRecommendationMissingFields(input: {
     current.testing.willSubmitTests !== false &&
       current.testing.satTotal === null &&
       current.testing.actComposite === null &&
-      current.testing.englishExamType === "unknown",
+      current.testing.englishExamType === "unknown"
   );
   add(
     "current",
     "preferences.intendedMajors",
     "At least one intended major is required.",
-    current.preferences.intendedMajors.length === 0,
+    current.preferences.intendedMajors.length === 0
   );
   const hasPreferredLocation =
     current.preferences.preferredStates.length > 0 ||
@@ -449,86 +482,86 @@ export function evaluateRecommendationMissingFields(input: {
     "current",
     "preferences.preferredLocationPreferences",
     "At least one preferred location is required.",
-    !hasPreferredLocation,
+    !hasPreferredLocation
   );
   add(
     "current",
     "preferences.preferredCampusLocale",
     "At least one preferred campus locale is required.",
-    current.preferences.preferredCampusLocale.length === 0,
+    current.preferences.preferredCampusLocale.length === 0
   );
   add(
     "current",
     "preferences.preferredSchoolControl",
     "At least one school control preference is required.",
-    current.preferences.preferredSchoolControl.length === 0,
+    current.preferences.preferredSchoolControl.length === 0
   );
   add(
     "current",
     "preferences.preferredUndergraduateSize",
     "Preferred undergraduate size is required.",
-    current.preferences.preferredUndergraduateSize === "unknown",
+    current.preferences.preferredUndergraduateSize === "unknown"
   );
   add(
     "current",
     "budget.annualBudgetUsd",
     "Annual budget is required.",
-    current.budget.annualBudgetUsd === null,
+    current.budget.annualBudgetUsd === null
   );
   add(
     "current",
     "budget.needsFinancialAid",
     "Financial aid need is required.",
-    current.budget.needsFinancialAid === null,
+    current.budget.needsFinancialAid === null
   );
   add(
     "current",
     "budget.needsMeritAid",
     "Merit aid preference is required.",
-    current.budget.needsMeritAid === null,
+    current.budget.needsMeritAid === null
   );
   add(
     "current",
     "budget.budgetFlexibility",
     "Budget flexibility is required.",
-    current.budget.budgetFlexibility === "unknown",
+    current.budget.budgetFlexibility === "unknown"
   );
   add(
     "current",
     "readiness.wantsEarlyRound",
     "Early-round intent is required.",
-    current.readiness.wantsEarlyRound === null,
+    current.readiness.wantsEarlyRound === null
   );
   add(
     "current",
     "readiness.hasTeacherRecommendationsReady",
     "Teacher recommendation readiness is required.",
-    current.readiness.hasTeacherRecommendationsReady === null,
+    current.readiness.hasTeacherRecommendationsReady === null
   );
   add(
     "current",
     "readiness.hasCounselorDocumentsReady",
     "Counselor document readiness is required.",
-    current.readiness.hasCounselorDocumentsReady === null,
+    current.readiness.hasCounselorDocumentsReady === null
   );
   add(
     "current",
     "readiness.hasEssayDraftsStarted",
     "Essay readiness is required.",
-    current.readiness.hasEssayDraftsStarted === null,
+    current.readiness.hasEssayDraftsStarted === null
   );
 
   add(
     "projected",
     "academic.projectedGpa100",
     "Projected GPA is required.",
-    input.projectedProfile.academic.projectedGpa100 === null,
+    input.projectedProfile.academic.projectedGpa100 === null
   );
   add(
     "projected",
     "assumptions",
     "At least one projected-state assumption is required.",
-    input.projectedAssumptions.length === 0,
+    input.projectedAssumptions.length === 0
   );
 
   return missingFields;
@@ -536,7 +569,7 @@ export function evaluateRecommendationMissingFields(input: {
 
 function lookupStudentIntakeFieldStatus(
   fieldStatuses: StudentIntakeFieldStatusMap | undefined,
-  field: StudentProfileMissingField,
+  field: StudentProfileMissingField
 ) {
   if (!fieldStatuses) {
     return null;
@@ -551,7 +584,7 @@ function lookupStudentIntakeFieldStatus(
 
 function splitRecommendationReadinessFields(
   missingFields: StudentProfileMissingField[],
-  fieldStatuses: StudentIntakeFieldStatusMap | undefined,
+  fieldStatuses: StudentIntakeFieldStatusMap | undefined
 ) {
   const resolvedWithCaveatFields: StudentProfileResolvedField[] = [];
   const unresolvedFields: StudentProfileMissingField[] = [];
@@ -559,7 +592,10 @@ function splitRecommendationReadinessFields(
   for (const field of missingFields) {
     const fieldStatus = lookupStudentIntakeFieldStatus(fieldStatuses, field);
 
-    if (fieldStatus && isStudentIntakeExplicitFieldState(fieldStatus.resolution)) {
+    if (
+      fieldStatus &&
+      isStudentIntakeExplicitFieldState(fieldStatus.resolution)
+    ) {
       resolvedWithCaveatFields.push({
         ...field,
         resolution: fieldStatus.resolution,
@@ -577,18 +613,16 @@ function splitRecommendationReadinessFields(
 }
 
 export function toRecommendationMissingFieldPaths(
-  missingFields: StudentProfileMissingField[],
+  missingFields: StudentProfileMissingField[]
 ) {
-  return missingFields.map(
-    (field) => `${field.snapshotKind}.${field.path}`,
-  );
+  return missingFields.map((field) => `${field.snapshotKind}.${field.path}`);
 }
 
 export function evaluateRecommendationRunReadinessFromDocument(
   document: StudentProfileDocument,
   options?: {
     fieldStatuses?: StudentIntakeFieldStatusMap;
-  },
+  }
 ) {
   const readinessFields = evaluateRecommendationMissingFields({
     currentProfile: document.current.profile,
@@ -597,10 +631,7 @@ export function evaluateRecommendationRunReadinessFromDocument(
     projectedAssumptions: document.projected.assumptions,
   });
   const { missingFields, resolvedWithCaveatFields } =
-    splitRecommendationReadinessFields(
-      readinessFields,
-      options?.fieldStatuses,
-    );
+    splitRecommendationReadinessFields(readinessFields, options?.fieldStatuses);
 
   return {
     missingFields,
@@ -613,11 +644,11 @@ export function evaluateRecommendationRunReadinessFromState(
   state: Pick<StudentProfileState, "profile" | "snapshots">,
   options?: {
     fieldStatuses?: StudentIntakeFieldStatusMap;
-  },
+  }
 ) {
   const documentReadiness = evaluateRecommendationRunReadinessFromDocument(
     buildStudentProfileDocumentFromState(state),
-    options,
+    options
   );
   const missingFields = [...documentReadiness.missingFields];
   const resolvedWithCaveatFields = [
@@ -656,7 +687,7 @@ export function evaluateRecommendationRunReadinessFromState(
 }
 
 export async function getStudentProfileStateForUser(
-  userId: string,
+  userId: string
 ): Promise<StudentProfileState> {
   const authDb = await getAuthDb();
   const profile = await authDb.query.studentProfiles.findFirst({
@@ -685,8 +716,8 @@ export async function getStudentProfileStateForUser(
 
     return {
       ...state,
-      missingFields: evaluateRecommendationRunReadinessFromState(state)
-        .missingFields,
+      missingFields:
+        evaluateRecommendationRunReadinessFromState(state).missingFields,
     };
   }
 
@@ -695,8 +726,9 @@ export async function getStudentProfileStateForUser(
     profile.snapshots.find((snapshot) => snapshot.snapshotKind === "current") ??
     null;
   const projectedSnapshot =
-    profile.snapshots.find((snapshot) => snapshot.snapshotKind === "projected") ??
-    null;
+    profile.snapshots.find(
+      (snapshot) => snapshot.snapshotKind === "projected"
+    ) ?? null;
 
   const state = {
     profile: normalizedProfile,
@@ -708,7 +740,7 @@ export async function getStudentProfileStateForUser(
           ? {
               ...currentSnapshot.profile,
               preferences: normalizeStudentPreferenceProfile(
-                currentSnapshot.profile.preferences,
+                currentSnapshot.profile.preferences
               ),
             }
           : normalizedProfile,
@@ -720,7 +752,7 @@ export async function getStudentProfileStateForUser(
           ? {
               ...projectedSnapshot.profile,
               preferences: normalizeStudentPreferenceProfile(
-                projectedSnapshot.profile.preferences,
+                projectedSnapshot.profile.preferences
               ),
             }
           : normalizedProfile,
@@ -730,7 +762,8 @@ export async function getStudentProfileStateForUser(
 
   return {
     ...state,
-    missingFields: evaluateRecommendationRunReadinessFromState(state).missingFields,
+    missingFields:
+      evaluateRecommendationRunReadinessFromState(state).missingFields,
   };
 }
 
@@ -751,7 +784,9 @@ export async function saveStudentProfileStateForUser(input: {
       projectedGpa100: input.projectedProfile.academic.projectedGpa100,
     },
     testing: input.currentProfile.testing,
-    preferences: normalizeStudentPreferenceProfile(input.currentProfile.preferences),
+    preferences: normalizeStudentPreferenceProfile(
+      input.currentProfile.preferences
+    ),
     budget: input.currentProfile.budget,
     readiness: input.currentProfile.readiness,
     updatedAt: new Date(),
@@ -776,7 +811,9 @@ export async function saveStudentProfileStateForUser(input: {
       projectedGpa100: input.projectedProfile.academic.projectedGpa100,
     },
     testing: input.currentProfile.testing,
-    preferences: normalizeStudentPreferenceProfile(input.currentProfile.preferences),
+    preferences: normalizeStudentPreferenceProfile(
+      input.currentProfile.preferences
+    ),
     budget: input.currentProfile.budget,
     readiness: input.currentProfile.readiness,
   };
@@ -786,7 +823,9 @@ export async function saveStudentProfileStateForUser(input: {
     targetEntryTerm: input.projectedProfile.targetEntryTerm.trim(),
     academic: input.projectedProfile.academic,
     testing: input.projectedProfile.testing,
-    preferences: normalizeStudentPreferenceProfile(input.projectedProfile.preferences),
+    preferences: normalizeStudentPreferenceProfile(
+      input.projectedProfile.preferences
+    ),
     budget: input.projectedProfile.budget,
     readiness: input.projectedProfile.readiness,
   };
@@ -836,7 +875,7 @@ async function upsertStudentProfileSnapshot(input: {
 }
 
 export async function getStudentIntakeStateForUser(
-  userId: string,
+  userId: string
 ): Promise<StudentIntakeStateRecord | null> {
   const authDb = await getAuthDb();
   const intakeState = await authDb.query.studentIntakeSessions.findFirst({
@@ -869,7 +908,7 @@ export async function saveStudentIntakeStateForUser(input: {
     previousResponseId:
       input.previousResponseId !== undefined
         ? input.previousResponseId
-        : existingState?.previousResponseId ?? null,
+        : (existingState?.previousResponseId ?? null),
     fieldStatuses:
       input.fieldStatuses !== undefined
         ? normalizeStudentIntakeFieldStatuses(input.fieldStatuses)

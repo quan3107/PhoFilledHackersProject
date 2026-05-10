@@ -13,7 +13,7 @@ export const locationPreferenceLabels = studentLocationPreferenceLabels;
 export const locationPreferenceKinds = [...studentLocationPreferenceKinds];
 
 export const locationPreferenceOptions = locationPreferenceKinds.map(
-  (kind) => locationPreferenceLabels[kind],
+  (kind) => locationPreferenceLabels[kind]
 );
 
 export function formatLocationPreferences(input: {
@@ -40,7 +40,7 @@ export function parseLocationPreferences(value: string) {
     locationPreferenceKinds.map((kind) => [
       locationPreferenceLabels[kind].toLowerCase(),
       kind,
-    ]),
+    ])
   );
 
   for (const entry of normalizedValues) {

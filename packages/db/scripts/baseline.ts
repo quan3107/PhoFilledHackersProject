@@ -55,7 +55,9 @@ function loadRepositoryEnv() {
 }
 
 function readBaselineMigration() {
-  const journal = JSON.parse(readFileSync(journalPath, "utf8")) as MigrationJournal;
+  const journal = JSON.parse(
+    readFileSync(journalPath, "utf8")
+  ) as MigrationJournal;
   const baselineEntry = journal.entries.at(0);
 
   if (!baselineEntry) {
@@ -120,7 +122,7 @@ export async function baselineExistingDatabase() {
 
       if (latestRecordedMigration) {
         throw new Error(
-          "Drizzle migration history already exists but does not match the checked-in baseline. Refusing to rewrite migration state.",
+          "Drizzle migration history already exists but does not match the checked-in baseline. Refusing to rewrite migration state."
         );
       }
     }
@@ -137,8 +139,8 @@ export async function baselineExistingDatabase() {
           migrationsFolder,
         },
         null,
-        2,
-      ),
+        2
+      )
     );
   } finally {
     await client.end({ timeout: 5 });
@@ -152,7 +154,7 @@ const isEntrypoint =
 if (isEntrypoint) {
   baselineExistingDatabase().catch((error: unknown) => {
     console.error(
-      `[db:baseline] ${error instanceof Error ? error.message : String(error)}`,
+      `[db:baseline] ${error instanceof Error ? error.message : String(error)}`
     );
     process.exitCode = 1;
   });

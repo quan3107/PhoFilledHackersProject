@@ -158,10 +158,7 @@ test("recommendation shortlists and explanations round-trip through the schema",
         model: "gpt-5-nano",
         promptVersion: "v1",
         systemPrompt: "system prompt text",
-        shortlistedRecommendationResultIds: [
-          secondResult.id,
-          firstResult.id,
-        ],
+        shortlistedRecommendationResultIds: [secondResult.id, firstResult.id],
         shortlistRationale: [
           "Kept one reach and one target school.",
           "Balanced budget risk with strong projected fit.",
@@ -192,21 +189,22 @@ test("recommendation shortlists and explanations round-trip through the schema",
       },
     ]);
 
-    const storedShortlist = await database.db.query.recommendationShortlists.findFirst({
-      where: eq(recommendationShortlists.recommendationRunId, insertedRun.id),
-      with: {
-        recommendationRun: true,
-        explanations: {
-          with: {
-            recommendationResult: {
-              with: {
-                university: true,
+    const storedShortlist =
+      await database.db.query.recommendationShortlists.findFirst({
+        where: eq(recommendationShortlists.recommendationRunId, insertedRun.id),
+        with: {
+          recommendationRun: true,
+          explanations: {
+            with: {
+              recommendationResult: {
+                with: {
+                  university: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
     assert.ok(storedShortlist);
     assert.equal(storedShortlist?.model, "gpt-5-nano");
@@ -218,30 +216,42 @@ test("recommendation shortlists and explanations round-trip through the schema",
     assert.equal(storedShortlist?.recommendationRun.id, insertedRun.id);
     assert.equal(storedShortlist?.explanations.length, 2);
     assert.deepEqual(
-      new Set(storedShortlist?.explanations.map((entry) => entry.recommendationResult.id)),
-      new Set([secondResult.id, firstResult.id]),
+      new Set(
+        storedShortlist?.explanations.map(
+          (entry) => entry.recommendationResult.id
+        )
+      ),
+      new Set([secondResult.id, firstResult.id])
     );
     assert.ok(
       storedShortlist?.explanations.some(
-        (entry) => entry.recommendationResult.university.schoolName === "Beta University",
-      ),
+        (entry) =>
+          entry.recommendationResult.university.schoolName === "Beta University"
+      )
     );
     assert.ok(
       storedShortlist?.explanations.some(
-        (entry) => entry.recommendationResult.university.schoolName === "Alpha University",
-      ),
+        (entry) =>
+          entry.recommendationResult.university.schoolName ===
+          "Alpha University"
+      )
     );
 
     const storedExplanations = await database.db
       .select()
       .from(recommendationExplanations)
-      .where(eq(recommendationExplanations.recommendationShortlistId, insertedShortlist.id))
+      .where(
+        eq(
+          recommendationExplanations.recommendationShortlistId,
+          insertedShortlist.id
+        )
+      )
       .orderBy(asc(recommendationExplanations.createdAt));
 
     assert.equal(storedExplanations.length, 2);
     assert.deepEqual(
       storedExplanations.map((row) => row.explanationConfidence),
-      ["medium", "high"],
+      ["medium", "high"]
     );
   } finally {
     await database.close();
@@ -252,7 +262,7 @@ function toSnapshotProfile(
   profile: StudentProfileRow,
   overrides: Partial<{
     projectedGpa100: number | null;
-  }> = {},
+  }> = {}
 ) {
   return {
     id: profile.id,

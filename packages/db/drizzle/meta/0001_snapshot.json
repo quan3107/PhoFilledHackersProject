@@ -144,12 +144,8 @@
           "name": "catalog_import_items_import_run_id_catalog_import_runs_id_fk",
           "tableFrom": "catalog_import_items",
           "tableTo": "catalog_import_runs",
-          "columnsFrom": [
-            "import_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["import_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -157,12 +153,8 @@
           "name": "catalog_import_items_university_id_universities_id_fk",
           "tableFrom": "catalog_import_items",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -273,12 +265,8 @@
           "name": "catalog_import_runs_university_id_universities_id_fk",
           "tableFrom": "catalog_import_runs",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -417,12 +405,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -525,12 +509,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -629,12 +609,8 @@
           "name": "student_profile_snapshots_student_profile_id_student_profiles_id_fk",
           "tableFrom": "student_profile_snapshots",
           "tableTo": "student_profiles",
-          "columnsFrom": [
-            "student_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -746,12 +722,8 @@
           "name": "student_profiles_user_id_users_id_fk",
           "tableFrom": "student_profiles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1213,12 +1185,8 @@
           "name": "university_sources_university_id_universities_id_fk",
           "tableFrom": "university_sources",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1248,51 +1216,27 @@
     "public.student_budget_flexibility": {
       "name": "student_budget_flexibility",
       "schema": "public",
-      "values": [
-        "low",
-        "medium",
-        "high",
-        "unknown"
-      ]
+      "values": ["low", "medium", "high", "unknown"]
     },
     "public.student_english_exam_type": {
       "name": "student_english_exam_type",
       "schema": "public",
-      "values": [
-        "ielts",
-        "toefl",
-        "duolingo",
-        "none",
-        "unknown"
-      ]
+      "values": ["ielts", "toefl", "duolingo", "none", "unknown"]
     },
     "public.student_preferred_undergraduate_size": {
       "name": "student_preferred_undergraduate_size",
       "schema": "public",
-      "values": [
-        "small",
-        "medium",
-        "large",
-        "unknown"
-      ]
+      "values": ["small", "medium", "large", "unknown"]
     },
     "public.student_curriculum_strength": {
       "name": "student_curriculum_strength",
       "schema": "public",
-      "values": [
-        "baseline",
-        "rigorous",
-        "most_rigorous",
-        "unknown"
-      ]
+      "values": ["baseline", "rigorous", "most_rigorous", "unknown"]
     },
     "public.student_profile_snapshot_kind": {
       "name": "student_profile_snapshot_kind",
       "schema": "public",
-      "values": [
-        "current",
-        "projected"
-      ]
+      "values": ["current", "projected"]
     },
     "public.university_source_kind": {
       "name": "university_source_kind",
@@ -1308,11 +1252,7 @@
     "public.university_validation_status": {
       "name": "university_validation_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "publishable",
-        "rejected"
-      ]
+      "values": ["draft", "publishable", "rejected"]
     }
   },
   "schemas": {},

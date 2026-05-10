@@ -54,18 +54,20 @@ export function normalizeComparableUrl(value: string) {
 
 export function assertMatchingIdentity(
   seed: SeedSchool,
-  draft: SchoolExtractionDraft["identity"],
+  draft: SchoolExtractionDraft["identity"]
 ) {
   if (
     normalizeComparableText(seed.schoolName) !==
       normalizeComparableText(draft.schoolName) ||
-    normalizeComparableText(seed.city) !== normalizeComparableText(draft.city) ||
-    normalizeComparableText(seed.state) !== normalizeComparableText(draft.state) ||
+    normalizeComparableText(seed.city) !==
+      normalizeComparableText(draft.city) ||
+    normalizeComparableText(seed.state) !==
+      normalizeComparableText(draft.state) ||
     normalizeComparableUrl(seed.officialAdmissionsUrl) !==
       normalizeComparableUrl(draft.officialAdmissionsUrl)
   ) {
     throw new Error(
-      `OpenAI extraction identity does not match the configured school seed "${seed.slug}".`,
+      `OpenAI extraction identity does not match the configured school seed "${seed.slug}".`
     );
   }
 }
@@ -159,22 +161,33 @@ export function normalizeDeadlinesByRound(value: unknown): DeadlinesByRound {
 
   const normalized: DeadlinesByRound = {};
   for (const [key, deadline] of Object.entries(value)) {
-    if (deadline === null || typeof deadline === "undefined" || deadline === "") {
+    if (
+      deadline === null ||
+      typeof deadline === "undefined" ||
+      deadline === ""
+    ) {
       continue;
     }
 
     const round = normalizeApplicationRound(key);
-    normalized[round] = normalizeDateString(deadline, `deadlinesByRound.${key}`);
+    normalized[round] = normalizeDateString(
+      deadline,
+      `deadlinesByRound.${key}`
+    );
   }
 
   if (Object.keys(normalized).length === 0) {
-    throw new Error("Deadlines by round must include at least one populated deadline.");
+    throw new Error(
+      "Deadlines by round must include at least one populated deadline."
+    );
   }
 
   return normalized;
 }
 
-export function normalizeEnglishRequirements(value: unknown): EnglishRequirements {
+export function normalizeEnglishRequirements(
+  value: unknown
+): EnglishRequirements {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error("English requirements must be an object.");
   }
@@ -202,11 +215,11 @@ export function normalizeEnglishRequirements(value: unknown): EnglishRequirement
   return {
     minimumIelts: parseNullableNumber(
       requirements.minimumIelts,
-      "englishRequirements.minimumIelts",
+      "englishRequirements.minimumIelts"
     ),
     minimumToeflInternetBased: parseNullableNumber(
       requirements.minimumToeflInternetBased,
-      "englishRequirements.minimumToeflInternetBased",
+      "englishRequirements.minimumToeflInternetBased"
     ),
     waiverNotes: normalizeOptionalString(requirements.waiverNotes),
   };
@@ -250,7 +263,7 @@ function normalizeNullableNumber(value: unknown) {
 function normalizeEnumValue<T extends readonly string[]>(
   value: unknown,
   allowed: T,
-  fallback: T[number],
+  fallback: T[number]
 ) {
   if (typeof value !== "string") {
     return fallback;
@@ -264,7 +277,7 @@ function normalizeEnumValue<T extends readonly string[]>(
 
 function normalizeTagArray<T extends readonly string[]>(
   value: unknown,
-  allowed: T,
+  allowed: T
 ) {
   if (!Array.isArray(value)) {
     return [];
@@ -281,13 +294,13 @@ function normalizeTagArray<T extends readonly string[]>(
         return (allowed as readonly string[]).includes(normalized)
           ? [normalized as T[number]]
           : [];
-      }),
-    ),
+      })
+    )
   );
 }
 
 export function normalizeRecommendationInputs(
-  value: unknown,
+  value: unknown
 ): UniversityRecommendationInputs {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return {
@@ -295,10 +308,12 @@ export function normalizeRecommendationInputs(
       testingRequirements: {
         ...defaultUniversityRecommendationInputs.testingRequirements,
         middle50SatTotal: {
-          ...defaultUniversityRecommendationInputs.testingRequirements.middle50SatTotal,
+          ...defaultUniversityRecommendationInputs.testingRequirements
+            .middle50SatTotal,
         },
         middle50ActComposite: {
-          ...defaultUniversityRecommendationInputs.testingRequirements.middle50ActComposite,
+          ...defaultUniversityRecommendationInputs.testingRequirements
+            .middle50ActComposite,
         },
       },
     };
@@ -333,34 +348,31 @@ export function normalizeRecommendationInputs(
     schoolControl: normalizeEnumValue(
       input.schoolControl,
       schoolControls,
-      defaultUniversityRecommendationInputs.schoolControl,
+      defaultUniversityRecommendationInputs.schoolControl
     ),
     campusLocale:
-      typeof input.campusLocale === "string" && input.campusLocale.trim().length > 0
+      typeof input.campusLocale === "string" &&
+      input.campusLocale.trim().length > 0
         ? input.campusLocale.trim()
         : null,
     internationalAidPolicy: normalizeEnumValue(
       input.internationalAidPolicy,
       internationalAidPolicies,
-      defaultUniversityRecommendationInputs.internationalAidPolicy,
+      defaultUniversityRecommendationInputs.internationalAidPolicy
     ),
     hasNeedBasedAid:
-      typeof input.hasNeedBasedAid === "boolean"
-        ? input.hasNeedBasedAid
-        : null,
+      typeof input.hasNeedBasedAid === "boolean" ? input.hasNeedBasedAid : null,
     hasMeritAid:
-      typeof input.hasMeritAid === "boolean"
-        ? input.hasMeritAid
-        : null,
+      typeof input.hasMeritAid === "boolean" ? input.hasMeritAid : null,
     programFitTags: normalizeTagArray(input.programFitTags, programFitTags),
     programAdmissionModel: normalizeEnumValue(
       input.programAdmissionModel,
       programAdmissionModels,
-      defaultUniversityRecommendationInputs.programAdmissionModel,
+      defaultUniversityRecommendationInputs.programAdmissionModel
     ),
     applicationStrategyTags: normalizeTagArray(
       input.applicationStrategyTags,
-      applicationStrategyTags,
+      applicationStrategyTags
     ),
     testingRequirements: {
       acceptedExams: Array.isArray(testingRequirements.acceptedExams)
@@ -375,8 +387,12 @@ export function normalizeRecommendationInputs(
               : [];
           })
         : [],
-      minimumSatTotal: normalizeNullableNumber(testingRequirements.minimumSatTotal),
-      minimumActComposite: normalizeNullableNumber(testingRequirements.minimumActComposite),
+      minimumSatTotal: normalizeNullableNumber(
+        testingRequirements.minimumSatTotal
+      ),
+      minimumActComposite: normalizeNullableNumber(
+        testingRequirements.minimumActComposite
+      ),
       latestSatTestDateNote:
         typeof testingRequirements.latestSatTestDateNote === "string" &&
         testingRequirements.latestSatTestDateNote.trim().length > 0
@@ -390,12 +406,14 @@ export function normalizeRecommendationInputs(
       superscorePolicy: normalizeEnumValue(
         testingRequirements.superscorePolicy,
         ["sat_only", "act_only", "both", "none", "unknown"] as const,
-        defaultUniversityRecommendationInputs.testingRequirements.superscorePolicy,
+        defaultUniversityRecommendationInputs.testingRequirements
+          .superscorePolicy
       ),
       writingEssayPolicy: normalizeEnumValue(
         testingRequirements.writingEssayPolicy,
         ["required", "optional", "not_considered", "unknown"] as const,
-        defaultUniversityRecommendationInputs.testingRequirements.writingEssayPolicy,
+        defaultUniversityRecommendationInputs.testingRequirements
+          .writingEssayPolicy
       ),
       scoreReportingPolicy: normalizeEnumValue(
         testingRequirements.scoreReportingPolicy,
@@ -405,7 +423,8 @@ export function normalizeRecommendationInputs(
           "official_required_after_admit",
           "unknown",
         ] as const,
-        defaultUniversityRecommendationInputs.testingRequirements.scoreReportingPolicy,
+        defaultUniversityRecommendationInputs.testingRequirements
+          .scoreReportingPolicy
       ),
       middle50SatTotal: {
         low: normalizeNullableNumber(middle50SatTotal.low),
@@ -420,7 +439,7 @@ export function normalizeRecommendationInputs(
 }
 
 export function normalizeExplanationInputs(
-  value: unknown,
+  value: unknown
 ): UniversityExplanationInputs {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return {
@@ -443,27 +462,27 @@ export function normalizeExplanationInputs(
     academicSelectivityBand: normalizeEnumValue(
       input.academicSelectivityBand,
       academicSelectivityBands,
-      defaultUniversityExplanationInputs.academicSelectivityBand,
+      defaultUniversityExplanationInputs.academicSelectivityBand
     ),
     testingExpectation: normalizeEnumValue(
       input.testingExpectation,
       testingExpectations,
-      defaultUniversityExplanationInputs.testingExpectation,
+      defaultUniversityExplanationInputs.testingExpectation
     ),
     englishPolicySummary: normalizeEnumValue(
       input.englishPolicySummary,
       englishPolicySummaries,
-      defaultUniversityExplanationInputs.englishPolicySummary,
+      defaultUniversityExplanationInputs.englishPolicySummary
     ),
     aidModel: normalizeEnumValue(
       input.aidModel,
       aidModels,
-      defaultUniversityExplanationInputs.aidModel,
+      defaultUniversityExplanationInputs.aidModel
     ),
     applicationComplexity: normalizeEnumValue(
       input.applicationComplexity,
       applicationComplexities,
-      defaultUniversityExplanationInputs.applicationComplexity,
+      defaultUniversityExplanationInputs.applicationComplexity
     ),
     deadlineUrgencyWindows: {
       earliestDeadline:
@@ -473,7 +492,7 @@ export function normalizeExplanationInputs(
             ? null
             : normalizeDateString(
                 windows.earliestDeadline,
-                "explanationInputs.deadlineUrgencyWindows.earliestDeadline",
+                "explanationInputs.deadlineUrgencyWindows.earliestDeadline"
               ),
       latestMajorDeadline:
         windows.latestMajorDeadline === null
@@ -482,18 +501,21 @@ export function normalizeExplanationInputs(
             ? null
             : normalizeDateString(
                 windows.latestMajorDeadline,
-                "explanationInputs.deadlineUrgencyWindows.latestMajorDeadline",
+                "explanationInputs.deadlineUrgencyWindows.latestMajorDeadline"
               ),
     },
     internationalStudentConsiderations: normalizeTagArray(
       input.internationalStudentConsiderations,
-      internationalStudentConsiderationTags,
+      internationalStudentConsiderationTags
     ),
     potentialFitTags: normalizeTagArray(input.potentialFitTags, schoolFitTags),
-    potentialRiskTags: normalizeTagArray(input.potentialRiskTags, schoolRiskTags),
+    potentialRiskTags: normalizeTagArray(
+      input.potentialRiskTags,
+      schoolRiskTags
+    ),
     actionableApplicationSteps: normalizeTagArray(
       input.actionableApplicationSteps,
-      applicationActionTags,
+      applicationActionTags
     ),
   };
 }

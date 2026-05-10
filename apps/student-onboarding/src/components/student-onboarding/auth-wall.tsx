@@ -5,7 +5,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Compass, Loader2, Lock, Mail, Shield, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  Compass,
+  Loader2,
+  Lock,
+  Mail,
+  Shield,
+  UserRound,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { type Locale, copy } from "@/lib/onboarding-data";
 import { FacebookIcon, GoogleIcon } from "./icons";
@@ -29,7 +37,11 @@ export function AuthWall({ locale }: AuthWallProps) {
   async function handleEmailSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!email.trim() || !password.trim() || (mode === "signUp" && !name.trim())) {
+    if (
+      !email.trim() ||
+      !password.trim() ||
+      (mode === "signUp" && !name.trim())
+    ) {
       return;
     }
 
@@ -54,7 +66,11 @@ export function AuthWall({ locale }: AuthWallProps) {
       router.replace("/");
       router.refresh();
     } catch (authError) {
-      setError(authError instanceof Error ? authError.message : "Unable to authenticate.");
+      setError(
+        authError instanceof Error
+          ? authError.message
+          : "Unable to authenticate."
+      );
     } finally {
       setLoading(null);
     }
@@ -67,7 +83,10 @@ export function AuthWall({ locale }: AuthWallProps) {
         <div className="absolute inset-0 flex opacity-[0.08]">
           <div className="w-[40%] space-y-4 border-r border-border/50 p-8">
             {[1, 2, 3, 4].map((index) => (
-              <div key={index} className={`flex ${index % 2 === 0 ? "justify-end" : ""}`}>
+              <div
+                key={index}
+                className={`flex ${index % 2 === 0 ? "justify-end" : ""}`}
+              >
                 <div
                   className={`h-10 rounded-2xl ${
                     index % 2 === 0 ? "w-48 bg-primary" : "w-64 bg-muted"
@@ -104,7 +123,9 @@ export function AuthWall({ locale }: AuthWallProps) {
               type="button"
               onClick={() => setMode("signIn")}
               className={`flex-1 rounded-lg px-3 py-2 text-sm transition ${
-                mode === "signIn" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                mode === "signIn"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground"
               }`}
             >
               Sign in
@@ -113,7 +134,9 @@ export function AuthWall({ locale }: AuthWallProps) {
               type="button"
               onClick={() => setMode("signUp")}
               className={`flex-1 rounded-lg px-3 py-2 text-sm transition ${
-                mode === "signUp" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+                mode === "signUp"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground"
               }`}
             >
               Create account
@@ -201,19 +224,27 @@ export function AuthWall({ locale }: AuthWallProps) {
               disabled={loading !== null}
               className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading === "email" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              {loading === "email" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="h-4 w-4" />
+              )}
               {mode === "signUp" ? "Create account" : "Sign in"}
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
 
           <div className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-            Social login and magic-link flows are still visible from the Figma design, but the live backend path available in this build is email/password.
+            Social login and magic-link flows are still visible from the Figma
+            design, but the live backend path available in this build is
+            email/password.
           </div>
 
           <div className="flex items-start gap-2 border-t border-border pt-2">
             <Shield className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <p className="text-xs leading-relaxed text-muted-foreground">{text.authTrust}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {text.authTrust}
+            </p>
           </div>
         </div>
 

@@ -43,7 +43,11 @@ export function LoginPage() {
 
       router.replace("/profile");
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Unable to authenticate.");
+      setError(
+        loginError instanceof Error
+          ? loginError.message
+          : "Unable to authenticate."
+      );
     } finally {
       setPending(false);
     }
@@ -69,7 +73,9 @@ export function LoginPage() {
               Start your student onboarding flow with one canonical account.
             </h1>
             <p className="mt-5 max-w-lg text-[15px] leading-7 text-white/68">
-              Sign in once to save your current and projected profile, return to unfinished work, and run recommendation passes against the stored catalog.
+              Sign in once to save your current and projected profile, return to
+              unfinished work, and run recommendation passes against the stored
+              catalog.
             </p>
           </div>
 
@@ -79,7 +85,10 @@ export function LoginPage() {
               "Saved profile snapshots",
               "Recommendation-ready workflow",
             ].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+              <div
+                key={item}
+                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80"
+              >
                 {item}
               </div>
             ))}
@@ -97,7 +106,9 @@ export function LoginPage() {
                 type="button"
                 onClick={() => setMode(item.value)}
                 className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
-                  mode === item.value ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  mode === item.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {item.label}
@@ -106,13 +117,17 @@ export function LoginPage() {
           </div>
 
           <div className="mb-6 rounded-[1.6rem] border border-border bg-surface-soft px-4 py-3 text-sm text-muted-foreground">
-            Use the same account for chat intake, manual profile edits, and recommendation review. Password auth is the only live path in this build.
+            Use the same account for chat intake, manual profile edits, and
+            recommendation review. Password auth is the only live path in this
+            build.
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signUp" ? (
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-foreground">Name</span>
+                <span className="mb-2 block text-sm font-medium text-foreground">
+                  Name
+                </span>
                 <div className="flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 shadow-sm">
                   <UserRound className="h-4 w-4 text-muted-foreground" />
                   <input
@@ -128,7 +143,9 @@ export function LoginPage() {
             ) : null}
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-foreground">Email</span>
+              <span className="mb-2 block text-sm font-medium text-foreground">
+                Email
+              </span>
               <div className="flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 shadow-sm">
                 <Mail className="h-4 w-4 text-muted-foreground" />
                 <input
@@ -143,7 +160,9 @@ export function LoginPage() {
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-foreground">Password</span>
+              <span className="mb-2 block text-sm font-medium text-foreground">
+                Password
+              </span>
               <div className="flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3 shadow-sm">
                 <Lock className="h-4 w-4 text-muted-foreground" />
                 <input
@@ -169,8 +188,14 @@ export function LoginPage() {
               disabled={pending}
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_16px_35px_rgba(23,61,99,0.18)] transition-colors hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {pending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-              {pending ? "Working..." : mode === "signUp" ? "Create account" : "Sign in"}
+              {pending ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : null}
+              {pending
+                ? "Working..."
+                : mode === "signUp"
+                  ? "Create account"
+                  : "Sign in"}
             </button>
           </form>
 
@@ -178,7 +203,11 @@ export function LoginPage() {
             {mode === "signUp" ? (
               <>
                 Already have an account?{" "}
-                <button type="button" onClick={() => setMode("signIn")} className="font-semibold text-foreground underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setMode("signIn")}
+                  className="font-semibold text-foreground underline-offset-4 hover:underline"
+                >
                   Sign in
                 </button>
                 .
@@ -186,7 +215,11 @@ export function LoginPage() {
             ) : (
               <>
                 Need a new account?{" "}
-                <button type="button" onClick={() => setMode("signUp")} className="font-semibold text-foreground underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => setMode("signUp")}
+                  className="font-semibold text-foreground underline-offset-4 hover:underline"
+                >
                   Create one
                 </button>
                 .

@@ -16,13 +16,13 @@ import {
 test("location preference labels stay aligned with the backend enum", () => {
   assert.deepEqual(
     Object.keys(locationPreferenceLabels),
-    studentLocationPreferenceKinds,
+    studentLocationPreferenceKinds
   );
 });
 
 test("location preferences parse and format round-trip through the shared helper", () => {
   const parsed = parseLocationPreferences(
-    "US - East Coast, CA, UK, No preference",
+    "US - East Coast, CA, UK, No preference"
   );
 
   assert.deepEqual(parsed.preferredStates, ["CA"]);
@@ -33,6 +33,6 @@ test("location preferences parse and format round-trip through the shared helper
   ]);
   assert.equal(
     formatLocationPreferences(parsed),
-    "US - East Coast, UK, No preference",
+    "US - East Coast, UK, No preference"
   );
 });

@@ -12,7 +12,7 @@ import {
 } from "../src/index.js";
 
 function buildRecord(
-  overrides: Partial<NormalizedUniversityCatalogRecord> = {},
+  overrides: Partial<NormalizedUniversityCatalogRecord> = {}
 ): NormalizedUniversityCatalogRecord {
   return {
     schoolName: "Example University",
@@ -111,7 +111,7 @@ const completeProvenance = [
 test("a complete source-backed university record is publishable", () => {
   const result = evaluateUniversityPublishability(
     buildRecord(),
-    completeProvenance,
+    completeProvenance
   );
 
   assert.equal(result.status, "publishable");
@@ -123,7 +123,7 @@ test("missing required fields produce explicit rejection reasons", () => {
     buildRecord({
       schoolName: " ",
       scholarshipNotes: "",
-    }),
+    })
   );
 
   assert.deepEqual(
@@ -131,7 +131,7 @@ test("missing required fields produce explicit rejection reasons", () => {
     [
       ["missing_required_field", "schoolName"],
       ["missing_required_field", "scholarshipNotes"],
-    ],
+    ]
   );
 });
 
@@ -145,7 +145,7 @@ test("missing provenance produces explicit rejection reasons", () => {
     result.reasons.some(
       (reason) =>
         reason.code === "missing_source_provenance" &&
-        reason.field === "tuitionAnnualUsd",
-    ),
+        reason.field === "tuitionAnnualUsd"
+    )
   );
 });

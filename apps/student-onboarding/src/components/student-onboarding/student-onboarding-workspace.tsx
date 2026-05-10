@@ -6,8 +6,15 @@ import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 
 import { GlobalHeader, type Viewer } from "./global-header";
-import { StudentOnboardingChatPanel, StudentOnboardingProfilePanel } from "./student-onboarding-panels";
-import { StudentOnboardingResultsPanel, StudentOnboardingReviewPanel, StudentOnboardingSettingsPanel } from "./student-onboarding-review-panels";
+import {
+  StudentOnboardingChatPanel,
+  StudentOnboardingProfilePanel,
+} from "./student-onboarding-panels";
+import {
+  StudentOnboardingResultsPanel,
+  StudentOnboardingReviewPanel,
+  StudentOnboardingSettingsPanel,
+} from "./student-onboarding-review-panels";
 import type {
   StudentOnboardingDocument,
   StudentOnboardingMissingField,
@@ -35,14 +42,24 @@ type Props = Readonly<{
   summary: StudentOnboardingSummary;
   missingFields: StudentOnboardingMissingField[];
   profileDocument: StudentOnboardingDocument;
-  chatMessages: Array<Readonly<{ id: string; role: "assistant" | "student"; text: string }>>;
+  chatMessages: Array<
+    Readonly<{ id: string; role: "assistant" | "student"; text: string }>
+  >;
   chatDraft: string;
   setChatDraft: (value: string) => void;
   onSendChat: () => void;
   onQuickAction: (value: string) => void;
   onViewerNameChange: (value: string) => void;
-  onChangeCurrent: (updater: (profile: StudentOnboardingDocument["current"]["profile"]) => StudentOnboardingDocument["current"]["profile"]) => void;
-  onChangeProjected: (updater: (profile: StudentOnboardingDocument["projected"]["profile"]) => StudentOnboardingDocument["projected"]["profile"]) => void;
+  onChangeCurrent: (
+    updater: (
+      profile: StudentOnboardingDocument["current"]["profile"]
+    ) => StudentOnboardingDocument["current"]["profile"]
+  ) => void;
+  onChangeProjected: (
+    updater: (
+      profile: StudentOnboardingDocument["projected"]["profile"]
+    ) => StudentOnboardingDocument["projected"]["profile"]
+  ) => void;
   onChangeCurrentAssumptions: (value: string[]) => void;
   onChangeProjectedAssumptions: (value: string[]) => void;
   onSave: () => void;
@@ -79,7 +96,8 @@ export function StudentOnboardingWorkspace({
   onSave,
   onRunRecommendations,
 }: Props) {
-  const [activeRoute, setActiveRoute] = useState<StudentOnboardingRoute>(initialRoute);
+  const [activeRoute, setActiveRoute] =
+    useState<StudentOnboardingRoute>(initialRoute);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -94,13 +112,15 @@ export function StudentOnboardingWorkspace({
 
       <div className="border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
         <div className="flex flex-wrap gap-2">
-          {([
-            { key: "chat", label: "Chat" },
-            { key: "profile", label: "Profile" },
-            { key: "results", label: "Results" },
-            { key: "review", label: "Review" },
-            { key: "settings", label: "Settings" },
-          ] as Array<{ key: StudentOnboardingRoute; label: string }>).map((tab) => (
+          {(
+            [
+              { key: "chat", label: "Chat" },
+              { key: "profile", label: "Profile" },
+              { key: "results", label: "Results" },
+              { key: "review", label: "Review" },
+              { key: "settings", label: "Settings" },
+            ] as Array<{ key: StudentOnboardingRoute; label: string }>
+          ).map((tab) => (
             <button
               key={tab.key}
               type="button"

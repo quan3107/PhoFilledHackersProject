@@ -43,7 +43,7 @@ const StudentOnboardingProfilePanel = dynamic(
     import("./student-onboarding-profile-panel").then((module) => ({
       default: module.StudentOnboardingProfilePanel,
     })),
-  { ssr: false },
+  { ssr: false }
 );
 
 const StudentOnboardingResultsPanel = dynamic(
@@ -51,7 +51,7 @@ const StudentOnboardingResultsPanel = dynamic(
     import("./student-onboarding-results-panel").then((module) => ({
       default: module.StudentOnboardingResultsPanel,
     })),
-  { ssr: false },
+  { ssr: false }
 );
 
 const StudentOnboardingReviewPanel = dynamic(
@@ -59,7 +59,7 @@ const StudentOnboardingReviewPanel = dynamic(
     import("./student-onboarding-review-panel").then((module) => ({
       default: module.StudentOnboardingReviewPanel,
     })),
-  { ssr: false },
+  { ssr: false }
 );
 
 const StudentOnboardingSettingsPanel = dynamic(
@@ -67,7 +67,7 @@ const StudentOnboardingSettingsPanel = dynamic(
     import("./student-onboarding-review-panel").then((module) => ({
       default: module.StudentOnboardingSettingsPanel,
     })),
-  { ssr: false },
+  { ssr: false }
 );
 
 type Viewer = Readonly<{ name: string; email: string }>;
@@ -85,7 +85,10 @@ type Props = Readonly<{
   initialDocument: StudentProfileDocument;
   initialIntakeState?: ChatAssistantState | null;
   initialRoute?: StudentOnboardingRoute;
-  onSave?: (payload: { name: string; document: StudentProfileDocument }) => Promise<SaveResult>;
+  onSave?: (payload: {
+    name: string;
+    document: StudentProfileDocument;
+  }) => Promise<SaveResult>;
   onRunRecommendations?: () => Promise<RunResult>;
   onLogout?: () => Promise<void> | void;
 }>;
@@ -112,15 +115,18 @@ const emptyDraft = (): StudentProfileDraft => ({ ...initialProfileDraft });
 function parseMoneyRange(value: string): number | null {
   const cleaned = value.replaceAll(",", "");
   const matches = Array.from(cleaned.matchAll(/\d+(?:\.\d+)?/g)).map((match) =>
-    Number(match[0]),
+    Number(match[0])
   );
 
-  if (!matches.length || matches.some((valuePart) => !Number.isFinite(valuePart))) {
+  if (
+    !matches.length ||
+    matches.some((valuePart) => !Number.isFinite(valuePart))
+  ) {
     return null;
   }
 
   const normalized = matches.map((valuePart) =>
-    /\b(k|thousand)\b/i.test(cleaned) ? valuePart * 1000 : valuePart,
+    /\b(k|thousand)\b/i.test(cleaned) ? valuePart * 1000 : valuePart
   );
   const total = normalized.reduce((sum, valuePart) => sum + valuePart, 0);
   return Math.round(total / normalized.length);
@@ -131,7 +137,9 @@ function parseGpaToHundred(value: string): number | null {
   if (!match) return null;
   const raw = Number(match[1]);
   if (!Number.isFinite(raw)) return null;
-  return raw <= 5 ? Math.round(raw * 25) : Math.round(raw <= 10 ? raw * 10 : raw);
+  return raw <= 5
+    ? Math.round(raw * 25)
+    : Math.round(raw <= 10 ? raw * 10 : raw);
 }
 
 function parseSat(value: string): number | null {
@@ -145,7 +153,7 @@ function parseAct(value: string): number | null {
 }
 
 function parseEnglishExam(
-  value: string,
+  value: string
 ): Pick<StudentProfile["testing"], "englishExamType" | "englishExamScore"> {
   const lower = value.toLowerCase();
   const scoreMatch = value.match(/(\d+(?:\.\d+)?)/);
@@ -166,15 +174,24 @@ function parseEnglishExam(
   return { englishExamType: "unknown", englishExamScore };
 }
 
-function draftFromDocument(document: StudentProfileDocument, viewerName: string): StudentProfileDraft {
+function draftFromDocument(
+  document: StudentProfileDocument,
+  viewerName: string
+): StudentProfileDraft {
   const current = document.current.profile;
-  const satDisplay = current.testing.satTotal ? `SAT ${current.testing.satTotal}` : "";
-  const actDisplay = current.testing.actComposite ? `ACT ${current.testing.actComposite}` : "";
+  const satDisplay = current.testing.satTotal
+    ? `SAT ${current.testing.satTotal}`
+    : "";
+  const actDisplay = current.testing.actComposite
+    ? `ACT ${current.testing.actComposite}`
+    : "";
   const englishDisplay =
     current.testing.englishExamType === "unknown"
       ? ""
       : `${current.testing.englishExamType.toUpperCase()}${
-          current.testing.englishExamScore === null ? "" : ` ${current.testing.englishExamScore}`
+          current.testing.englishExamScore === null
+            ? ""
+            : ` ${current.testing.englishExamScore}`
         }`;
 
   return {
@@ -235,7 +252,8 @@ function draftFromDocument(document: StudentProfileDocument, viewerName: string)
       current.preferences.preferredLocationPreferences.length > 0
         ? formatLocationPreferences({
             preferredStates: current.preferences.preferredStates,
-            preferredLocationPreferences: current.preferences.preferredLocationPreferences,
+            preferredLocationPreferences:
+              current.preferences.preferredLocationPreferences,
           })
         : current.preferences.preferredStates.join(", "),
     campusSize:
@@ -252,7 +270,7 @@ function draftFromDocument(document: StudentProfileDocument, viewerName: string)
 function applyDraftFieldToDocument(
   document: StudentProfileDocument,
   field: ProfileField,
-  value: string,
+  value: string
 ): StudentProfileDocument {
   const next = cloneStudentProfileDocument(document);
   const current = next.current.profile;
@@ -263,7 +281,10 @@ function applyDraftFieldToDocument(
     const lower = trimmed.toLowerCase();
     const curriculumStrength = lower.includes("most")
       ? "most_rigorous"
-      : lower.includes("rigorous") || lower.includes("ib") || lower.includes("ap") || lower.includes("a-level")
+      : lower.includes("rigorous") ||
+          lower.includes("ib") ||
+          lower.includes("ap") ||
+          lower.includes("a-level")
         ? "rigorous"
         : lower
           ? "baseline"
@@ -283,8 +304,12 @@ function applyDraftFieldToDocument(
 
   if (field === "sat") {
     const lower = trimmed.toLowerCase();
-    current.testing.satTotal = lower.includes("sat") ? parseSat(trimmed) : current.testing.satTotal;
-    current.testing.actComposite = lower.includes("act") ? parseAct(trimmed) : current.testing.actComposite;
+    current.testing.satTotal = lower.includes("sat")
+      ? parseSat(trimmed)
+      : current.testing.satTotal;
+    current.testing.actComposite = lower.includes("act")
+      ? parseAct(trimmed)
+      : current.testing.actComposite;
     current.testing.willSubmitTests = trimmed ? true : null;
   }
 
@@ -367,17 +392,24 @@ export function StudentOnboardingExperience({
   const router = useRouter();
   const [locale, setLocale] = useState<Locale>("en");
   const [theme, setTheme] = useState<ThemeMode>("light");
-  const [activeRoute, setActiveRoute] = useState<StudentOnboardingRoute>(initialRoute);
+  const [activeRoute, setActiveRoute] =
+    useState<StudentOnboardingRoute>(initialRoute);
   const [viewerName, setViewerName] = useState(viewer.name);
   const [draftProfile, setDraftProfile] = useState<StudentProfileDraft>(() =>
-    draftFromDocument(initialDocument, viewer.name),
+    draftFromDocument(initialDocument, viewer.name)
   );
-  const [recentlyUpdated, setRecentlyUpdated] = useState<ProfileField | null>(null);
+  const [recentlyUpdated, setRecentlyUpdated] = useState<ProfileField | null>(
+    null
+  );
   const [progressCurrent, setProgressCurrent] = useState(0);
-  const [progressTotal, setProgressTotal] = useState(requiredProfileFields.length);
-  const [document, setDocument] = useState(() => cloneStudentProfileDocument(initialDocument));
+  const [progressTotal, setProgressTotal] = useState(
+    requiredProfileFields.length
+  );
+  const [document, setDocument] = useState(() =>
+    cloneStudentProfileDocument(initialDocument)
+  );
   const [intakeState, setIntakeState] = useState<ChatAssistantState | null>(
-    initialIntakeState,
+    initialIntakeState
   );
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -394,18 +426,23 @@ export function StudentOnboardingExperience({
 
   const backendSummary = useMemo(
     () => buildStudentOnboardingSummary(document),
-    [document],
+    [document]
   );
 
   const filledCount = useMemo(
-    () => Object.values(draftProfile).filter((value) => value.trim().length > 0).length,
-    [draftProfile],
+    () =>
+      Object.values(draftProfile).filter((value) => value.trim().length > 0)
+        .length,
+    [draftProfile]
   );
   const totalCount = Object.keys(draftProfile).length;
   const isComplete = missingFields.length === 0;
 
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
       return undefined;
     }
 
@@ -424,14 +461,16 @@ export function StudentOnboardingExperience({
 
   function applyDraftField(field: ProfileField, value: string) {
     setDraftProfile((existing) => ({ ...existing, [field]: value }));
-    setDocument((existing) => applyDraftFieldToDocument(existing, field, value));
+    setDocument((existing) =>
+      applyDraftFieldToDocument(existing, field, value)
+    );
     setRecentlyUpdated(field);
     setDirty(true);
     setSaveMessage(null);
   }
 
   function applyCurrentDraftUpdater(
-    updater: (profile: StudentProfileDraft) => StudentProfileDraft,
+    updater: (profile: StudentProfileDraft) => StudentProfileDraft
   ) {
     setDraftProfile((existing) => {
       const next = updater(existing);
@@ -456,7 +495,9 @@ export function StudentOnboardingExperience({
       document,
     };
 
-    const saveResult = onSave ? await onSave(payload) : await defaultSave(payload);
+    const saveResult = onSave
+      ? await onSave(payload)
+      : await defaultSave(payload);
 
     setSaving(false);
     if (!saveResult.ok) {
@@ -489,9 +530,12 @@ export function StudentOnboardingExperience({
           tone: "warning",
         })),
         rawPreview: JSON.stringify(
-          { error: runResult.error, missingFields: runResult.missingFields ?? [] },
+          {
+            error: runResult.error,
+            missingFields: runResult.missingFields ?? [],
+          },
           null,
-          2,
+          2
         ),
       });
       return;
@@ -511,7 +555,9 @@ export function StudentOnboardingExperience({
 
   async function handleChatTurn(message: string | null) {
     const result = await defaultSubmitIntakeTurn(message, locale);
-    const nextDocument = buildStudentProfileDocumentFromState(result.profileState);
+    const nextDocument = buildStudentProfileDocumentFromState(
+      result.profileState
+    );
 
     setIntakeState(result.intakeState);
     setDocument(nextDocument);
@@ -524,7 +570,7 @@ export function StudentOnboardingExperience({
 
   async function handleRecommendationChatTurn(
     message: string | null,
-    messages: RecommendationChatMessage[],
+    messages: RecommendationChatMessage[]
   ) {
     return defaultSubmitRecommendationChatTurn(message, messages);
   }
@@ -550,7 +596,9 @@ export function StudentOnboardingExperience({
 
       {activeRoute === "chat" ? (
         <>
-          <div className={`${isMobileViewport ? "hidden" : "flex"} min-h-0 flex-1`}>
+          <div
+            className={`${isMobileViewport ? "hidden" : "flex"} min-h-0 flex-1`}
+          >
             <div className="w-[40%] min-w-[360px] border-r border-border">
               {!isMobileViewport ? (
                 <ChatAssistant
@@ -579,7 +627,9 @@ export function StudentOnboardingExperience({
             </div>
           </div>
 
-          <div className={`${isMobileViewport ? "flex" : "hidden"} relative min-h-0 flex-1 flex-col`}>
+          <div
+            className={`${isMobileViewport ? "flex" : "hidden"} relative min-h-0 flex-1 flex-col`}
+          >
             {isMobileViewport ? (
               <ChatAssistant
                 locale={locale}
@@ -736,10 +786,15 @@ async function defaultSave(payload: {
       projectedAssumptions: payload.document.projected.assumptions,
     }),
   });
-  const body = (await response.json().catch(() => null)) as { error?: string } | null;
+  const body = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
 
   if (!response.ok) {
-    return { ok: false, error: body?.error ?? "Unable to save the profile draft." };
+    return {
+      ok: false,
+      error: body?.error ?? "Unable to save the profile draft.",
+    };
   }
 
   if (payload.name.trim()) {
@@ -769,23 +824,23 @@ async function defaultRunRecommendations(): Promise<RunResult> {
 
 async function defaultSubmitIntakeTurn(
   message: string | null,
-  locale: Locale,
+  locale: Locale
 ): Promise<ChatTurnResponse> {
   const response = await fetch("/api/profile/intake/turn", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ message, locale }),
   });
-  const body = (await response.json().catch(() => null)) as
-    | {
-        error?: string;
-        intakeState?: ChatAssistantState;
-        profileState?: ChatTurnResponse["profileState"];
-      }
-    | null;
+  const body = (await response.json().catch(() => null)) as {
+    error?: string;
+    intakeState?: ChatAssistantState;
+    profileState?: ChatTurnResponse["profileState"];
+  } | null;
 
   if (!response.ok || !body?.intakeState || !body.profileState) {
-    throw new Error(body?.error ?? "Unable to continue the onboarding conversation.");
+    throw new Error(
+      body?.error ?? "Unable to continue the onboarding conversation."
+    );
   }
 
   return {
@@ -796,24 +851,22 @@ async function defaultSubmitIntakeTurn(
 
 async function defaultSubmitRecommendationChatTurn(
   message: string | null,
-  messages: RecommendationChatMessage[],
+  messages: RecommendationChatMessage[]
 ): Promise<RecommendationChatTurnResponse> {
   const response = await fetch("/api/recommendations/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ message, messages }),
   });
-  const body = (await response.json().catch(() => null)) as
-    | {
-        error?: string;
-        assistantMessage?: string;
-        suggestedReplies?: string[];
-      }
-    | null;
+  const body = (await response.json().catch(() => null)) as {
+    error?: string;
+    assistantMessage?: string;
+    suggestedReplies?: string[];
+  } | null;
 
   if (!response.ok || typeof body?.assistantMessage !== "string") {
     throw new Error(
-      body?.error ?? "Unable to continue the recommendations conversation.",
+      body?.error ?? "Unable to continue the recommendations conversation."
     );
   }
 
@@ -821,7 +874,8 @@ async function defaultSubmitRecommendationChatTurn(
     assistantMessage: body.assistantMessage,
     suggestedReplies: Array.isArray(body.suggestedReplies)
       ? body.suggestedReplies.filter(
-          (entry): entry is string => typeof entry === "string" && entry.trim().length > 0,
+          (entry): entry is string =>
+            typeof entry === "string" && entry.trim().length > 0
         )
       : [],
   };

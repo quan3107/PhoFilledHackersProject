@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "lint": "node --eval \"console.log('packages/auth lint is intentionally deferred until repo-wide lint rules land.')\"",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@etest/db": "*",

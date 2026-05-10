@@ -7,10 +7,7 @@
     "state": "TN",
     "officialAdmissionsUrl": "https://admissions.vanderbilt.edu/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2025-11-01",
@@ -52,10 +49,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "ED I preferred last SAT test date: October 4, 2025. ED II and Regular Decision preferred last SAT test date: December 6, 2025.",

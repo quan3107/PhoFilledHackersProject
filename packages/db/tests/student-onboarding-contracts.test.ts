@@ -15,11 +15,17 @@ import {
 test("location preference labels stay in sync with the canonical enum", () => {
   assert.deepEqual(
     Object.keys(studentLocationPreferenceLabels).sort(),
-    [...studentLocationPreferenceKinds].sort(),
+    [...studentLocationPreferenceKinds].sort()
   );
 
-  for (const [kind, states] of Object.entries(studentLocationPreferenceStateGroups)) {
-    assert.ok(studentLocationPreferenceKinds.includes(kind as (typeof studentLocationPreferenceKinds)[number]));
+  for (const [kind, states] of Object.entries(
+    studentLocationPreferenceStateGroups
+  )) {
+    assert.ok(
+      studentLocationPreferenceKinds.includes(
+        kind as (typeof studentLocationPreferenceKinds)[number]
+      )
+    );
     assert.ok(states.every((state) => /^[A-Z]{2}$/.test(state)));
   }
 });
@@ -29,30 +35,30 @@ test("live student-onboarding workspace copy stays free of placeholder and couns
     readFile(
       new URL(
         "../../../apps/student-onboarding/src/components/student-onboarding/student-onboarding-review-panel.tsx",
-        import.meta.url,
+        import.meta.url
       ),
-      "utf8",
+      "utf8"
     ),
     readFile(
       new URL(
         "../../../apps/student-onboarding/src/components/student-onboarding/student-onboarding-review-panels.tsx",
-        import.meta.url,
+        import.meta.url
       ),
-      "utf8",
+      "utf8"
     ),
     readFile(
       new URL(
         "../../../apps/student-onboarding/src/components/student-onboarding/student-onboarding-model.ts",
-        import.meta.url,
+        import.meta.url
       ),
-      "utf8",
+      "utf8"
     ),
     readFile(
       new URL(
         "../../../apps/student-onboarding/src/components/student-onboarding/student-onboarding-profile-panel.tsx",
-        import.meta.url,
+        import.meta.url
       ),
-      "utf8",
+      "utf8"
     ),
   ]);
 
@@ -71,7 +77,7 @@ test("live student-onboarding workspace copy stays free of placeholder and couns
     assert.equal(
       combined.includes(phrase),
       false,
-      `Found banned onboarding copy: ${phrase}`,
+      `Found banned onboarding copy: ${phrase}`
     );
   }
 });

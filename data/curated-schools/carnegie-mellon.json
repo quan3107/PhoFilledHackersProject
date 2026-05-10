@@ -7,10 +7,7 @@
     "state": "PA",
     "officialAdmissionsUrl": "https://www.cmu.edu/admission/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2026-11-03",
@@ -53,10 +50,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "November 1 for Early Decision; January 3 for Regular Decision.",

@@ -34,27 +34,27 @@ import {
 
 export const studentCurriculumStrengthEnum = pgEnum(
   "student_curriculum_strength",
-  studentCurriculumStrengths,
+  studentCurriculumStrengths
 );
 
 export const englishExamTypeEnum = pgEnum(
   "student_english_exam_type",
-  englishExamTypes,
+  englishExamTypes
 );
 
 export const preferredUndergraduateSizeEnum = pgEnum(
   "student_preferred_undergraduate_size",
-  preferredUndergraduateSizes,
+  preferredUndergraduateSizes
 );
 
 export const budgetFlexibilityEnum = pgEnum(
   "student_budget_flexibility",
-  budgetFlexibilities,
+  budgetFlexibilities
 );
 
 export const studentProfileSnapshotKindEnum = pgEnum(
   "student_profile_snapshot_kind",
-  studentProfileSnapshotKinds,
+  studentProfileSnapshotKinds
 );
 
 export const users = pgTable(
@@ -74,7 +74,7 @@ export const users = pgTable(
   },
   (table) => ({
     emailIdx: uniqueIndex("users_email_idx").on(table.email),
-  }),
+  })
 );
 
 export const sessions = pgTable(
@@ -98,7 +98,7 @@ export const sessions = pgTable(
   (table) => ({
     tokenIdx: uniqueIndex("sessions_token_idx").on(table.token),
     userIdIdx: index("sessions_user_id_idx").on(table.userId),
-  }),
+  })
 );
 
 export const accounts = pgTable(
@@ -131,10 +131,10 @@ export const accounts = pgTable(
   (table) => ({
     providerAccountIdx: uniqueIndex("accounts_provider_account_idx").on(
       table.providerId,
-      table.accountId,
+      table.accountId
     ),
     userIdIdx: index("accounts_user_id_idx").on(table.userId),
-  }),
+  })
 );
 
 export const verifications = pgTable(
@@ -154,9 +154,9 @@ export const verifications = pgTable(
   (table) => ({
     identifierValueIdx: uniqueIndex("verifications_identifier_value_idx").on(
       table.identifier,
-      table.value,
+      table.value
     ),
-  }),
+  })
 );
 
 export const studentProfiles = pgTable(
@@ -172,31 +172,31 @@ export const studentProfiles = pgTable(
       .$type<StudentAcademicProfile>()
       .notNull()
       .default(
-        sql`'{"currentGpa100":null,"projectedGpa100":null,"curriculumStrength":"unknown","classRankPercent":null}'::jsonb`,
+        sql`'{"currentGpa100":null,"projectedGpa100":null,"curriculumStrength":"unknown","classRankPercent":null}'::jsonb`
       ),
     testing: jsonb("testing")
       .$type<StudentTestingProfile>()
       .notNull()
       .default(
-        sql`'{"satTotal":null,"actComposite":null,"englishExamType":"unknown","englishExamScore":null,"willSubmitTests":null}'::jsonb`,
+        sql`'{"satTotal":null,"actComposite":null,"englishExamType":"unknown","englishExamScore":null,"willSubmitTests":null}'::jsonb`
       ),
     preferences: jsonb("preferences")
       .$type<StudentPreferenceProfile>()
       .notNull()
       .default(
-        sql`'{"intendedMajors":[],"preferredStates":[],"preferredLocationPreferences":[],"preferredCampusLocale":[],"preferredSchoolControl":[],"preferredUndergraduateSize":"unknown"}'::jsonb`,
+        sql`'{"intendedMajors":[],"preferredStates":[],"preferredLocationPreferences":[],"preferredCampusLocale":[],"preferredSchoolControl":[],"preferredUndergraduateSize":"unknown"}'::jsonb`
       ),
     budget: jsonb("budget")
       .$type<StudentBudgetProfile>()
       .notNull()
       .default(
-        sql`'{"annualBudgetUsd":null,"needsFinancialAid":null,"needsMeritAid":null,"budgetFlexibility":"unknown"}'::jsonb`,
+        sql`'{"annualBudgetUsd":null,"needsFinancialAid":null,"needsMeritAid":null,"budgetFlexibility":"unknown"}'::jsonb`
       ),
     readiness: jsonb("readiness")
       .$type<StudentReadinessProfile>()
       .notNull()
       .default(
-        sql`'{"wantsEarlyRound":null,"hasTeacherRecommendationsReady":null,"hasCounselorDocumentsReady":null,"hasEssayDraftsStarted":null}'::jsonb`,
+        sql`'{"wantsEarlyRound":null,"hasTeacherRecommendationsReady":null,"hasCounselorDocumentsReady":null,"hasEssayDraftsStarted":null}'::jsonb`
       ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -207,7 +207,7 @@ export const studentProfiles = pgTable(
   },
   (table) => ({
     userIdIdx: uniqueIndex("student_profiles_user_id_idx").on(table.userId),
-  }),
+  })
 );
 
 export const studentProfileSnapshots = pgTable(
@@ -222,21 +222,19 @@ export const studentProfileSnapshots = pgTable(
       .$type<string[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
-    profile: jsonb("profile")
-      .$type<StudentProfileRecord>()
-      .notNull(),
+    profile: jsonb("profile").$type<StudentProfileRecord>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => ({
     profileIdIdx: index("student_profile_snapshots_profile_id_idx").on(
-      table.studentProfileId,
+      table.studentProfileId
     ),
     profileKindIdx: uniqueIndex(
-      "student_profile_snapshots_profile_kind_idx",
+      "student_profile_snapshots_profile_kind_idx"
     ).on(table.studentProfileId, table.snapshotKind),
-  }),
+  })
 );
 
 export const studentIntakeSessions = pgTable(
@@ -260,9 +258,7 @@ export const studentIntakeSessions = pgTable(
     progressCompletedCount: integer("progress_completed_count")
       .notNull()
       .default(0),
-    progressTotalCount: integer("progress_total_count")
-      .notNull()
-      .default(0),
+    progressTotalCount: integer("progress_total_count").notNull().default(0),
     messages: jsonb("messages")
       .$type<StudentIntakeMessageRecord[]>()
       .notNull()
@@ -275,7 +271,11 @@ export const studentIntakeSessions = pgTable(
       .defaultNow(),
   },
   (table) => ({
-    userIdIdx: uniqueIndex("student_intake_sessions_user_id_idx").on(table.userId),
-    updatedAtIdx: index("student_intake_sessions_updated_at_idx").on(table.updatedAt),
-  }),
+    userIdIdx: uniqueIndex("student_intake_sessions_user_id_idx").on(
+      table.userId
+    ),
+    updatedAtIdx: index("student_intake_sessions_updated_at_idx").on(
+      table.updatedAt
+    ),
+  })
 );

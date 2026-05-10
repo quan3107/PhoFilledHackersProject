@@ -20,7 +20,8 @@
     "lint": "node --eval \"console.log('packages/db lint is intentionally deferred until repo-wide lint rules land.')\"",
     "migrate": "tsx ./scripts/migrate.ts",
     "test": "tsx --test tests/**/*.test.ts",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

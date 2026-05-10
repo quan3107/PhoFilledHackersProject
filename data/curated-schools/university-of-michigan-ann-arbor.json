@@ -7,11 +7,7 @@
     "state": "MI",
     "officialAdmissionsUrl": "https://admissions.umich.edu/apply/first-year-applicants"
   },
-  "applicationRounds": [
-    "early_action",
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": "2026-11-01",
@@ -50,10 +46,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Self-reported SAT or ACT scores for Early Decision/Early Action are optional and due by Nov. 1; for Regular Decision they are optional and due by Feb. 1.",
@@ -80,9 +73,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "separate_school_application",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "highly_selective",

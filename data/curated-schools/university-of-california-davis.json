@@ -7,9 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://www.ucdavis.edu/admissions/undergraduate/freshman/requirements"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,
@@ -46,10 +44,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "If tests are used for minimum subject requirements or course placement, UC Davis says to take them no later than December of the last year before graduation.",
@@ -67,10 +62,7 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "research_intensive",
-      "life_sciences"
-    ],
+    "programFitTags": ["research_intensive", "life_sciences"],
     "programAdmissionModel": "open",
     "applicationStrategyTags": []
   },

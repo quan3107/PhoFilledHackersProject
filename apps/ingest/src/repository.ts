@@ -4,7 +4,10 @@
 
 import postgres from "postgres";
 
-import type { IngestRepository, PersistSuccessfulImportInput } from "./types.js";
+import type {
+  IngestRepository,
+  PersistSuccessfulImportInput,
+} from "./types.js";
 
 function toDbStatus(status: string) {
   return status;
@@ -14,7 +17,9 @@ function nowIso(date: Date) {
   return date.toISOString();
 }
 
-export function createPostgresIngestRepository(databaseUrl: string): IngestRepository {
+export function createPostgresIngestRepository(
+  databaseUrl: string
+): IngestRepository {
   const sql = postgres(databaseUrl, {
     prepare: false,
   });

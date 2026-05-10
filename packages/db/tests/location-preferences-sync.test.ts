@@ -13,6 +13,6 @@ import {
 test("student onboarding location labels stay in sync with the backend enum", () => {
   assert.deepEqual(
     Object.keys(studentLocationPreferenceLabels).sort(),
-    [...studentLocationPreferenceKinds].sort(),
+    [...studentLocationPreferenceKinds].sort()
   );
 });

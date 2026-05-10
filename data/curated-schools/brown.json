@@ -7,10 +7,7 @@
     "state": "RI",
     "officialAdmissionsUrl": "https://admission.brown.edu/first-year"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2026-11-01",
@@ -46,10 +43,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "For Early Decision, testing must be completed by the last October test date to ensure receipt of scores. For Regular Decision, testing must be completed by the last December test date to ensure receipt of scores.",
@@ -72,15 +66,9 @@
     "undergraduateSize": 7273,
     "campusLocale": null,
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "humanities",
-      "social_sciences",
-      "research_intensive"
-    ],
+    "programFitTags": ["humanities", "social_sciences", "research_intensive"],
     "programAdmissionModel": "unknown",
-    "applicationStrategyTags": [
-      "binding_early_decision"
-    ]
+    "applicationStrategyTags": ["binding_early_decision"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",

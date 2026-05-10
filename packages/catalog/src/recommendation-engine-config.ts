@@ -122,7 +122,7 @@ export const defaultRecommendationEngineScoringConfig: RecommendationEngineScori
   };
 
 export function resolveRecommendationEngineScoringConfig(
-  overrides?: RecommendationEngineScoringConfigOverrides,
+  overrides?: RecommendationEngineScoringConfigOverrides
 ): RecommendationEngineScoringConfig {
   if (!overrides) {
     return defaultRecommendationEngineScoringConfig;
@@ -149,7 +149,8 @@ export function resolveRecommendationEngineScoringConfig(
       ...defaultRecommendationEngineScoringConfig.studentIndex,
       ...overrides.studentIndex,
       curriculumBonuses: {
-        ...defaultRecommendationEngineScoringConfig.studentIndex.curriculumBonuses,
+        ...defaultRecommendationEngineScoringConfig.studentIndex
+          .curriculumBonuses,
         ...overrides.studentIndex?.curriculumBonuses,
       },
     },

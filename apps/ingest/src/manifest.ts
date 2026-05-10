@@ -15,7 +15,8 @@ export const seedSchools = [
       admissions: "https://admission.stanford.edu/",
       tuition: "https://studentservices.stanford.edu/my-finances/tuition-fees",
       costOfAttendance: "https://financialaid.stanford.edu/undergrad/budget/",
-      scholarship: "https://financialaid.stanford.edu/undergrad/types/index.html",
+      scholarship:
+        "https://financialaid.stanford.edu/undergrad/types/index.html",
     },
   },
 ] as const satisfies readonly SeedSchool[];
@@ -34,13 +35,15 @@ export function resolveSeedSchool(slug: string | null | undefined) {
   }
 
   const normalizedSlug = normalizeSlug(slug);
-  const school = seedSchools.find((candidate) => candidate.slug === normalizedSlug);
+  const school = seedSchools.find(
+    (candidate) => candidate.slug === normalizedSlug
+  );
 
   if (!school) {
     throw new Error(
       `Unknown ingest school slug "${slug}". Valid options: ${seedSchools
         .map((candidate) => candidate.slug)
-        .join(", ")}`,
+        .join(", ")}`
     );
   }
 

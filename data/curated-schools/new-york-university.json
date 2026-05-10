@@ -7,10 +7,7 @@
     "state": "NY",
     "officialAdmissionsUrl": "https://www.nyu.edu/admissions/undergraduate-admissions/how-to-apply/all-freshmen-applicants.html"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2026-11-01",
@@ -50,10 +47,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": null,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "NYU recommends standardized tests be completed in advance of the application deadline. Early Decision I is November 1, Early Decision II is January 1, and Regular Decision is January 5.",

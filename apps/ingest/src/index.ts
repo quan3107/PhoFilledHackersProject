@@ -44,7 +44,7 @@ export async function main(argv = process.argv.slice(2)) {
     });
 
     console.log(
-      `[ingest] run=${result.runId} university=${result.universityId} validation=${result.validationStatus} items=${result.itemCount}`,
+      `[ingest] run=${result.runId} university=${result.universityId} validation=${result.validationStatus} items=${result.itemCount}`
     );
     return result;
   } finally {
@@ -59,7 +59,7 @@ const isEntrypoint =
 if (isEntrypoint) {
   main().catch((error: unknown) => {
     console.error(
-      `[ingest] ${error instanceof Error ? error.message : String(error)}`,
+      `[ingest] ${error instanceof Error ? error.message : String(error)}`
     );
     process.exitCode = 1;
   });

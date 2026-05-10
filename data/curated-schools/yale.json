@@ -7,10 +7,7 @@
     "state": "CT",
     "officialAdmissionsUrl": "https://admissions.yale.edu/requirements"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2025-11-01",
     "early_decision": null,
@@ -53,10 +50,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "SAT exams completed in October or November are generally available for consideration in Yale's Single-Choice Early Action round; exams completed in January or February are generally available for consideration in Regular Decision.",
@@ -81,9 +75,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "single_choice_early_action"
-    ]
+    "applicationStrategyTags": ["single_choice_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",

@@ -7,11 +7,7 @@
     "state": "OH",
     "officialAdmissionsUrl": "https://case.edu/admission/apply"
   },
-  "applicationRounds": [
-    "early_action",
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2025-11-01",
     "early_decision": "2025-11-01",
@@ -53,10 +49,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Ordinarily, scores from tests taken in November of senior year arrive in time for Early Action or Early Decision I, and scores from tests taken in January arrive in time for Early Decision II or Regular Decision consideration.",

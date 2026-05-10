@@ -55,7 +55,10 @@ export interface BrightDataPage {
   fetchedAt: Date;
 }
 
-export type BrightDataSourceKind = Exclude<UniversitySourceKind, "manual_review">;
+export type BrightDataSourceKind = Exclude<
+  UniversitySourceKind,
+  "manual_review"
+>;
 
 export interface SchoolExtractionDraft {
   identity: {
@@ -153,7 +156,7 @@ export class IngestStageError extends Error {
       | "normalizing"
       | "persisting",
     message: string,
-    public readonly cause: unknown,
+    public readonly cause: unknown
   ) {
     super(message);
     this.name = "IngestStageError";

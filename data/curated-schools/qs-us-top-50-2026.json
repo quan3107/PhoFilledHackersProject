@@ -6,55 +6,211 @@
     "sourceUrl": "https://www.topuniversities.com/qs-top-uni-wur"
   },
   "schools": [
-    { "usRank": 1, "slug": "massachusetts-institute-of-technology", "schoolName": "Massachusetts Institute of Technology (MIT)" },
+    {
+      "usRank": 1,
+      "slug": "massachusetts-institute-of-technology",
+      "schoolName": "Massachusetts Institute of Technology (MIT)"
+    },
     { "usRank": 2, "slug": "stanford", "schoolName": "Stanford University" },
     { "usRank": 3, "slug": "harvard", "schoolName": "Harvard University" },
-    { "usRank": 4, "slug": "california-institute-of-technology", "schoolName": "California Institute of Technology (Caltech)" },
-    { "usRank": 5, "slug": "university-of-chicago", "schoolName": "University of Chicago" },
-    { "usRank": 6, "slug": "university-of-pennsylvania", "schoolName": "University of Pennsylvania" },
+    {
+      "usRank": 4,
+      "slug": "california-institute-of-technology",
+      "schoolName": "California Institute of Technology (Caltech)"
+    },
+    {
+      "usRank": 5,
+      "slug": "university-of-chicago",
+      "schoolName": "University of Chicago"
+    },
+    {
+      "usRank": 6,
+      "slug": "university-of-pennsylvania",
+      "schoolName": "University of Pennsylvania"
+    },
     { "usRank": 7, "slug": "cornell", "schoolName": "Cornell University" },
-    { "usRank": 8, "slug": "university-of-california-berkeley", "schoolName": "University of California, Berkeley (UCB)" },
+    {
+      "usRank": 8,
+      "slug": "university-of-california-berkeley",
+      "schoolName": "University of California, Berkeley (UCB)"
+    },
     { "usRank": 9, "slug": "yale", "schoolName": "Yale University" },
-    { "usRank": 10, "slug": "johns-hopkins", "schoolName": "Johns Hopkins University" },
+    {
+      "usRank": 10,
+      "slug": "johns-hopkins",
+      "schoolName": "Johns Hopkins University"
+    },
     { "usRank": 11, "slug": "princeton", "schoolName": "Princeton University" },
     { "usRank": 12, "slug": "columbia", "schoolName": "Columbia University" },
-    { "usRank": 13, "slug": "northwestern", "schoolName": "Northwestern University" },
-    { "usRank": 14, "slug": "university-of-michigan-ann-arbor", "schoolName": "University of Michigan-Ann Arbor" },
-    { "usRank": 15, "slug": "university-of-california-los-angeles", "schoolName": "University of California, Los Angeles (UCLA)" },
-    { "usRank": 16, "slug": "carnegie-mellon", "schoolName": "Carnegie Mellon University" },
-    { "usRank": 17, "slug": "new-york-university", "schoolName": "New York University (NYU)" },
+    {
+      "usRank": 13,
+      "slug": "northwestern",
+      "schoolName": "Northwestern University"
+    },
+    {
+      "usRank": 14,
+      "slug": "university-of-michigan-ann-arbor",
+      "schoolName": "University of Michigan-Ann Arbor"
+    },
+    {
+      "usRank": 15,
+      "slug": "university-of-california-los-angeles",
+      "schoolName": "University of California, Los Angeles (UCLA)"
+    },
+    {
+      "usRank": 16,
+      "slug": "carnegie-mellon",
+      "schoolName": "Carnegie Mellon University"
+    },
+    {
+      "usRank": 17,
+      "slug": "new-york-university",
+      "schoolName": "New York University (NYU)"
+    },
     { "usRank": 18, "slug": "duke", "schoolName": "Duke University" },
-    { "usRank": 19, "slug": "university-of-california-san-diego", "schoolName": "University of California, San Diego (UCSD)" },
-    { "usRank": 20, "slug": "university-of-texas-at-austin", "schoolName": "University of Texas at Austin" },
+    {
+      "usRank": 19,
+      "slug": "university-of-california-san-diego",
+      "schoolName": "University of California, San Diego (UCSD)"
+    },
+    {
+      "usRank": 20,
+      "slug": "university-of-texas-at-austin",
+      "schoolName": "University of Texas at Austin"
+    },
     { "usRank": 21, "slug": "brown", "schoolName": "Brown University" },
-    { "usRank": 22, "slug": "university-of-illinois-urbana-champaign", "schoolName": "University of Illinois Urbana-Champaign" },
-    { "usRank": 23, "slug": "university-of-washington", "schoolName": "University of Washington" },
-    { "usRank": 24, "slug": "pennsylvania-state-university", "schoolName": "Pennsylvania State University" },
-    { "usRank": 25, "slug": "boston-university", "schoolName": "Boston University" },
+    {
+      "usRank": 22,
+      "slug": "university-of-illinois-urbana-champaign",
+      "schoolName": "University of Illinois Urbana-Champaign"
+    },
+    {
+      "usRank": 23,
+      "slug": "university-of-washington",
+      "schoolName": "University of Washington"
+    },
+    {
+      "usRank": 24,
+      "slug": "pennsylvania-state-university",
+      "schoolName": "Pennsylvania State University"
+    },
+    {
+      "usRank": 25,
+      "slug": "boston-university",
+      "schoolName": "Boston University"
+    },
     { "usRank": 26, "slug": "purdue", "schoolName": "Purdue University" },
-    { "usRank": 27, "slug": "university-of-wisconsin-madison", "schoolName": "University of Wisconsin-Madison" },
-    { "usRank": 28, "slug": "university-of-california-davis", "schoolName": "University of California, Davis" },
+    {
+      "usRank": 27,
+      "slug": "university-of-wisconsin-madison",
+      "schoolName": "University of Wisconsin-Madison"
+    },
+    {
+      "usRank": 28,
+      "slug": "university-of-california-davis",
+      "schoolName": "University of California, Davis"
+    },
     { "usRank": 29, "slug": "rice", "schoolName": "Rice University" },
-    { "usRank": 30, "slug": "georgia-institute-of-technology", "schoolName": "Georgia Institute of Technology" },
-    { "usRank": 31, "slug": "university-of-north-carolina-chapel-hill", "schoolName": "University of North Carolina at Chapel Hill" },
-    { "usRank": 32, "slug": "texas-am-university", "schoolName": "Texas A&M University" },
-    { "usRank": 33, "slug": "university-of-southern-california", "schoolName": "University of Southern California" },
-    { "usRank": 34, "slug": "michigan-state", "schoolName": "Michigan State University" },
-    { "usRank": 35, "slug": "washington-university-in-st-louis", "schoolName": "Washington University in St. Louis" },
-    { "usRank": 36, "slug": "arizona-state", "schoolName": "Arizona State University" },
-    { "usRank": 37, "slug": "university-of-california-santa-barbara", "schoolName": "University of California, Santa Barbara (UCSB)" },
+    {
+      "usRank": 30,
+      "slug": "georgia-institute-of-technology",
+      "schoolName": "Georgia Institute of Technology"
+    },
+    {
+      "usRank": 31,
+      "slug": "university-of-north-carolina-chapel-hill",
+      "schoolName": "University of North Carolina at Chapel Hill"
+    },
+    {
+      "usRank": 32,
+      "slug": "texas-am-university",
+      "schoolName": "Texas A&M University"
+    },
+    {
+      "usRank": 33,
+      "slug": "university-of-southern-california",
+      "schoolName": "University of Southern California"
+    },
+    {
+      "usRank": 34,
+      "slug": "michigan-state",
+      "schoolName": "Michigan State University"
+    },
+    {
+      "usRank": 35,
+      "slug": "washington-university-in-st-louis",
+      "schoolName": "Washington University in St. Louis"
+    },
+    {
+      "usRank": 36,
+      "slug": "arizona-state",
+      "schoolName": "Arizona State University"
+    },
+    {
+      "usRank": 37,
+      "slug": "university-of-california-santa-barbara",
+      "schoolName": "University of California, Santa Barbara (UCSB)"
+    },
     { "usRank": 38, "slug": "emory", "schoolName": "Emory University" },
-    { "usRank": 39, "slug": "ohio-state", "schoolName": "The Ohio State University" },
-    { "usRank": 40, "slug": "university-of-maryland-college-park", "schoolName": "University of Maryland, College Park" },
-    { "usRank": 41, "slug": "university-of-minnesota", "schoolName": "University of Minnesota (System)" },
-    { "usRank": 42, "slug": "university-of-florida", "schoolName": "University of Florida" },
-    { "usRank": 43, "slug": "university-of-rochester", "schoolName": "University of Rochester" },
-    { "usRank": 44, "slug": "university-of-massachusetts-amherst", "schoolName": "University of Massachusetts Amherst" },
-    { "usRank": 45, "slug": "vanderbilt", "schoolName": "Vanderbilt University" },
-    { "usRank": 46, "slug": "university-of-virginia", "schoolName": "University of Virginia" },
-    { "usRank": 47, "slug": "university-of-pittsburgh", "schoolName": "University of Pittsburgh" },
-    { "usRank": 48, "slug": "university-of-california-irvine", "schoolName": "University of California, Irvine" },
-    { "usRank": 49, "slug": "university-of-notre-dame", "schoolName": "University of Notre Dame" },
-    { "usRank": 50, "slug": "case-western-reserve", "schoolName": "Case Western Reserve University" }
+    {
+      "usRank": 39,
+      "slug": "ohio-state",
+      "schoolName": "The Ohio State University"
+    },
+    {
+      "usRank": 40,
+      "slug": "university-of-maryland-college-park",
+      "schoolName": "University of Maryland, College Park"
+    },
+    {
+      "usRank": 41,
+      "slug": "university-of-minnesota",
+      "schoolName": "University of Minnesota (System)"
+    },
+    {
+      "usRank": 42,
+      "slug": "university-of-florida",
+      "schoolName": "University of Florida"
+    },
+    {
+      "usRank": 43,
+      "slug": "university-of-rochester",
+      "schoolName": "University of Rochester"
+    },
+    {
+      "usRank": 44,
+      "slug": "university-of-massachusetts-amherst",
+      "schoolName": "University of Massachusetts Amherst"
+    },
+    {
+      "usRank": 45,
+      "slug": "vanderbilt",
+      "schoolName": "Vanderbilt University"
+    },
+    {
+      "usRank": 46,
+      "slug": "university-of-virginia",
+      "schoolName": "University of Virginia"
+    },
+    {
+      "usRank": 47,
+      "slug": "university-of-pittsburgh",
+      "schoolName": "University of Pittsburgh"
+    },
+    {
+      "usRank": 48,
+      "slug": "university-of-california-irvine",
+      "schoolName": "University of California, Irvine"
+    },
+    {
+      "usRank": 49,
+      "slug": "university-of-notre-dame",
+      "schoolName": "University of Notre Dame"
+    },
+    {
+      "usRank": 50,
+      "slug": "case-western-reserve",
+      "schoolName": "Case Western Reserve University"
+    }
   ]
 }

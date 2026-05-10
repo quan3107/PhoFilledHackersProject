@@ -5,11 +5,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  catalogImportItems,
-  catalogImportRuns,
-  universities,
-} from "@etest/db";
+import { catalogImportItems, catalogImportRuns, universities } from "@etest/db";
 
 import { listRecommendationCandidateSchools } from "../src/recommendation-catalog-read-path.js";
 import { createCatalogTestDatabase } from "../../db/src/testing/pglite.js";
@@ -126,7 +122,7 @@ test("recommendation candidates are ordered deterministically by school name", a
 
     assert.deepEqual(
       candidates.map((candidate) => candidate.schoolName),
-      ["Alpha University", "Beta University", "Zeta University"],
+      ["Alpha University", "Beta University", "Zeta University"]
     );
   } finally {
     await database.close();
@@ -161,7 +157,8 @@ function buildUniversityInsert(input: {
       "Merit scholarships available for international applicants.",
     recommendationInputs: buildRecommendationInputs(),
     explanationInputs: buildExplanationInputs(),
-    lastVerifiedAt: input.lastVerifiedAt ?? new Date("2026-03-21T00:00:00.000Z"),
+    lastVerifiedAt:
+      input.lastVerifiedAt ?? new Date("2026-03-21T00:00:00.000Z"),
     validationStatus: input.validationStatus,
   } as const;
 }

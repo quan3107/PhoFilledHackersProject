@@ -144,12 +144,8 @@
           "name": "catalog_import_items_import_run_id_catalog_import_runs_id_fk",
           "tableFrom": "catalog_import_items",
           "tableTo": "catalog_import_runs",
-          "columnsFrom": [
-            "import_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["import_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -157,12 +153,8 @@
           "name": "catalog_import_items_university_id_universities_id_fk",
           "tableFrom": "catalog_import_items",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -273,12 +265,8 @@
           "name": "catalog_import_runs_university_id_universities_id_fk",
           "tableFrom": "catalog_import_runs",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -463,12 +451,8 @@
           "name": "recommendation_results_recommendation_run_id_recommendation_runs_id_fk",
           "tableFrom": "recommendation_results",
           "tableTo": "recommendation_runs",
-          "columnsFrom": [
-            "recommendation_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["recommendation_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -476,12 +460,8 @@
           "name": "recommendation_results_university_id_universities_id_fk",
           "tableFrom": "recommendation_results",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -615,12 +595,8 @@
           "name": "recommendation_runs_user_id_student_profiles_user_id_fk",
           "tableFrom": "recommendation_runs",
           "tableTo": "student_profiles",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -628,12 +604,8 @@
           "name": "recommendation_runs_student_profile_id_student_profiles_id_fk",
           "tableFrom": "recommendation_runs",
           "tableTo": "student_profiles",
-          "columnsFrom": [
-            "student_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -641,12 +613,8 @@
           "name": "recommendation_runs_current_snapshot_id_student_profile_snapshots_id_fk",
           "tableFrom": "recommendation_runs",
           "tableTo": "student_profile_snapshots",
-          "columnsFrom": [
-            "current_snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["current_snapshot_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -654,12 +622,8 @@
           "name": "recommendation_runs_projected_snapshot_id_student_profile_snapshots_id_fk",
           "tableFrom": "recommendation_runs",
           "tableTo": "student_profile_snapshots",
-          "columnsFrom": [
-            "projected_snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["projected_snapshot_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -798,12 +762,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -906,12 +866,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1010,12 +966,8 @@
           "name": "student_profile_snapshots_student_profile_id_student_profiles_id_fk",
           "tableFrom": "student_profile_snapshots",
           "tableTo": "student_profiles",
-          "columnsFrom": [
-            "student_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1127,12 +1079,8 @@
           "name": "student_profiles_user_id_users_id_fk",
           "tableFrom": "student_profiles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1594,12 +1542,8 @@
           "name": "university_sources_university_id_universities_id_fk",
           "tableFrom": "university_sources",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1629,108 +1573,57 @@
     "public.recommendation_budget_fit_label": {
       "name": "recommendation_budget_fit_label",
       "schema": "public",
-      "values": [
-        "comfortable",
-        "stretch",
-        "high_risk",
-        "unknown"
-      ]
+      "values": ["comfortable", "stretch", "high_risk", "unknown"]
     },
     "public.recommendation_confidence_level": {
       "name": "recommendation_confidence_level",
       "schema": "public",
-      "values": [
-        "low",
-        "medium",
-        "high"
-      ]
+      "values": ["low", "medium", "high"]
     },
     "public.recommendation_deadline_pressure_label": {
       "name": "recommendation_deadline_pressure_label",
       "schema": "public",
-      "values": [
-        "low",
-        "medium",
-        "high"
-      ]
+      "values": ["low", "medium", "high"]
     },
     "public.recommendation_outlook_label": {
       "name": "recommendation_outlook_label",
       "schema": "public",
-      "values": [
-        "very_strong",
-        "strong",
-        "possible",
-        "stretch",
-        "unlikely"
-      ]
+      "values": ["very_strong", "strong", "possible", "stretch", "unlikely"]
     },
     "public.recommendation_run_status": {
       "name": "recommendation_run_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "succeeded",
-        "failed"
-      ]
+      "values": ["pending", "succeeded", "failed"]
     },
     "public.recommendation_tier": {
       "name": "recommendation_tier",
       "schema": "public",
-      "values": [
-        "reach",
-        "target",
-        "safety"
-      ]
+      "values": ["reach", "target", "safety"]
     },
     "public.student_budget_flexibility": {
       "name": "student_budget_flexibility",
       "schema": "public",
-      "values": [
-        "low",
-        "medium",
-        "high",
-        "unknown"
-      ]
+      "values": ["low", "medium", "high", "unknown"]
     },
     "public.student_english_exam_type": {
       "name": "student_english_exam_type",
       "schema": "public",
-      "values": [
-        "ielts",
-        "toefl",
-        "duolingo",
-        "none",
-        "unknown"
-      ]
+      "values": ["ielts", "toefl", "duolingo", "none", "unknown"]
     },
     "public.student_preferred_undergraduate_size": {
       "name": "student_preferred_undergraduate_size",
       "schema": "public",
-      "values": [
-        "small",
-        "medium",
-        "large",
-        "unknown"
-      ]
+      "values": ["small", "medium", "large", "unknown"]
     },
     "public.student_curriculum_strength": {
       "name": "student_curriculum_strength",
       "schema": "public",
-      "values": [
-        "baseline",
-        "rigorous",
-        "most_rigorous",
-        "unknown"
-      ]
+      "values": ["baseline", "rigorous", "most_rigorous", "unknown"]
     },
     "public.student_profile_snapshot_kind": {
       "name": "student_profile_snapshot_kind",
       "schema": "public",
-      "values": [
-        "current",
-        "projected"
-      ]
+      "values": ["current", "projected"]
     },
     "public.university_source_kind": {
       "name": "university_source_kind",
@@ -1746,11 +1639,7 @@
     "public.university_validation_status": {
       "name": "university_validation_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "publishable",
-        "rejected"
-      ]
+      "values": ["draft", "publishable", "rejected"]
     }
   },
   "schemas": {},

@@ -2,7 +2,12 @@
 // OpenAI Responses API wrapper for the runner's extraction step.
 // Uses structured JSON output via direct fetch so the model result stays machine-readable.
 
-import type { BrightDataPage, OpenAiExtractionClient, SchoolExtractionDraft, SeedSchool } from "./types.js";
+import type {
+  BrightDataPage,
+  OpenAiExtractionClient,
+  SchoolExtractionDraft,
+  SeedSchool,
+} from "./types.js";
 
 interface OpenAiResponseBody {
   status?: string;
@@ -210,10 +215,18 @@ const extractionSchema = {
               required: ["low", "high"],
               properties: {
                 low: {
-                  anyOf: [{ type: "number" }, { type: "string" }, { type: "null" }],
+                  anyOf: [
+                    { type: "number" },
+                    { type: "string" },
+                    { type: "null" },
+                  ],
                 },
                 high: {
-                  anyOf: [{ type: "number" }, { type: "string" }, { type: "null" }],
+                  anyOf: [
+                    { type: "number" },
+                    { type: "string" },
+                    { type: "null" },
+                  ],
                 },
               },
             },
@@ -223,10 +236,18 @@ const extractionSchema = {
               required: ["low", "high"],
               properties: {
                 low: {
-                  anyOf: [{ type: "number" }, { type: "string" }, { type: "null" }],
+                  anyOf: [
+                    { type: "number" },
+                    { type: "string" },
+                    { type: "null" },
+                  ],
                 },
                 high: {
-                  anyOf: [{ type: "number" }, { type: "string" }, { type: "null" }],
+                  anyOf: [
+                    { type: "number" },
+                    { type: "string" },
+                    { type: "null" },
+                  ],
                 },
               },
             },
@@ -305,7 +326,7 @@ function buildInputPrompt(school: SeedSchool, pages: BrightDataPage[]) {
       })),
     },
     null,
-    2,
+    2
   );
 }
 
@@ -325,7 +346,7 @@ async function parseOpenAiResponse(response: Response) {
   const responseText = await response.text();
   if (!response.ok) {
     throw new Error(
-      `OpenAI Responses API request failed with HTTP ${response.status}: ${responseText}`,
+      `OpenAI Responses API request failed with HTTP ${response.status}: ${responseText}`
     );
   }
 
@@ -337,7 +358,9 @@ async function parseOpenAiResponse(response: Response) {
   }
 
   if (payload.status === "failed") {
-    throw new Error(payload.error?.message ?? "OpenAI Responses API request failed.");
+    throw new Error(
+      payload.error?.message ?? "OpenAI Responses API request failed."
+    );
   }
 
   const outputText = readOutputText(payload);
@@ -359,7 +382,7 @@ export function createOpenAiExtractionClient(
     reasoningEffort: "minimal" | "low" | "medium" | "high" | "xhigh";
     endpoint?: string;
   },
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch = fetch
 ): OpenAiExtractionClient {
   const endpoint = input.endpoint ?? "https://api.openai.com/v1/responses";
 

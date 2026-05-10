@@ -7,9 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admissions.sa.ucsb.edu/faq"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,

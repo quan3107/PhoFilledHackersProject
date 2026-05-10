@@ -22,8 +22,14 @@ type RootLayoutProps = Readonly<{
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${manrope.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-screen bg-background text-foreground">{children}</body>
+    <html
+      lang="en"
+      className={`${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-background text-foreground">
+        {children}
+      </body>
     </html>
   );
 }

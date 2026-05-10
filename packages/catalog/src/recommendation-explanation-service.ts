@@ -26,7 +26,12 @@ import {
 
 const RECOMMENDATION_SHORTLIST_MAX_COUNT = 3;
 
-export type OpenAiReasoningEffort = "minimal" | "low" | "medium" | "high" | "xhigh";
+export type OpenAiReasoningEffort =
+  | "minimal"
+  | "low"
+  | "medium"
+  | "high"
+  | "xhigh";
 
 export type RecommendationExplanationDb = PgDatabase<
   PgQueryResultHKT,
@@ -161,7 +166,7 @@ export class RecommendationExplanationOutputError extends Error {
 
 export function createRecommendationExplanationClient(
   config: RecommendationExplanationClientConfig,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch = fetch
 ): RecommendationExplanationClient {
   const endpoint = config.endpoint ?? "https://api.openai.com/v1/responses";
 
@@ -200,7 +205,7 @@ export function createRecommendationExplanationClient(
 
 export function buildRecommendationExplanationClientFromEnv(
   env: NodeJS.ProcessEnv = process.env,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch = fetch
 ): RecommendationExplanationClient {
   const apiKey = env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
@@ -212,15 +217,15 @@ export function buildRecommendationExplanationClientFromEnv(
       apiKey,
       model: env.RECOMMENDATION_OPENAI_MODEL?.trim() || "gpt-5-nano",
       reasoningEffort: parseReasoningEffort(
-        env.RECOMMENDATION_OPENAI_REASONING_EFFORT,
+        env.RECOMMENDATION_OPENAI_REASONING_EFFORT
       ),
     },
-    fetchImpl,
+    fetchImpl
   );
 }
 
 export function buildRecommendationExplanationPromptInput(
-  context: RecommendationExplanationRunContext,
+  context: RecommendationExplanationRunContext
 ): RecommendationExplanationPromptInput {
   return {
     recommendationRun: context.recommendationRun,
@@ -238,7 +243,7 @@ export async function runRecommendationExplanationPassForRun(input: {
 }): Promise<PersistedRecommendationExplanationBundle> {
   const context = await loadRecommendationExplanationRunContext(
     input.db,
-    input.recommendationRunId,
+    input.recommendationRunId
   );
 
   const modelOutput =
@@ -249,7 +254,7 @@ export async function runRecommendationExplanationPassForRun(input: {
             instructions: recommendationExplanationSystemPrompt,
             payload: buildRecommendationExplanationPromptInput(context),
           }),
-          context,
+          context
         );
 
   return persistRecommendationExplanationPass(input.db, context, modelOutput, {
@@ -267,11 +272,11 @@ export async function persistRecommendationExplanationPass(
     model: string;
     promptVersion: string;
     systemPrompt: string;
-  },
+  }
 ): Promise<PersistedRecommendationExplanationBundle> {
   const orderedResultIds = output.shortlistedRecommendationResultIds;
   const explanationByResultId = new Map(
-    output.explanations.map((item) => [item.recommendationResultId, item]),
+    output.explanations.map((item) => [item.recommendationResultId, item])
   );
 
   await db.transaction(async (tx) => {
@@ -289,7 +294,7 @@ export async function persistRecommendationExplanationPass(
 
     if (!shortlist) {
       throw new RecommendationExplanationOutputError(
-        "Recommendation shortlist persistence failed.",
+        "Recommendation shortlist persistence failed."
       );
     }
 
@@ -300,7 +305,7 @@ export async function persistRecommendationExplanationPass(
 
           if (!explanation) {
             throw new RecommendationExplanationOutputError(
-              `Missing explanation payload for recommendation result ${recommendationResultId}.`,
+              `Missing explanation payload for recommendation result ${recommendationResultId}.`
             );
           }
 
@@ -314,19 +319,19 @@ export async function persistRecommendationExplanationPass(
             assumptionChanges: explanation.assumptionChanges,
             explanationConfidence: explanation.explanationConfidence,
           };
-        }),
+        })
       );
     }
   });
 
   const bundle = await getPersistedRecommendationExplanationBundle(
     db,
-    context.recommendationRun.id,
+    context.recommendationRun.id
   );
 
   if (!bundle) {
     throw new RecommendationExplanationOutputError(
-      "Recommendation explanation persistence completed without a readable bundle.",
+      "Recommendation explanation persistence completed without a readable bundle."
     );
   }
 
@@ -337,7 +342,7 @@ function parseRecommendationExplanationResponse(response: Response) {
   return response.text().then((responseText) => {
     if (!response.ok) {
       throw new Error(
-        `OpenAI Responses API request failed with HTTP ${response.status}: ${responseText}`,
+        `OpenAI Responses API request failed with HTTP ${response.status}: ${responseText}`
       );
     }
 
@@ -350,13 +355,15 @@ function parseRecommendationExplanationResponse(response: Response) {
 
     if (payload.status === "failed") {
       throw new Error(
-        payload.error?.message ?? "OpenAI Responses API request failed.",
+        payload.error?.message ?? "OpenAI Responses API request failed."
       );
     }
 
     const outputText = readOutputText(payload);
     if (!outputText) {
-      throw new Error("OpenAI Responses API returned no structured text output.");
+      throw new Error(
+        "OpenAI Responses API returned no structured text output."
+      );
     }
 
     try {
@@ -381,28 +388,28 @@ function readOutputText(body: OpenAiResponseBody) {
 
 function validateRecommendationExplanationModelOutput(
   output: RecommendationExplanationModelOutput,
-  context: RecommendationExplanationRunContext,
+  context: RecommendationExplanationRunContext
 ): RecommendationExplanationModelOutput {
   if (output.recommendationRunId !== context.recommendationRun.id) {
     throw new RecommendationExplanationOutputError(
-      `Recommendation run id ${output.recommendationRunId} does not match the requested run ${context.recommendationRun.id}.`,
+      `Recommendation run id ${output.recommendationRunId} does not match the requested run ${context.recommendationRun.id}.`
     );
   }
 
   const allowedResultIds = new Set(
-    context.scoredResults.map((result) => result.id),
+    context.scoredResults.map((result) => result.id)
   );
   const shortlistIds = output.shortlistedRecommendationResultIds;
 
   if (context.scoredResults.length > 0 && shortlistIds.length === 0) {
     throw new RecommendationExplanationOutputError(
-      "The explanation pass must shortlist at least one school when scored results exist.",
+      "The explanation pass must shortlist at least one school when scored results exist."
     );
   }
 
   if (shortlistIds.length > RECOMMENDATION_SHORTLIST_MAX_COUNT) {
     throw new RecommendationExplanationOutputError(
-      `The explanation pass may shortlist at most ${RECOMMENDATION_SHORTLIST_MAX_COUNT} schools.`,
+      `The explanation pass may shortlist at most ${RECOMMENDATION_SHORTLIST_MAX_COUNT} schools.`
     );
   }
 
@@ -412,26 +419,26 @@ function validateRecommendationExplanationModelOutput(
   for (const resultId of shortlistIds) {
     if (!allowedResultIds.has(resultId)) {
       throw new RecommendationExplanationOutputError(
-        `Recommendation result ${resultId} is not part of the scored result set.`,
+        `Recommendation result ${resultId} is not part of the scored result set.`
       );
     }
   }
 
   if (output.explanations.length !== shortlistIds.length) {
     throw new RecommendationExplanationOutputError(
-      "Every shortlisted school must have exactly one explanation payload.",
+      "Every shortlisted school must have exactly one explanation payload."
     );
   }
 
   const explanationIds = output.explanations.map(
-    (explanation) => explanation.recommendationResultId,
+    (explanation) => explanation.recommendationResultId
   );
   assertUniqueStrings(explanationIds, "explanations.recommendationResultId");
 
   for (const explanation of output.explanations) {
     if (!allowedResultIds.has(explanation.recommendationResultId)) {
       throw new RecommendationExplanationOutputError(
-        `Explanation result ${explanation.recommendationResultId} is not part of the scored result set.`,
+        `Explanation result ${explanation.recommendationResultId} is not part of the scored result set.`
       );
     }
 
@@ -439,7 +446,7 @@ function validateRecommendationExplanationModelOutput(
     assertStringArray(explanation.topBlockers, "topBlockers");
     assertStringArray(
       explanation.nextRecommendedActions,
-      "nextRecommendedActions",
+      "nextRecommendedActions"
     );
     assertStringArray(explanation.budgetSummary, "budgetSummary");
     assertStringArray(explanation.assumptionChanges, "assumptionChanges");
@@ -448,7 +455,7 @@ function validateRecommendationExplanationModelOutput(
   for (const shortlistId of shortlistIds) {
     if (!explanationIds.includes(shortlistId)) {
       throw new RecommendationExplanationOutputError(
-        `Missing explanation payload for shortlisted recommendation result ${shortlistId}.`,
+        `Missing explanation payload for shortlisted recommendation result ${shortlistId}.`
       );
     }
   }
@@ -457,12 +464,12 @@ function validateRecommendationExplanationModelOutput(
     ...output,
     explanations: shortlistIds.map((resultId) => {
       const explanation = output.explanations.find(
-        (entry) => entry.recommendationResultId === resultId,
+        (entry) => entry.recommendationResultId === resultId
       );
 
       if (!explanation) {
         throw new RecommendationExplanationOutputError(
-          `Missing explanation payload for shortlisted recommendation result ${resultId}.`,
+          `Missing explanation payload for shortlisted recommendation result ${resultId}.`
         );
       }
 
@@ -472,7 +479,7 @@ function validateRecommendationExplanationModelOutput(
 }
 
 function emptyRecommendationExplanationOutput(
-  recommendationRunId: string,
+  recommendationRunId: string
 ): RecommendationExplanationModelOutput {
   return {
     recommendationRunId,
@@ -489,7 +496,7 @@ function assertUniqueStrings(values: string[], fieldName: string) {
   for (const value of values) {
     if (seen.has(value)) {
       throw new RecommendationExplanationOutputError(
-        `Duplicate value found in ${fieldName}: ${value}`,
+        `Duplicate value found in ${fieldName}: ${value}`
       );
     }
 
@@ -498,15 +505,18 @@ function assertUniqueStrings(values: string[], fieldName: string) {
 }
 
 function assertStringArray(values: unknown, fieldName: string) {
-  if (!Array.isArray(values) || values.some((value) => typeof value !== "string")) {
+  if (
+    !Array.isArray(values) ||
+    values.some((value) => typeof value !== "string")
+  ) {
     throw new RecommendationExplanationOutputError(
-      `Field ${fieldName} must be an array of strings.`,
+      `Field ${fieldName} must be an array of strings.`
     );
   }
 }
 
 function parseReasoningEffort(
-  value: string | undefined,
+  value: string | undefined
 ): OpenAiReasoningEffort {
   if (!value) {
     return "low";
@@ -524,6 +534,6 @@ function parseReasoningEffort(
   }
 
   throw new Error(
-    `Invalid RECOMMENDATION_OPENAI_REASONING_EFFORT value: ${value}`,
+    `Invalid RECOMMENDATION_OPENAI_REASONING_EFFORT value: ${value}`
   );
 }

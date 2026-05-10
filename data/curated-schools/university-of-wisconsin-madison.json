@@ -7,10 +7,7 @@
     "state": "WI",
     "officialAdmissionsUrl": "https://admissions.wisc.edu/apply-as-a-freshman/"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2025-11-01",
     "early_decision": null,
@@ -48,10 +45,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Including SAT scores is optional through the spring 2027 term. If submitted, scores must be sent directly from the testing agency and arrive by the materials deadline for the chosen decision plan.",
@@ -76,9 +70,7 @@
       "business"
     ],
     "programAdmissionModel": "capacity_limited",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "moderately_selective",

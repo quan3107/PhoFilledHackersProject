@@ -212,8 +212,7 @@ export const academicSelectivityBands = [
   "unknown",
 ] as const;
 
-export type AcademicSelectivityBand =
-  (typeof academicSelectivityBands)[number];
+export type AcademicSelectivityBand = (typeof academicSelectivityBands)[number];
 
 export const testingExpectations = [
   "high_scores_expected",
