@@ -2,7 +2,13 @@
 // This is the visible entry surface for the local assistant flow.
 "use client";
 
-import { ArrowRight, CheckCircle2, MessagesSquare, Sparkles, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  MessagesSquare,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 
 import { MetricCard, Pill, SectionCard } from "../dashboard/primitives";
 import {
@@ -11,7 +17,11 @@ import {
   type StudentOnboardingSummary,
 } from "./student-onboarding-model";
 
-type ChatMessage = Readonly<{ id: string; role: "assistant" | "student"; text: string }>;
+type ChatMessage = Readonly<{
+  id: string;
+  role: "assistant" | "student";
+  text: string;
+}>;
 
 type ChatPanelProps = Readonly<{
   viewerName: string;
@@ -71,10 +81,16 @@ export function StudentOnboardingChatPanel({
           <div className="rounded-[1.4rem] border border-border bg-[var(--surface-soft,#f4f7fb)] p-3">
             <div className="flex items-center justify-between gap-3 border-b border-border/70 pb-2.5">
               <div>
-                <p className="text-sm font-semibold text-foreground">Live intake transcript</p>
-                <p className="text-xs text-muted-foreground">Use quick prompts or type a request below.</p>
+                <p className="text-sm font-semibold text-foreground">
+                  Live intake transcript
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Use quick prompts or type a request below.
+                </p>
               </div>
-              <Pill className="bg-primary/10 text-primary">{summary.completion}% ready</Pill>
+              <Pill className="bg-primary/10 text-primary">
+                {summary.completion}% ready
+              </Pill>
             </div>
 
             <div className="mt-3 max-h-[18rem] space-y-3 overflow-auto pr-1">
@@ -128,27 +144,47 @@ export function StudentOnboardingChatPanel({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <MetricCard label="Missing fields" value={String(summary.missingCount)} />
-            <MetricCard label="Current gaps" value={String(summary.currentMissingCount)} />
-            <MetricCard label="Projected gaps" value={String(summary.projectedMissingCount)} />
+            <MetricCard
+              label="Missing fields"
+              value={String(summary.missingCount)}
+            />
+            <MetricCard
+              label="Current gaps"
+              value={String(summary.currentMissingCount)}
+            />
+            <MetricCard
+              label="Projected gaps"
+              value={String(summary.projectedMissingCount)}
+            />
           </div>
         </div>
       </SectionCard>
 
       <div className="space-y-4">
         <SectionCard title="Live profile" icon={Sparkles}>
-          <SummaryList title="Current snapshot" items={summary.currentHighlights} />
-          <SummaryList title="Projected snapshot" items={summary.projectedHighlights} className="mt-5" />
+          <SummaryList
+            title="Current snapshot"
+            items={summary.currentHighlights}
+          />
+          <SummaryList
+            title="Projected snapshot"
+            items={summary.projectedHighlights}
+            className="mt-5"
+          />
         </SectionCard>
 
         <SectionCard title="Missing fields" icon={CheckCircle2}>
           <div className="space-y-2">
             {missingFields.slice(0, 8).map((field) => (
-              <MissingFieldRow key={`${field.snapshotKind}-${field.path}`} field={field} />
+              <MissingFieldRow
+                key={`${field.snapshotKind}-${field.path}`}
+                field={field}
+              />
             ))}
             {missingFields.length > 8 ? (
               <p className="pt-2 text-xs text-muted-foreground">
-                {missingFields.length - 8} more fields remain outside the current view.
+                {missingFields.length - 8} more fields remain outside the
+                current view.
               </p>
             ) : null}
           </div>
@@ -156,9 +192,18 @@ export function StudentOnboardingChatPanel({
 
         <SectionCard title="Snapshot notes" icon={UserRound}>
           <div className="space-y-3">
-            <NoteBlock title="Current assumptions" value={summary.nextSteps[0] ?? "Not set"} />
-            <NoteBlock title="Projected assumptions" value={summary.nextSteps[1] ?? "Not set"} />
-            <NoteBlock title="School control" value={summary.nextSteps[2] ?? "Not set"} />
+            <NoteBlock
+              title="Current assumptions"
+              value={summary.nextSteps[0] ?? "Not set"}
+            />
+            <NoteBlock
+              title="Projected assumptions"
+              value={summary.nextSteps[1] ?? "Not set"}
+            />
+            <NoteBlock
+              title="School control"
+              value={summary.nextSteps[2] ?? "Not set"}
+            />
           </div>
         </SectionCard>
       </div>
@@ -175,7 +220,9 @@ function Field({
 }>) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-[12px] font-medium text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );
@@ -187,7 +234,11 @@ function SummaryList({
   className = "",
 }: Readonly<{
   title: string;
-  items: Array<{ label: string; value: string; tone?: "neutral" | "warning" | "success" }>;
+  items: Array<{
+    label: string;
+    value: string;
+    tone?: "neutral" | "warning" | "success";
+  }>;
   className?: string;
 }>) {
   return (
@@ -197,13 +248,22 @@ function SummaryList({
       </p>
       <div className="mt-3 space-y-2">
         {items.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-border bg-white px-3.5 py-3">
+          <div
+            key={item.label}
+            className="rounded-2xl border border-border bg-white px-3.5 py-3"
+          >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-foreground">{item.label}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{item.value}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {item.label}
+                </p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {item.value}
+                </p>
               </div>
-              {item.tone ? <Pill className={toneClass(item.tone)}>{item.tone}</Pill> : null}
+              {item.tone ? (
+                <Pill className={toneClass(item.tone)}>{item.tone}</Pill>
+              ) : null}
             </div>
           </div>
         ))}

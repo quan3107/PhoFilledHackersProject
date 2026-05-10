@@ -7,9 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admissions.uci.edu/apply/first-year-students/index.php"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,

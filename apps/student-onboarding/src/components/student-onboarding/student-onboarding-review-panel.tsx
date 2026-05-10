@@ -2,7 +2,14 @@
 // Keeps save-state and action guidance visible using canonical backend state.
 "use client";
 
-import { AlertTriangle, CheckCircle2, LogOut, Save, Sparkles, UserRound } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  LogOut,
+  Save,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 
 import { MetricCard, Pill, SectionCard } from "../dashboard/primitives";
 import {
@@ -42,10 +49,17 @@ export function StudentOnboardingReviewPanel({
                   {dirty ? "Draft has unsaved changes" : "Draft is in sync"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {saveMessage ?? "Save once the profile is ready, then move into recommendations."}
+                  {saveMessage ??
+                    "Save once the profile is ready, then move into recommendations."}
                 </p>
               </div>
-              <Pill className={dirty ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}>
+              <Pill
+                className={
+                  dirty
+                    ? "bg-amber-50 text-amber-700"
+                    : "bg-emerald-50 text-emerald-700"
+                }
+              >
                 {summary.completion}% ready
               </Pill>
             </div>
@@ -58,8 +72,14 @@ export function StudentOnboardingReviewPanel({
 
           <div className="grid gap-3 sm:grid-cols-3">
             <MetricCard label="Missing" value={String(summary.missingCount)} />
-            <MetricCard label="Current gaps" value={String(summary.currentMissingCount)} />
-            <MetricCard label="Projected gaps" value={String(summary.projectedMissingCount)} />
+            <MetricCard
+              label="Current gaps"
+              value={String(summary.currentMissingCount)}
+            />
+            <MetricCard
+              label="Projected gaps"
+              value={String(summary.projectedMissingCount)}
+            />
           </div>
 
           <div className="rounded-[1.35rem] border border-border bg-white p-4">
@@ -68,7 +88,10 @@ export function StudentOnboardingReviewPanel({
             </p>
             <div className="mt-3 space-y-2">
               {missingFields.slice(0, 6).map((field) => (
-                <MissingFieldRow key={`${field.snapshotKind}-${field.path}`} field={field} />
+                <MissingFieldRow
+                  key={`${field.snapshotKind}-${field.path}`}
+                  field={field}
+                />
               ))}
             </div>
           </div>
@@ -99,10 +122,12 @@ export function StudentOnboardingReviewPanel({
         <SectionCard title="Assumptions and notes" icon={AlertTriangle}>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              This review surface reflects the canonical profile snapshots and recommendation controls.
+              This review surface reflects the canonical profile snapshots and
+              recommendation controls.
             </p>
             <p>
-              Use the save action to persist the current canonical document before generating recommendations.
+              Use the save action to persist the current canonical document
+              before generating recommendations.
             </p>
           </div>
         </SectionCard>
@@ -111,7 +136,14 @@ export function StudentOnboardingReviewPanel({
           <div className="space-y-2">
             {summary.nextSteps.length ? (
               summary.nextSteps.map((step) => (
-                <MissingFieldRow key={step} field={{ snapshotKind: "current", path: "next-step", message: step }} />
+                <MissingFieldRow
+                  key={step}
+                  field={{
+                    snapshotKind: "current",
+                    path: "next-step",
+                    message: step,
+                  }}
+                />
               ))
             ) : (
               <p className="rounded-xl border border-emerald-500/30 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
@@ -160,9 +192,18 @@ export function StudentOnboardingSettingsPanel({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <InfoCard title="Canonical profile" description="The backend owns the saved student profile and snapshot records." />
-            <InfoCard title="Intake transcript" description="The chat transcript can be restored from the persisted intake session." />
-            <InfoCard title="Recommendation runs" description="Recommendation history is owned by the canonical API and catalog tables." />
+            <InfoCard
+              title="Canonical profile"
+              description="The backend owns the saved student profile and snapshot records."
+            />
+            <InfoCard
+              title="Intake transcript"
+              description="The chat transcript can be restored from the persisted intake session."
+            />
+            <InfoCard
+              title="Recommendation runs"
+              description="Recommendation history is owned by the canonical API and catalog tables."
+            />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -200,10 +241,12 @@ export function StudentOnboardingSettingsPanel({
         <SectionCard title="Backend-owned surfaces" icon={Sparkles}>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              The visible surfaces here now reflect backend-backed profile, intake, and recommendation state.
+              The visible surfaces here now reflect backend-backed profile,
+              intake, and recommendation state.
             </p>
             <div className="rounded-2xl border border-dashed border-border bg-white px-3 py-3 text-sm text-muted-foreground">
-              This panel reflects backend-backed profile, intake, and recommendation data only.
+              This panel reflects backend-backed profile, intake, and
+              recommendation data only.
             </div>
           </div>
         </SectionCard>
@@ -221,7 +264,9 @@ function Field({
 }>) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-[12px] font-medium text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );

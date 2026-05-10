@@ -83,7 +83,21 @@ export const studentLocationPreferenceStateGroups: Partial<
     "VT",
     "WV",
   ],
-  us_west_coast: ["AK", "AZ", "CA", "CO", "HI", "ID", "MT", "NV", "NM", "OR", "UT", "WA", "WY"],
+  us_west_coast: [
+    "AK",
+    "AZ",
+    "CA",
+    "CO",
+    "HI",
+    "ID",
+    "MT",
+    "NV",
+    "NM",
+    "OR",
+    "UT",
+    "WA",
+    "WY",
+  ],
   us_midwest: [
     "IA",
     "IL",
@@ -223,7 +237,10 @@ export interface StudentIntakeFieldStatusRecord {
   sourceMessageId?: string | null;
 }
 
-export type StudentIntakeFieldStatusMap = Record<string, StudentIntakeFieldStatusRecord>;
+export type StudentIntakeFieldStatusMap = Record<
+  string,
+  StudentIntakeFieldStatusRecord
+>;
 
 export interface StudentIntakeStateRecord {
   userId: string;

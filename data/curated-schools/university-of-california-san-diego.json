@@ -7,9 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admissions.ucsd.edu/first-year/application-requirements.html"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,
@@ -23,10 +21,7 @@
     "waiverNotes": "Demonstration of English proficiency is required for international students whose native language is not English and whose secondary education was in a country where English is not the language of instruction."
   },
   "testPolicy": "test_blind",
-  "requiredMaterials": [
-    "uc_application",
-    "personal_insight_questions"
-  ],
+  "requiredMaterials": ["uc_application", "personal_insight_questions"],
   "tuitionAnnualUsd": 54024,
   "estimatedCostOfAttendanceUsd": 78429,
   "livingCostEstimateUsd": 19629,
@@ -43,10 +38,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": null,
@@ -64,10 +56,7 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "engineering",
-      "research_intensive"
-    ],
+    "programFitTags": ["engineering", "research_intensive"],
     "programAdmissionModel": "capacity_limited",
     "applicationStrategyTags": []
   },

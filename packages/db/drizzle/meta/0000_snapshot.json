@@ -144,12 +144,8 @@
           "name": "catalog_import_items_import_run_id_catalog_import_runs_id_fk",
           "tableFrom": "catalog_import_items",
           "tableTo": "catalog_import_runs",
-          "columnsFrom": [
-            "import_run_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["import_run_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -157,12 +153,8 @@
           "name": "catalog_import_items_university_id_universities_id_fk",
           "tableFrom": "catalog_import_items",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -273,12 +265,8 @@
           "name": "catalog_import_runs_university_id_universities_id_fk",
           "tableFrom": "catalog_import_runs",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -593,12 +581,8 @@
           "name": "university_sources_university_id_universities_id_fk",
           "tableFrom": "university_sources",
           "tableTo": "universities",
-          "columnsFrom": [
-            "university_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["university_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -639,11 +623,7 @@
     "public.university_validation_status": {
       "name": "university_validation_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "publishable",
-        "rejected"
-      ]
+      "values": ["draft", "publishable", "rejected"]
     }
   },
   "schemas": {},

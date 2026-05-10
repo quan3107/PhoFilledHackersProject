@@ -44,9 +44,15 @@ function loadRepositoryEnv() {
   }
 }
 
-async function relationExists<TTable>(db: ReturnType<typeof drizzle>, table: TTable) {
+async function relationExists<TTable>(
+  db: ReturnType<typeof drizzle>,
+  table: TTable
+) {
   try {
-    await db.select().from(table as never).limit(1);
+    await db
+      .select()
+      .from(table as never)
+      .limit(1);
     return true;
   } catch {
     return false;
@@ -55,7 +61,7 @@ async function relationExists<TTable>(db: ReturnType<typeof drizzle>, table: TTa
 
 async function tableExistsByName(
   db: ReturnType<typeof drizzle>,
-  tableName: string,
+  tableName: string
 ) {
   const result = await db.execute(sql`
     select exists (
@@ -136,7 +142,9 @@ async function runDrizzleMigrations() {
       hasAccountsTable && !hasAccounts ? "accounts" : null,
       hasSessionsTable && !hasSessions ? "sessions" : null,
       hasVerificationsTable && !hasVerifications ? "verifications" : null,
-      hasStudentProfilesTable && !hasStudentProfiles ? "student_profiles" : null,
+      hasStudentProfilesTable && !hasStudentProfiles
+        ? "student_profiles"
+        : null,
       hasStudentProfileSnapshotsTable && !hasStudentProfileSnapshots
         ? "student_profile_snapshots"
         : null,
@@ -156,7 +164,7 @@ async function runDrizzleMigrations() {
 
     if (driftedApplicationTables.length > 0) {
       throw new Error(
-        `Existing application tables do not match the checked-in Drizzle schema: ${driftedApplicationTables.join(", ")}. Normalize or drop the drifted tables before rerunning migrate.`,
+        `Existing application tables do not match the checked-in Drizzle schema: ${driftedApplicationTables.join(", ")}. Normalize or drop the drifted tables before rerunning migrate.`
       );
     }
 
@@ -169,18 +177,19 @@ async function runDrizzleMigrations() {
 
       if (
         lastAppliedMigration &&
-        Number(lastAppliedMigration.createdAt) === latestMigration.folderMillis &&
+        Number(lastAppliedMigration.createdAt) ===
+          latestMigration.folderMillis &&
         lastAppliedMigration.hash !== latestMigration.hash
       ) {
         throw new Error(
-          "Drizzle migration drift detected: the live migration history does not match the checked-in baseline.",
+          "Drizzle migration drift detected: the live migration history does not match the checked-in baseline."
         );
       }
     }
 
     if (hasApplicationSchema && !hasMigrationState) {
       throw new Error(
-        "Existing catalog schema detected without Drizzle migration history. Run `npm --workspace @etest/db run baseline` once, then rerun migrate.",
+        "Existing catalog schema detected without Drizzle migration history. Run `npm --workspace @etest/db run baseline` once, then rerun migrate."
       );
     }
 
@@ -195,8 +204,8 @@ async function runDrizzleMigrations() {
           migrationCount: migrations.length,
         },
         null,
-        2,
-      ),
+        2
+      )
     );
   } finally {
     await client.end({ timeout: 5 });
@@ -210,7 +219,7 @@ const isEntrypoint =
 if (isEntrypoint) {
   runDrizzleMigrations().catch((error: unknown) => {
     console.error(
-      `[db:migrate] ${error instanceof Error ? error.message : String(error)}`,
+      `[db:migrate] ${error instanceof Error ? error.message : String(error)}`
     );
     process.exitCode = 1;
   });

@@ -79,20 +79,24 @@ export async function runRecommendationEngineForUser(input: {
 }): Promise<RecommendationEngineResult> {
   const { db, userId, profileState } = input;
   const scoringConfig = resolveRecommendationEngineScoringConfig(
-    input.scoringConfig,
+    input.scoringConfig
   );
   const currentSnapshot = profileState.snapshots.current;
   const projectedSnapshot = profileState.snapshots.projected;
 
-  if (!profileState.profile || !currentSnapshot.id || !currentSnapshot.profile) {
+  if (
+    !profileState.profile ||
+    !currentSnapshot.id ||
+    !currentSnapshot.profile
+  ) {
     throw new RecommendationEngineInputError(
       "A saved current profile snapshot is required before a recommendation run can start.",
-      profileState.missingFields,
+      profileState.missingFields
     );
   }
 
   const missingProfileFields = profileState.missingFields.map(
-    (field) => `${field.snapshotKind}.${field.path}`,
+    (field) => `${field.snapshotKind}.${field.path}`
   );
   const currentProfile = currentSnapshot.profile;
 
@@ -143,7 +147,7 @@ export async function runRecommendationEngineForUser(input: {
         currentAssumptions: currentSnapshot.assumptions,
         projectedAssumptions: projectedSnapshot.assumptions,
         scoringConfig,
-      }),
+      })
     )
     .sort((left, right) => {
       if (right.currentScore !== left.currentScore) {
@@ -176,7 +180,7 @@ export async function runRecommendationEngineForUser(input: {
             projectedScoreBreakdown: result.projectedScoreBreakdown,
             projectedAssumptionDelta: result.projectedAssumptionDelta,
             rankOrder: index + 1,
-          })),
+          }))
         )
         .returning()
     : [];
@@ -244,7 +248,7 @@ function scoreCandidateSchool(input: {
     budgetFit: scoreBudgetLabel(
       input.school,
       input.currentProfile,
-      input.scoringConfig,
+      input.scoringConfig
     ),
     deadlinePressure: scoreDeadlinePressure(input.currentProfile),
     currentScore,
@@ -253,7 +257,7 @@ function scoreCandidateSchool(input: {
     projectedScoreBreakdown,
     projectedAssumptionDelta: differenceAssumptions(
       input.currentAssumptions,
-      input.projectedAssumptions,
+      input.projectedAssumptions
     ),
   };
 }
@@ -268,18 +272,18 @@ function scoreBreakdown(input: {
     admissionFit: scoreAdmissionFit(
       input.school,
       input.profile,
-      input.scoringConfig,
+      input.scoringConfig
     ),
     readinessFit: scoreReadinessFit(input.profile, input.scoringConfig),
     budgetFit: scoreBudgetComponent(
       input.school,
       input.profile,
-      input.scoringConfig,
+      input.scoringConfig
     ),
     preferenceFit: scorePreferenceFit(
       input.school,
       input.profile,
-      input.scoringConfig,
+      input.scoringConfig
     ),
     improvementUpside: clampScore(input.improvementUpside),
   };
@@ -288,7 +292,7 @@ function scoreBreakdown(input: {
 function scoreAdmissionFit(
   school: RecommendationCandidateSchool,
   profile: StudentProfileRecord,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   const studentIndex = scoreStudentIndex(profile, scoringConfig);
   const schoolIndex = scoreSchoolIndex(school, scoringConfig);
@@ -304,7 +308,8 @@ function scoreAdmissionFit(
 
   const testingRequired =
     school.recommendationInputs.testingRequirements.minimumSatTotal !== null ||
-    school.recommendationInputs.testingRequirements.minimumActComposite !== null;
+    school.recommendationInputs.testingRequirements.minimumActComposite !==
+      null;
 
   if (testingRequired && profile.testing.willSubmitTests === false) {
     score -= scoringConfig.admissionFit.testingRequiredNoSubmissionPenalty;
@@ -315,7 +320,7 @@ function scoreAdmissionFit(
 
 function scoreReadinessFit(
   profile: StudentProfileRecord,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   const readinessValues = [
     profile.readiness.hasTeacherRecommendationsReady,
@@ -340,22 +345,22 @@ function scoreReadinessFit(
 function scoreBudgetComponent(
   school: RecommendationCandidateSchool,
   profile: StudentProfileRecord,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   return budgetLabelToComponent(
     scoreBudgetLabel(school, profile, scoringConfig),
-    scoringConfig,
+    scoringConfig
   );
 }
 
 function scorePreferenceFit(
   school: RecommendationCandidateSchool,
   profile: StudentProfileRecord,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   let score = 0;
   const schoolTags = new Set(
-    school.recommendationInputs.programFitTags.map(normalizeToken),
+    school.recommendationInputs.programFitTags.map(normalizeToken)
   );
   const intendedMajors = profile.preferences.intendedMajors.map(normalizeToken);
 
@@ -369,7 +374,7 @@ function scorePreferenceFit(
     score += scoringConfig.preferenceFit.stateMatchScore;
   } else if (
     profile.preferences.preferredLocationPreferences.some((kind) =>
-      studentLocationPreferenceStateGroups[kind]?.includes(school.state),
+      studentLocationPreferenceStateGroups[kind]?.includes(school.state)
     )
   ) {
     score += scoringConfig.preferenceFit.stateMatchScore;
@@ -378,9 +383,9 @@ function scorePreferenceFit(
   const campusLocale = normalizeToken(school.recommendationInputs.campusLocale);
   if (
     campusLocale &&
-    profile.preferences.preferredCampusLocale.map(normalizeToken).includes(
-      campusLocale,
-    )
+    profile.preferences.preferredCampusLocale
+      .map(normalizeToken)
+      .includes(campusLocale)
   ) {
     score += scoringConfig.preferenceFit.localeMatchScore;
   }
@@ -389,7 +394,7 @@ function scorePreferenceFit(
     school.recommendationInputs.schoolControl !== "private_for_profit" &&
     school.recommendationInputs.schoolControl !== "unknown" &&
     profile.preferences.preferredSchoolControl.includes(
-      school.recommendationInputs.schoolControl,
+      school.recommendationInputs.schoolControl
     )
   ) {
     score += scoringConfig.preferenceFit.schoolControlMatchScore;
@@ -399,9 +404,8 @@ function scorePreferenceFit(
     school.recommendationInputs.undergraduateSize !== null &&
     schoolSizeBucket(
       school.recommendationInputs.undergraduateSize,
-      scoringConfig,
-    ) ===
-      profile.preferences.preferredUndergraduateSize
+      scoringConfig
+    ) === profile.preferences.preferredUndergraduateSize
   ) {
     score += scoringConfig.preferenceFit.sizeMatchScore;
   }
@@ -428,22 +432,22 @@ function scoreImprovementUpside(input: {
     input.currentProfile.academic.currentGpa100;
   const assumptionBonus = Math.min(
     input.scoringConfig.improvementUpside.assumptionBonusCap,
-    input.projectedAssumptions.length,
+    input.projectedAssumptions.length
   );
 
   return clampScore(
     Math.max(
       0,
       Math.round(
-        gpaDelta / input.scoringConfig.improvementUpside.gpaDeltaDivisor,
-      ),
-    ) + assumptionBonus,
+        gpaDelta / input.scoringConfig.improvementUpside.gpaDeltaDivisor
+      )
+    ) + assumptionBonus
   );
 }
 
 function scoreStudentIndex(
   profile: StudentProfileRecord,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   const gpaScore =
     (profile.academic.currentGpa100 ?? 0) *
@@ -459,13 +463,11 @@ function scoreStudentIndex(
   const classRankBonus =
     profile.academic.classRankPercent === null
       ? 0
-      : (
-          scoringConfig.studentIndex.classRankBands.find(
-            (band) =>
-              (profile.academic.classRankPercent ?? Number.POSITIVE_INFINITY) <=
-              band.maxPercentile,
-          )?.bonus ?? 0
-        );
+      : (scoringConfig.studentIndex.classRankBands.find(
+          (band) =>
+            (profile.academic.classRankPercent ?? Number.POSITIVE_INFINITY) <=
+            band.maxPercentile
+        )?.bonus ?? 0);
   const satScore =
     profile.testing.satTotal === null
       ? 0
@@ -479,44 +481,47 @@ function scoreStudentIndex(
 
   return clampToRange(
     Math.round(
-      gpaScore + curriculumBonus + classRankBonus + Math.max(satScore, actScore),
+      gpaScore + curriculumBonus + classRankBonus + Math.max(satScore, actScore)
     ),
     0,
-    100,
+    100
   );
 }
 
 function scoreSchoolIndex(
   school: RecommendationCandidateSchool,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   const admissionRateScore =
     school.recommendationInputs.admissionRateOverall === null
       ? scoringConfig.schoolIndex.admissionRateNullScore
       : clampToRange(
-          Math.round((1 - school.recommendationInputs.admissionRateOverall) * 100),
+          Math.round(
+            (1 - school.recommendationInputs.admissionRateOverall) * 100
+          ),
           scoringConfig.schoolIndex.admissionRateMinScore,
-          scoringConfig.schoolIndex.admissionRateMaxScore,
+          scoringConfig.schoolIndex.admissionRateMaxScore
         );
   const satScore =
     school.recommendationInputs.satAverageOverall === null
       ? 0
       : clampToRange(
           Math.round(
-            ((school.recommendationInputs.satAverageOverall - 800) / 800) * 100,
+            ((school.recommendationInputs.satAverageOverall - 800) / 800) * 100
           ),
           scoringConfig.schoolIndex.satScoreMin,
-          scoringConfig.schoolIndex.satScoreMax,
+          scoringConfig.schoolIndex.satScoreMax
         );
   const actScore =
     school.recommendationInputs.actMidpointCumulative === null
       ? 0
       : clampToRange(
           Math.round(
-            ((school.recommendationInputs.actMidpointCumulative - 15) / 21) * 100,
+            ((school.recommendationInputs.actMidpointCumulative - 15) / 21) *
+              100
           ),
           scoringConfig.schoolIndex.actScoreMin,
-          scoringConfig.schoolIndex.actScoreMax,
+          scoringConfig.schoolIndex.actScoreMax
         );
 
   if (
@@ -532,7 +537,7 @@ function scoreSchoolIndex(
 function scoreBudgetLabel(
   school: RecommendationCandidateSchool,
   profile: StudentProfileRecord,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ): BudgetFitLabel {
   const budget = profile.budget.annualBudgetUsd;
 
@@ -541,8 +546,7 @@ function scoreBudgetLabel(
   }
 
   const totalCost = school.estimatedCostOfAttendanceUsd;
-  const netPrice =
-    school.recommendationInputs.averageNetPriceUsd ?? totalCost;
+  const netPrice = school.recommendationInputs.averageNetPriceUsd ?? totalCost;
 
   if (budget >= totalCost) {
     return "comfortable";
@@ -565,8 +569,8 @@ function scoreBudgetLabel(
   }
 
   if (
-    effectiveBudget +
-      scoringConfig.budgetFit.stretchCoaGapBuffer >= totalCost &&
+    effectiveBudget + scoringConfig.budgetFit.stretchCoaGapBuffer >=
+      totalCost &&
     aidAvailable
   ) {
     return "stretch";
@@ -577,7 +581,7 @@ function scoreBudgetLabel(
 
 function budgetLabelToComponent(
   label: BudgetFitLabel,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   switch (label) {
     case "comfortable":
@@ -591,7 +595,9 @@ function budgetLabelToComponent(
   }
 }
 
-function scoreDeadlinePressure(profile: StudentProfileRecord): DeadlinePressureLabel {
+function scoreDeadlinePressure(
+  profile: StudentProfileRecord
+): DeadlinePressureLabel {
   const readyCount = [
     profile.readiness.hasTeacherRecommendationsReady,
     profile.readiness.hasCounselorDocumentsReady,
@@ -610,7 +616,7 @@ function scoreDeadlinePressure(profile: StudentProfileRecord): DeadlinePressureL
 }
 
 function scoreConfidenceLevel(
-  school: RecommendationCandidateSchool,
+  school: RecommendationCandidateSchool
 ): ConfidenceLevel {
   let missingClusters = 0;
 
@@ -658,13 +664,13 @@ function totalBreakdown(breakdown: ScoreComponentBreakdown) {
       breakdown.preferenceFit +
       breakdown.improvementUpside,
     0,
-    100,
+    100
   );
 }
 
 function scoreToTier(
   score: number,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ): RecommendationTier {
   if (score >= scoringConfig.tierThresholds.safetyMin) {
     return "safety";
@@ -679,7 +685,7 @@ function scoreToTier(
 
 function scoreToOutlook(
   score: number,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ): OutlookLabel {
   if (score >= scoringConfig.outlookThresholds.very_strong) {
     return "very_strong";
@@ -702,7 +708,7 @@ function scoreToOutlook(
 
 function schoolSizeBucket(
   size: number,
-  scoringConfig: RecommendationEngineScoringConfig,
+  scoringConfig: RecommendationEngineScoringConfig
 ) {
   if (size < scoringConfig.sizeBuckets.smallMaxExclusive) {
     return "small";
@@ -719,7 +725,7 @@ function differenceAssumptions(current: string[], projected: string[]) {
   const currentSet = new Set(current.map(normalizeToken));
 
   return projected.filter(
-    (assumption) => !currentSet.has(normalizeToken(assumption)),
+    (assumption) => !currentSet.has(normalizeToken(assumption))
   );
 }
 
@@ -740,7 +746,7 @@ function clampToRange(value: number, min: number, max: number) {
 }
 
 function toRecommendationRunRecord(
-  row: typeof recommendationRuns.$inferSelect,
+  row: typeof recommendationRuns.$inferSelect
 ): RecommendationRunRecord {
   return {
     id: row.id,
@@ -758,7 +764,7 @@ function toRecommendationRunRecord(
 }
 
 function toRecommendationResultRecord(
-  row: typeof recommendationResults.$inferSelect,
+  row: typeof recommendationResults.$inferSelect
 ): RecommendationResultRecord {
   return {
     id: row.id,

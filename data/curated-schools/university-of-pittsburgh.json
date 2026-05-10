@@ -7,9 +7,7 @@
     "state": "PA",
     "officialAdmissionsUrl": "https://admissions.pitt.edu/audience/first-year-student/"
   },
-  "applicationRounds": [
-    "rolling_admission"
-  ],
+  "applicationRounds": ["rolling_admission"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,
@@ -47,10 +45,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Pitt's current official test-optional page says SAT or ACT scores are not required for students applying for fall 2025, 2026, 2027, and 2028; no latest SAT test date is published on the reviewed official pages.",
@@ -68,15 +63,9 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "research_intensive",
-      "engineering",
-      "life_sciences"
-    ],
+    "programFitTags": ["research_intensive", "engineering", "life_sciences"],
     "programAdmissionModel": "unknown",
-    "applicationStrategyTags": [
-      "rolling_or_extended_timeline"
-    ]
+    "applicationStrategyTags": ["rolling_or_extended_timeline"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "selective",

@@ -35,12 +35,20 @@ function createMessage(role: "assistant" | "student", text: string) {
 }
 
 function isResolvedStatus(resolution: string | undefined) {
-  return resolution === "filled" || resolution === "unknown" || resolution === "declined";
+  return (
+    resolution === "filled" ||
+    resolution === "unknown" ||
+    resolution === "declined"
+  );
 }
 
 function isKnownFreeTextValue(value: string) {
   const normalized = value.trim().toLowerCase();
-  return normalized.length > 0 && normalized !== "unknown" && normalized !== "declined";
+  return (
+    normalized.length > 0 &&
+    normalized !== "unknown" &&
+    normalized !== "declined"
+  );
 }
 
 function classifyExplicitFieldIntent(message: string | null) {
@@ -79,31 +87,73 @@ function classifyExplicitFieldIntent(message: string | null) {
 
 const fieldQuestionHints: Partial<Record<IntakeFieldPath, string[]>> = {
   citizenshipCountry: ["citizenship", "citizen", "country"],
-  targetEntryTerm: ["target entry term", "entry term", "fall", "spring", "term"],
+  targetEntryTerm: [
+    "target entry term",
+    "entry term",
+    "fall",
+    "spring",
+    "term",
+  ],
   "academic.currentGpa100": ["current gpa", "gpa", "4.0 scale", "100 scale"],
   "academic.projectedGpa100": ["projected gpa", "future gpa"],
-  "academic.curriculumStrength": ["curriculum", "course rigor", "rigor", "ib", "ap", "a-level"],
+  "academic.curriculumStrength": [
+    "curriculum",
+    "course rigor",
+    "rigor",
+    "ib",
+    "ap",
+    "a-level",
+  ],
   "academic.classRankPercent": ["class rank", "percentile", "top"],
-  "testing.willSubmitTests": ["submit tests", "test submission", "submit scores"],
+  "testing.willSubmitTests": [
+    "submit tests",
+    "test submission",
+    "submit scores",
+  ],
   "testing.satTotal": ["sat"],
   "testing.actComposite": ["act"],
   "testing.englishExamType": ["english exam", "ielts", "toefl", "duolingo"],
   "testing.englishExamScore": ["english score", "ielts", "toefl", "duolingo"],
   "preferences.intendedMajors": ["major", "majors", "study"],
   "preferences.preferredStates": ["state", "states"],
-  "preferences.preferredLocationPreferences": ["location", "region", "east coast", "west coast"],
-  "preferences.preferredCampusLocale": ["campus locale", "urban", "suburban", "rural"],
+  "preferences.preferredLocationPreferences": [
+    "location",
+    "region",
+    "east coast",
+    "west coast",
+  ],
+  "preferences.preferredCampusLocale": [
+    "campus locale",
+    "urban",
+    "suburban",
+    "rural",
+  ],
   "preferences.preferredSchoolControl": ["public", "private"],
-  "preferences.preferredUndergraduateSize": ["school size", "undergraduate size", "small", "medium", "large"],
+  "preferences.preferredUndergraduateSize": [
+    "school size",
+    "undergraduate size",
+    "small",
+    "medium",
+    "large",
+  ],
   "budget.annualBudgetUsd": ["budget", "annual budget", "usd"],
   "budget.needsFinancialAid": ["financial aid", "need aid"],
   "budget.needsMeritAid": ["merit aid", "scholarship"],
   "budget.budgetFlexibility": ["budget flexibility", "flexibility"],
-  "readiness.wantsEarlyRound": ["early round", "early decision", "early action"],
+  "readiness.wantsEarlyRound": [
+    "early round",
+    "early decision",
+    "early action",
+  ],
   "readiness.hasTeacherRecommendationsReady": ["teacher recommendation"],
   "readiness.hasCounselorDocumentsReady": ["counselor", "school documents"],
   "readiness.hasEssayDraftsStarted": ["essay", "drafts"],
-  "projected.assumptions": ["assumption", "assumptions", "improve", "projection"],
+  "projected.assumptions": [
+    "assumption",
+    "assumptions",
+    "improve",
+    "projection",
+  ],
 };
 
 function findActiveFieldFromTranscript(input: {
@@ -112,8 +162,8 @@ function findActiveFieldFromTranscript(input: {
 }) {
   const lastAssistantMessage = [...input.transcript]
     .reverse()
-    .find((message) => message.role === "assistant")?.text
-    .toLowerCase();
+    .find((message) => message.role === "assistant")
+    ?.text.toLowerCase();
 
   if (!lastAssistantMessage) {
     return (input.outstandingFields[0] as IntakeFieldPath | undefined) ?? null;
@@ -148,10 +198,17 @@ function findActiveFieldFromTranscript(input: {
     }
   }
 
-  return bestMatch?.path ?? ((input.outstandingFields[0] as IntakeFieldPath | undefined) ?? null);
+  return (
+    bestMatch?.path ??
+    (input.outstandingFields[0] as IntakeFieldPath | undefined) ??
+    null
+  );
 }
 
-function isFieldSatisfied(document: ReturnType<typeof buildStudentProfileDocumentFromState>, path: IntakeFieldPath) {
+function isFieldSatisfied(
+  document: ReturnType<typeof buildStudentProfileDocumentFromState>,
+  path: IntakeFieldPath
+) {
   const current = document.current.profile;
   const projected = document.projected.profile;
 
@@ -171,11 +228,20 @@ function isFieldSatisfied(document: ReturnType<typeof buildStudentProfileDocumen
     case "testing.willSubmitTests":
       return current.testing.willSubmitTests !== null;
     case "testing.satTotal":
-      return current.testing.willSubmitTests === false || current.testing.satTotal !== null;
+      return (
+        current.testing.willSubmitTests === false ||
+        current.testing.satTotal !== null
+      );
     case "testing.actComposite":
-      return current.testing.willSubmitTests === false || current.testing.actComposite !== null;
+      return (
+        current.testing.willSubmitTests === false ||
+        current.testing.actComposite !== null
+      );
     case "testing.englishExamType":
-      return current.testing.willSubmitTests === false || current.testing.englishExamType !== "unknown";
+      return (
+        current.testing.willSubmitTests === false ||
+        current.testing.englishExamType !== "unknown"
+      );
     case "testing.englishExamScore":
       return (
         current.testing.willSubmitTests === false ||
@@ -225,7 +291,7 @@ function isFieldSatisfied(document: ReturnType<typeof buildStudentProfileDocumen
 
 function computeOutstandingFields(
   document: ReturnType<typeof buildStudentProfileDocumentFromState>,
-  fieldStatuses: StudentIntakeFieldStatusMap,
+  fieldStatuses: StudentIntakeFieldStatusMap
 ) {
   return intakeFieldDefinitions
     .filter((field) => {
@@ -264,8 +330,7 @@ function buildPrompt(input: {
         "When a field has been captured or intentionally unresolved, the assistantMessage should end with the next single question, not another confirmation request.",
         "Keep assistantMessage concise: one short acknowledgement, one short impact note only when useful, then one next question.",
       ],
-      responseLanguage:
-        input.locale === "vi" ? "Vietnamese" : "English",
+      responseLanguage: input.locale === "vi" ? "Vietnamese" : "English",
       latestUserMessage: input.latestUserMessage,
       transcript: input.transcript.slice(-12),
       currentProfile: input.document.current.profile,
@@ -283,7 +348,7 @@ function buildPrompt(input: {
       })),
     },
     null,
-    2,
+    2
   );
 }
 
@@ -318,11 +383,14 @@ function buildExplicitIntentFollowUp(input: {
   resolvedFieldPath: IntakeFieldPath;
   nextOutstandingFieldPath: IntakeFieldPath | null;
 }) {
-  const resolvedField = intakeFieldDefinitionByPath.get(input.resolvedFieldPath);
+  const resolvedField = intakeFieldDefinitionByPath.get(
+    input.resolvedFieldPath
+  );
   const nextField = input.nextOutstandingFieldPath
     ? intakeFieldDefinitionByPath.get(input.nextOutstandingFieldPath)
     : null;
-  const resolutionLabel = input.resolution === "declined" ? "declined" : "unknown";
+  const resolutionLabel =
+    input.resolution === "declined" ? "declined" : "unknown";
 
   if (!resolvedField) {
     return nextField
@@ -368,7 +436,7 @@ function formatDeterministicValueSummary(input: {
 
   if (value && typeof value === "object") {
     const entries = Object.values(value as Record<string, unknown>).filter(
-      (entry) => entry !== null && entry !== undefined && entry !== "",
+      (entry) => entry !== null && entry !== undefined && entry !== ""
     );
     return entries.length > 0 ? entries.join(" ") : null;
   }
@@ -383,7 +451,9 @@ function buildDeterministicFilledFollowUp(input: {
   projectedAssumptions: string[] | null;
   nextOutstandingFieldPath: IntakeFieldPath | null;
 }) {
-  const resolvedField = intakeFieldDefinitionByPath.get(input.resolvedFieldPath);
+  const resolvedField = intakeFieldDefinitionByPath.get(
+    input.resolvedFieldPath
+  );
   const nextField = input.nextOutstandingFieldPath
     ? intakeFieldDefinitionByPath.get(input.nextOutstandingFieldPath)
     : null;
@@ -421,7 +491,9 @@ function parseBooleanAnswer(message: string) {
     return true;
   }
 
-  if (/^(no|nope|false|not yet|won't|will not|don't|do not)\b/.test(normalized)) {
+  if (
+    /^(no|nope|false|not yet|won't|will not|don't|do not)\b/.test(normalized)
+  ) {
     return false;
   }
 
@@ -430,7 +502,9 @@ function parseBooleanAnswer(message: string) {
 
 function parseTargetEntryTerm(message: string) {
   const match = message.match(/\b(fall|spring|summer|winter)\s+(20\d{2})\b/i);
-  return match ? `${match[1][0].toUpperCase()}${match[1].slice(1).toLowerCase()} ${match[2]}` : null;
+  return match
+    ? `${match[1][0].toUpperCase()}${match[1].slice(1).toLowerCase()} ${match[2]}`
+    : null;
 }
 
 function parseGpaToHundred(message: string) {
@@ -444,13 +518,15 @@ function parseGpaToHundred(message: string) {
     return null;
   }
 
-  return raw <= 5 ? Math.round(raw * 25) : Math.round(raw <= 10 ? raw * 10 : raw);
+  return raw <= 5
+    ? Math.round(raw * 25)
+    : Math.round(raw <= 10 ? raw * 10 : raw);
 }
 
 function parseMoneyRange(message: string) {
   const cleaned = message.replaceAll(",", "");
   const matches = Array.from(cleaned.matchAll(/\d+(?:\.\d+)?/g)).map((match) =>
-    Number(match[0]),
+    Number(match[0])
   );
 
   if (!matches.length || matches.some((value) => !Number.isFinite(value))) {
@@ -458,9 +534,11 @@ function parseMoneyRange(message: string) {
   }
 
   const normalized = matches.map((value) =>
-    /\b(k|thousand)\b/i.test(cleaned) ? value * 1000 : value,
+    /\b(k|thousand)\b/i.test(cleaned) ? value * 1000 : value
   );
-  return Math.round(normalized.reduce((sum, value) => sum + value, 0) / normalized.length);
+  return Math.round(
+    normalized.reduce((sum, value) => sum + value, 0) / normalized.length
+  );
 }
 
 function parseCurriculumStrength(message: string) {
@@ -482,7 +560,11 @@ function parseCurriculumStrength(message: string) {
     return "rigorous";
   }
 
-  if (lower.includes("baseline") || lower.includes("standard") || lower.includes("regular")) {
+  if (
+    lower.includes("baseline") ||
+    lower.includes("standard") ||
+    lower.includes("regular")
+  ) {
     return "baseline";
   }
 
@@ -554,7 +636,9 @@ function parseSchoolControl(message: string) {
 
 function parseCampusLocale(message: string) {
   const lower = message.toLowerCase();
-  const values = ["urban", "suburban", "rural"].filter((entry) => lower.includes(entry));
+  const values = ["urban", "suburban", "rural"].filter((entry) =>
+    lower.includes(entry)
+  );
   return values.length > 0 ? values : null;
 }
 
@@ -631,7 +715,7 @@ function getPatchValueForField(input: {
 
 function mergePatchObject(
   base: Record<string, unknown>,
-  addition: Record<string, unknown>,
+  addition: Record<string, unknown>
 ) {
   const merged = { ...base };
 
@@ -646,7 +730,7 @@ function mergePatchObject(
     ) {
       merged[key] = mergePatchObject(
         merged[key] as Record<string, unknown>,
-        value as Record<string, unknown>,
+        value as Record<string, unknown>
       );
       continue;
     }
@@ -752,7 +836,9 @@ function inferDeterministicFieldUpdate(input: {
       const value = parseSat(message);
       return value !== null
         ? {
-            currentProfilePatch: { testing: { satTotal: value, willSubmitTests: true } },
+            currentProfilePatch: {
+              testing: { satTotal: value, willSubmitTests: true },
+            },
             projectedProfilePatch: {},
             projectedAssumptions: null,
             resolution: "filled" as const,
@@ -763,7 +849,9 @@ function inferDeterministicFieldUpdate(input: {
       const value = parseAct(message);
       return value !== null
         ? {
-            currentProfilePatch: { testing: { actComposite: value, willSubmitTests: true } },
+            currentProfilePatch: {
+              testing: { actComposite: value, willSubmitTests: true },
+            },
             projectedProfilePatch: {},
             projectedAssumptions: null,
             resolution: "filled" as const,
@@ -819,7 +907,9 @@ function inferDeterministicFieldUpdate(input: {
       const values = parseCampusLocale(message);
       return values
         ? {
-            currentProfilePatch: { preferences: { preferredCampusLocale: values } },
+            currentProfilePatch: {
+              preferences: { preferredCampusLocale: values },
+            },
             projectedProfilePatch: {},
             projectedAssumptions: null,
             resolution: "filled" as const,
@@ -830,7 +920,9 @@ function inferDeterministicFieldUpdate(input: {
       const values = parseSchoolControl(message);
       return values
         ? {
-            currentProfilePatch: { preferences: { preferredSchoolControl: values } },
+            currentProfilePatch: {
+              preferences: { preferredSchoolControl: values },
+            },
             projectedProfilePatch: {},
             projectedAssumptions: null,
             resolution: "filled" as const,
@@ -841,7 +933,9 @@ function inferDeterministicFieldUpdate(input: {
       const value = parsePreferredSize(message);
       return value
         ? {
-            currentProfilePatch: { preferences: { preferredUndergraduateSize: value } },
+            currentProfilePatch: {
+              preferences: { preferredUndergraduateSize: value },
+            },
             projectedProfilePatch: {},
             projectedAssumptions: null,
             resolution: "filled" as const,
@@ -917,7 +1011,9 @@ export async function runIntakeTurn(input: {
   ]);
   const document = buildStudentProfileDocumentFromState(profileState);
   const userMessage = input.message?.trim() || null;
-  const nextUserMessage = userMessage ? createMessage("student", userMessage) : null;
+  const nextUserMessage = userMessage
+    ? createMessage("student", userMessage)
+    : null;
   const transcript = [
     ...(existingIntakeState?.messages ?? []),
     ...(nextUserMessage ? [nextUserMessage] : []),
@@ -957,7 +1053,9 @@ export async function runIntakeTurn(input: {
       : null;
   const modelCoveredActiveField =
     activeFieldPath !== null &&
-    (output.resolutions.some((resolution) => resolution.path === activeFieldPath) ||
+    (output.resolutions.some(
+      (resolution) => resolution.path === activeFieldPath
+    ) ||
       getPatchValueForField({
         fieldPath: activeFieldPath,
         currentProfilePatch: output.currentProfilePatch,
@@ -966,7 +1064,9 @@ export async function runIntakeTurn(input: {
       }) !== undefined);
   const fallbackResolutions =
     explicitFieldIntent && activeFieldPath
-      ? output.resolutions.some((resolution) => resolution.path === activeFieldPath)
+      ? output.resolutions.some(
+          (resolution) => resolution.path === activeFieldPath
+        )
         ? output.resolutions
         : [
             ...output.resolutions,
@@ -976,9 +1076,7 @@ export async function runIntakeTurn(input: {
               note: "Inferred directly from the student's explicit response.",
             },
           ]
-      : deterministicFieldUpdate &&
-          activeFieldPath &&
-          !modelCoveredActiveField
+      : deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
         ? [
             ...output.resolutions,
             {
@@ -990,11 +1088,17 @@ export async function runIntakeTurn(input: {
         : output.resolutions;
   const effectiveCurrentProfilePatch =
     deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
-      ? mergePatchObject(output.currentProfilePatch, deterministicFieldUpdate.currentProfilePatch)
+      ? mergePatchObject(
+          output.currentProfilePatch,
+          deterministicFieldUpdate.currentProfilePatch
+        )
       : output.currentProfilePatch;
   const effectiveProjectedProfilePatch =
     deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
-      ? mergePatchObject(output.projectedProfilePatch, deterministicFieldUpdate.projectedProfilePatch)
+      ? mergePatchObject(
+          output.projectedProfilePatch,
+          deterministicFieldUpdate.projectedProfilePatch
+        )
       : output.projectedProfilePatch;
   const effectiveProjectedAssumptions =
     deterministicFieldUpdate &&
@@ -1028,31 +1132,40 @@ export async function runIntakeTurn(input: {
       })
     : profileState;
 
-  const readiness = evaluateRecommendationRunReadinessFromDocument(nextDocument, {
-    fieldStatuses: nextFieldStatuses,
-  });
-  const nextOutstandingFields = computeOutstandingFields(nextDocument, nextFieldStatuses);
-  const resolvedFieldCount = totalIntakeFieldCount - nextOutstandingFields.length;
+  const readiness = evaluateRecommendationRunReadinessFromDocument(
+    nextDocument,
+    {
+      fieldStatuses: nextFieldStatuses,
+    }
+  );
+  const nextOutstandingFields = computeOutstandingFields(
+    nextDocument,
+    nextFieldStatuses
+  );
+  const resolvedFieldCount =
+    totalIntakeFieldCount - nextOutstandingFields.length;
   const assistantText =
     explicitFieldIntent && activeFieldPath
       ? buildExplicitIntentFollowUp({
           resolution: explicitFieldIntent,
           resolvedFieldPath: activeFieldPath,
-          nextOutstandingFieldPath: (nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null,
+          nextOutstandingFieldPath:
+            (nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null,
         }).trim()
-      : deterministicFieldUpdate &&
-          activeFieldPath &&
-          !modelCoveredActiveField
+      : deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
         ? buildDeterministicFilledFollowUp({
             resolvedFieldPath: activeFieldPath,
             currentProfilePatch: effectiveCurrentProfilePatch,
             projectedProfilePatch: effectiveProjectedProfilePatch,
             projectedAssumptions: effectiveProjectedAssumptions,
-            nextOutstandingFieldPath: (nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null,
+            nextOutstandingFieldPath:
+              (nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null,
           }).trim()
-      : output.assistantMessage.trim();
+        : output.assistantMessage.trim();
   if (!assistantText) {
-    throw new Error("OpenAI intake response did not include an assistant message.");
+    throw new Error(
+      "OpenAI intake response did not include an assistant message."
+    );
   }
 
   const assistantMessage = createMessage("assistant", assistantText);

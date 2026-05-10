@@ -116,19 +116,34 @@ const profilePatchSchema = {
       ],
       properties: {
         intendedMajors: {
-          anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
+          anyOf: [
+            { type: "array", items: { type: "string" } },
+            { type: "null" },
+          ],
         },
         preferredStates: {
-          anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
+          anyOf: [
+            { type: "array", items: { type: "string" } },
+            { type: "null" },
+          ],
         },
         preferredLocationPreferences: {
-          anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
+          anyOf: [
+            { type: "array", items: { type: "string" } },
+            { type: "null" },
+          ],
         },
         preferredCampusLocale: {
-          anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
+          anyOf: [
+            { type: "array", items: { type: "string" } },
+            { type: "null" },
+          ],
         },
         preferredSchoolControl: {
-          anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
+          anyOf: [
+            { type: "array", items: { type: "string" } },
+            { type: "null" },
+          ],
         },
         preferredUndergraduateSize: {
           anyOf: [{ type: "string" }, { type: "null" }],
@@ -260,7 +275,9 @@ export function createIntakeOpenAiClient(fetchImpl: typeof fetch = fetch) {
         body: JSON.stringify({
           model: process.env.ONBOARDING_OPENAI_MODEL?.trim() || "gpt-5.4-nano",
           reasoning: {
-            effort: process.env.ONBOARDING_OPENAI_REASONING_EFFORT?.trim() || "medium",
+            effort:
+              process.env.ONBOARDING_OPENAI_REASONING_EFFORT?.trim() ||
+              "medium",
           },
           store: false,
           instructions: input.instructions,
@@ -276,15 +293,21 @@ export function createIntakeOpenAiClient(fetchImpl: typeof fetch = fetch) {
         }),
       });
 
-      const body = (await response.json().catch(() => null)) as OpenAiResponseBody | null;
+      const body = (await response
+        .json()
+        .catch(() => null)) as OpenAiResponseBody | null;
 
       if (!response.ok) {
-        throw new Error(body?.error?.message ?? "OpenAI intake request failed.");
+        throw new Error(
+          body?.error?.message ?? "OpenAI intake request failed."
+        );
       }
 
       const text = body ? readOutputText(body) : null;
       if (!text) {
-        throw new Error("OpenAI intake response did not include JSON output text.");
+        throw new Error(
+          "OpenAI intake response did not include JSON output text."
+        );
       }
 
       const parsed = JSON.parse(text) as IntakeTurnModelOutput;
@@ -292,7 +315,7 @@ export function createIntakeOpenAiClient(fetchImpl: typeof fetch = fetch) {
         output: parsed,
         responseId:
           body && typeof (body as { id?: unknown }).id === "string"
-            ? ((body as { id: string }).id)
+            ? (body as { id: string }).id
             : null,
       };
     },

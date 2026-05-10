@@ -131,7 +131,7 @@ function buildSelectedSources() {
 test("normalization builds a catalog record from selected sources", () => {
   const result = normalizeUniversityCatalogRecord(
     buildSelectedSources(),
-    new Date("2026-03-21T00:00:00.000Z"),
+    new Date("2026-03-21T00:00:00.000Z")
   );
 
   assert.deepEqual(result.issues, []);
@@ -147,12 +147,12 @@ test("normalization reports invalid numeric fields explicitly", () => {
   const selectedSources = buildSelectedSources().map((source) =>
     source.fieldKey === "tuitionAnnualUsd"
       ? { ...source, value: "not-a-number" }
-      : source,
+      : source
   );
 
   const result = normalizeUniversityCatalogRecord(
     selectedSources,
-    new Date("2026-03-21T00:00:00.000Z"),
+    new Date("2026-03-21T00:00:00.000Z")
   );
 
   assert.equal(result.record, null);
@@ -160,7 +160,7 @@ test("normalization reports invalid numeric fields explicitly", () => {
     result.issues.some(
       (issue) =>
         issue.code === "invalid_field_value" &&
-        issue.fieldKey === "tuitionAnnualUsd",
-    ),
+        issue.fieldKey === "tuitionAnnualUsd"
+    )
   );
 });

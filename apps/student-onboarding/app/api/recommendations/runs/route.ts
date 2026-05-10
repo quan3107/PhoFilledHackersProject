@@ -47,7 +47,7 @@ export async function POST() {
     });
     const candidateSchools = await listRecommendationCandidateSchools(authDb);
     const schoolByUniversityId = new Map(
-      candidateSchools.map((school) => [school.universityId, school]),
+      candidateSchools.map((school) => [school.universityId, school])
     );
 
     return NextResponse.json({
@@ -65,7 +65,7 @@ export async function POST() {
           missingFields: error.missingFields,
           resolvedWithCaveatFields: readiness.resolvedWithCaveatFields,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -95,7 +95,7 @@ export async function POST() {
           error:
             "Recommendations backend is not fully provisioned yet. The UI remains available, but recommendation runs are temporarily disabled.",
         },
-        { status: 503 },
+        { status: 503 }
       );
     }
 

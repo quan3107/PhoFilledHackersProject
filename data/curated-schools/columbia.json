@@ -7,10 +7,7 @@
     "state": "NY",
     "officialAdmissionsUrl": "https://undergrad.admissions.columbia.edu/apply/firstyear"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2026-11-01",
@@ -54,10 +51,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Standardized tests may be taken as late as November for Early Decision and February for Regular Decision.",
@@ -83,9 +77,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "separate_school_application",
-    "applicationStrategyTags": [
-      "binding_early_decision"
-    ]
+    "applicationStrategyTags": ["binding_early_decision"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",

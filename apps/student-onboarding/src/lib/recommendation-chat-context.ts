@@ -46,8 +46,8 @@ export interface RecommendationChatSchoolContext {
   scholarshipNotes: string;
   officialAdmissionsUrl: string;
   applicationRounds: string[];
-  deadlinesByRound: typeof universities.$inferSelect["deadlinesByRound"];
-  englishRequirements: typeof universities.$inferSelect["englishRequirements"];
+  deadlinesByRound: (typeof universities.$inferSelect)["deadlinesByRound"];
+  englishRequirements: (typeof universities.$inferSelect)["englishRequirements"];
   testPolicy: string;
   requiredMaterials: string[];
 }
@@ -88,7 +88,7 @@ export async function loadRecommendationChatContextForUser(input: {
   const latestSuccessfulRun = (await authDb.query.recommendationRuns.findFirst({
     where: and(
       eq(recommendationRuns.userId, input.userId),
-      eq(recommendationRuns.runStatus, "succeeded"),
+      eq(recommendationRuns.runStatus, "succeeded")
     ),
     orderBy: (table, { desc: sortDesc }) => [sortDesc(table.createdAt)],
     with: {
@@ -107,7 +107,11 @@ export async function loadRecommendationChatContextForUser(input: {
     profileState,
     profileDocument: buildStudentProfileDocumentFromState(profileState),
     latestRecommendationRun: latestSuccessfulRun
-      ? toRecommendationChatRunContext(latestSuccessfulRun, input.latestMessage, input.transcript)
+      ? toRecommendationChatRunContext(
+          latestSuccessfulRun,
+          input.latestMessage,
+          input.transcript
+        )
       : null,
   };
 }
@@ -121,15 +125,17 @@ type RecommendationRunQueryRow = RecommendationRunRow & {
 function toRecommendationChatRunContext(
   run: RecommendationRunQueryRow,
   latestMessage: string | null,
-  transcript: RecommendationChatTranscriptMessage[],
+  transcript: RecommendationChatTranscriptMessage[]
 ): RecommendationChatRunContext {
   const rankedResults = run.results.map(toRecommendationChatSchoolContext);
   const relevantResults = selectRelevantResultIds(
     latestMessage,
     transcript,
-    rankedResults,
+    rankedResults
   );
-  const relevantSchoolIds = new Set(relevantResults.map((result) => result.schoolName));
+  const relevantSchoolIds = new Set(
+    relevantResults.map((result) => result.schoolName)
+  );
 
   return {
     run: toRecommendationRunRecord(run),
@@ -141,7 +147,7 @@ function toRecommendationChatRunContext(
       : null,
     rankedResults,
     detailedSchools: rankedResults.filter((result) =>
-      relevantSchoolIds.has(result.schoolName),
+      relevantSchoolIds.has(result.schoolName)
     ),
   };
 }
@@ -149,15 +155,17 @@ function toRecommendationChatRunContext(
 function selectRelevantResultIds(
   latestMessage: string | null,
   transcript: RecommendationChatTranscriptMessage[],
-  rankedResults: RecommendationChatSchoolContext[],
+  rankedResults: RecommendationChatSchoolContext[]
 ): RecommendationChatSchoolContext[] {
   const haystack = normalizeSearchText(
-    [latestMessage ?? "", ...transcript.map((message) => message.text)].join(" "),
+    [latestMessage ?? "", ...transcript.map((message) => message.text)].join(
+      " "
+    )
   );
   const matched = rankedResults.filter((result) =>
     normalizeSearchText(result.schoolName)
       .split(" ")
-      .every((token) => haystack.includes(token)),
+      .every((token) => haystack.includes(token))
   );
 
   if (matched.length > 0) {
@@ -175,7 +183,9 @@ function normalizeSearchText(value: string) {
     .trim();
 }
 
-function toRecommendationRunRecord(row: RecommendationRunQueryRow): RecommendationRunRecord {
+function toRecommendationRunRecord(
+  row: RecommendationRunQueryRow
+): RecommendationRunRecord {
   return {
     id: row.id,
     userId: row.userId,
@@ -192,7 +202,7 @@ function toRecommendationRunRecord(row: RecommendationRunQueryRow): Recommendati
 }
 
 function toSnapshotSummary(
-  row: StudentProfileSnapshotRow,
+  row: StudentProfileSnapshotRow
 ): StudentProfileSnapshotRowSummary {
   return {
     id: row.id,
@@ -205,7 +215,7 @@ function toSnapshotSummary(
 }
 
 function toRecommendationChatSchoolContext(
-  row: RecommendationResultRow,
+  row: RecommendationResultRow
 ): RecommendationChatSchoolContext {
   return {
     rankOrder: row.rankOrder,

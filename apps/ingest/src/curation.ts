@@ -31,27 +31,33 @@ async function readJsonFile<T>(filePath: string): Promise<T> {
 }
 
 export async function loadCuratedSchoolSeeds(
-  options: LoadSeedsOptions = {},
+  options: LoadSeedsOptions = {}
 ): Promise<CuratedSchoolSeed[]> {
   const listPath = options.seedListPath ?? seedListPath;
-  const payload = await readJsonFile<{ schools?: CuratedSchoolSeed[] }>(listPath);
+  const payload = await readJsonFile<{ schools?: CuratedSchoolSeed[] }>(
+    listPath
+  );
   if (!Array.isArray(payload.schools)) {
     throw new Error(`Invalid QS seed list: ${listPath}`);
   }
 
   return payload.schools.filter(
     (school): school is CuratedSchoolSeed =>
-      !!school && typeof school.slug === "string" && typeof school.schoolName === "string",
+      !!school &&
+      typeof school.slug === "string" &&
+      typeof school.schoolName === "string"
   );
 }
 
 export async function findNextCuratedSchool(
-  options: FindNextSchoolOptions = {},
+  options: FindNextSchoolOptions = {}
 ): Promise<
   | { done: false; school: CuratedSchoolSeed; artifactPath: string }
   | { done: true }
 > {
-  const schools = await loadCuratedSchoolSeeds({ seedListPath: options.seedListPath });
+  const schools = await loadCuratedSchoolSeeds({
+    seedListPath: options.seedListPath,
+  });
   const artifactsDir = options.curatedSchoolsDir ?? curatedSchoolsDir;
 
   for (const school of schools) {
@@ -68,7 +74,10 @@ function renderArtifactExample(seed: CuratedSchoolSeed) {
   return JSON.stringify(buildCurationArtifactExample(seed), null, 2);
 }
 
-export async function buildCurationPrompt(slug: string, options: LoadSeedsOptions = {}) {
+export async function buildCurationPrompt(
+  slug: string,
+  options: LoadSeedsOptions = {}
+) {
   const schools = await loadCuratedSchoolSeeds(options);
   const school = schools.find((entry) => entry.slug === slug);
   if (!school) {
@@ -111,20 +120,25 @@ async function readStdin() {
     const chunks: Buffer[] = [];
     process.stdin.setEncoding("utf8");
     process.stdin.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-    process.stdin.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    process.stdin.on("end", () =>
+      resolve(Buffer.concat(chunks).toString("utf8"))
+    );
     process.stdin.on("error", reject);
   });
 }
 
 export async function loadCurationArtifact(sourcePath?: string) {
-  const raw = sourcePath && sourcePath !== "-" ? await readFile(sourcePath, "utf8") : await readStdin();
+  const raw =
+    sourcePath && sourcePath !== "-"
+      ? await readFile(sourcePath, "utf8")
+      : await readStdin();
   return JSON.parse(raw) as unknown;
 }
 
 export async function writeCuratedSchoolArtifact(
   slug: string,
   artifact: CuratedSchoolArtifact,
-  options: FindNextSchoolOptions = {},
+  options: FindNextSchoolOptions = {}
 ) {
   const artifactsDir = options.curatedSchoolsDir ?? curatedSchoolsDir;
   await mkdir(artifactsDir, { recursive: true });
@@ -181,7 +195,10 @@ export async function main(argv = process.argv.slice(2)) {
         return validation;
       }
 
-      const outputPath = await writeCuratedSchoolArtifact(slug, validation.artifact);
+      const outputPath = await writeCuratedSchoolArtifact(
+        slug,
+        validation.artifact
+      );
       const result = { ok: true, writtenTo: outputPath, schoolSlug: slug };
       console.log(JSON.stringify(result, null, 2));
       return result;
@@ -196,7 +213,7 @@ export async function main(argv = process.argv.slice(2)) {
           "  curate prompt <school-slug>",
           "  curate validate <artifact-path|->",
           "  curate write <school-slug> [artifact-path|-]",
-        ].join("\n"),
+        ].join("\n")
       );
       return null;
   }
@@ -208,7 +225,9 @@ const isEntrypoint =
 
 if (isEntrypoint) {
   main().catch((error: unknown) => {
-    console.error(`[curation] ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `[curation] ${error instanceof Error ? error.message : String(error)}`
+    );
     process.exitCode = 1;
   });
 }

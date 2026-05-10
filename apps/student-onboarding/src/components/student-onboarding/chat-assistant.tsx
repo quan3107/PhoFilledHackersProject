@@ -36,13 +36,8 @@ interface ChatAssistantProps {
 function getProgress(state: ChatAssistantState | null | undefined) {
   return {
     current:
-      state?.progress?.resolvedFieldCount ??
-      state?.progressCompletedCount ??
-      0,
-    total:
-      state?.progress?.totalFieldCount ??
-      state?.progressTotalCount ??
-      26,
+      state?.progress?.resolvedFieldCount ?? state?.progressCompletedCount ?? 0,
+    total: state?.progress?.totalFieldCount ?? state?.progressTotalCount ?? 26,
   };
 }
 
@@ -56,7 +51,7 @@ export function ChatAssistant({
 }: ChatAssistantProps) {
   const text = copy[locale];
   const [sessionState, setSessionState] = useState<ChatAssistantState | null>(
-    initialState,
+    initialState
   );
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(!initialState?.messages.length);
@@ -108,7 +103,7 @@ export function ChatAssistant({
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to start the onboarding conversation.",
+            : "Unable to start the onboarding conversation."
         );
       })
       .finally(() => {
@@ -137,7 +132,7 @@ export function ChatAssistant({
       setSessionState(nextState);
     } catch (error: unknown) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Unable to send that message.",
+        error instanceof Error ? error.message : "Unable to send that message."
       );
       if (trimmedMessage) {
         setInputValue(trimmedMessage);
@@ -161,7 +156,9 @@ export function ChatAssistant({
           <h3 className="text-sm text-foreground">{text.chatTitle}</h3>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-            <span className="text-xs text-muted-foreground">{text.chatActive}</span>
+            <span className="text-xs text-muted-foreground">
+              {text.chatActive}
+            </span>
           </div>
         </div>
         <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
@@ -233,7 +230,9 @@ export function ChatAssistant({
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
             placeholder={
-              sessionState?.conversationDone ? text.chatComplete : text.chatPlaceholder
+              sessionState?.conversationDone
+                ? text.chatComplete
+                : text.chatPlaceholder
             }
             disabled={sessionState?.conversationDone || isTyping}
             className="flex-1 rounded-lg bg-[var(--input-background)] px-4 py-2.5 text-sm outline-none disabled:opacity-50"
@@ -241,7 +240,9 @@ export function ChatAssistant({
           {!sessionState?.conversationDone ? (
             <button
               type="button"
-              onClick={() => void submitTurn("I prefer not to answer this question.")}
+              onClick={() =>
+                void submitTurn("I prefer not to answer this question.")
+              }
               className="flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2 text-xs text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"
             >
               <SkipForward className="h-3.5 w-3.5" />
@@ -250,7 +251,9 @@ export function ChatAssistant({
           ) : null}
           <button
             type="submit"
-            disabled={!inputValue.trim() || sessionState?.conversationDone || isTyping}
+            disabled={
+              !inputValue.trim() || sessionState?.conversationDone || isTyping
+            }
             className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />

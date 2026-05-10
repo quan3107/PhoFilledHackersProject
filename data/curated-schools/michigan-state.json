@@ -49,10 +49,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "MSU advises students to submit any test scores well in advance of the application submission deadline if they want the scores considered.",
@@ -77,9 +74,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "rolling_or_extended_timeline"
-    ]
+    "applicationStrategyTags": ["rolling_or_extended_timeline"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "broad_access",

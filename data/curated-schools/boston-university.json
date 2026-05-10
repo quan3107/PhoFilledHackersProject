@@ -7,10 +7,7 @@
     "state": "MA",
     "officialAdmissionsUrl": "https://www.bu.edu/admissions/apply/first-year/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2025-11-02",
@@ -54,10 +51,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "For Early Decision applicants who choose to submit scores, SAT test dates should be no later than November. For Early Decision 2 and Regular Decision applicants, official score timing is tied to the January 5 deadline. Self-reported scores are accepted, but official scores are required before enrollment.",
@@ -82,9 +76,7 @@
       "humanities"
     ],
     "programAdmissionModel": "separate_school_application",
-    "applicationStrategyTags": [
-      "binding_early_decision"
-    ]
+    "applicationStrategyTags": ["binding_early_decision"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "highly_selective",

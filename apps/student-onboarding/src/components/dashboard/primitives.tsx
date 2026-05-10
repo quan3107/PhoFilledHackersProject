@@ -17,7 +17,9 @@ export function SectionCard({
   className?: string;
 }>) {
   return (
-    <section className={`overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-sm ${className}`}>
+    <section
+      className={`overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-sm ${className}`}
+    >
       <div className="flex items-center gap-2.5 border-b border-border bg-[var(--surface-soft,#f4f7fb)] px-5 py-3.5">
         <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10">
           <Icon className="h-3.5 w-3.5 text-primary" />
@@ -39,7 +41,9 @@ export function Pill({
   className?: string;
 }>) {
   return (
-    <span className={`inline-flex items-center rounded-xl px-2.5 py-1 text-[11px] font-semibold ${className}`}>
+    <span
+      className={`inline-flex items-center rounded-xl px-2.5 py-1 text-[11px] font-semibold ${className}`}
+    >
       {children}
     </span>
   );

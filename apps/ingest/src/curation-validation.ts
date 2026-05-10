@@ -75,7 +75,12 @@ export interface CuratedSchoolArtifact {
     minimumToeflInternetBased: number | null;
     waiverNotes: string | null;
   };
-  testPolicy: "required" | "test_optional" | "test_flexible" | "test_blind" | "unknown";
+  testPolicy:
+    | "required"
+    | "test_optional"
+    | "test_flexible"
+    | "test_blind"
+    | "unknown";
   requiredMaterials: string[];
   tuitionAnnualUsd: number;
   estimatedCostOfAttendanceUsd: number;
@@ -115,7 +120,7 @@ function expectString(
   value: unknown,
   path: string,
   issues: CurationIssue[],
-  allowEmpty = false,
+  allowEmpty = false
 ) {
   if (typeof value !== "string" || (!allowEmpty && value.trim().length === 0)) {
     pushIssue(issues, path, "Expected a non-empty string.");
@@ -147,7 +152,7 @@ function expectNullableString(
   value: unknown,
   path: string,
   issues: CurationIssue[],
-  allowEmpty = false,
+  allowEmpty = false
 ) {
   if (value === null) {
     return null;
@@ -160,7 +165,7 @@ function expectEnum<T extends readonly string[]>(
   value: unknown,
   path: string,
   allowed: T,
-  issues: CurationIssue[],
+  issues: CurationIssue[]
 ) {
   const stringValue = expectString(value, path, issues);
   if (!stringValue) {
@@ -178,7 +183,7 @@ function expectEnum<T extends readonly string[]>(
 function expectStringArray(
   value: unknown,
   path: string,
-  issues: CurationIssue[],
+  issues: CurationIssue[]
 ) {
   if (!Array.isArray(value)) {
     pushIssue(issues, path, "Expected an array of strings.");
@@ -200,7 +205,7 @@ function expectEnumArray<T extends readonly string[]>(
   value: unknown,
   path: string,
   issues: CurationIssue[],
-  allowed: T,
+  allowed: T
 ) {
   const items = expectStringArray(value, path, issues);
   if (!items) {
@@ -210,7 +215,11 @@ function expectEnumArray<T extends readonly string[]>(
   const result: T[number][] = [];
   for (const [index, item] of items.entries()) {
     if (!allowed.includes(item as T[number])) {
-      pushIssue(issues, `${path}[${index}]`, `Expected one of: ${allowed.join(", ")}.`);
+      pushIssue(
+        issues,
+        `${path}[${index}]`,
+        `Expected one of: ${allowed.join(", ")}.`
+      );
       continue;
     }
 
@@ -220,7 +229,11 @@ function expectEnumArray<T extends readonly string[]>(
   return result;
 }
 
-function expectDateString(value: unknown, path: string, issues: CurationIssue[]) {
+function expectDateString(
+  value: unknown,
+  path: string,
+  issues: CurationIssue[]
+) {
   const parsed = expectString(value, path, issues);
   if (!parsed) {
     return null;
@@ -236,7 +249,7 @@ function expectDateString(value: unknown, path: string, issues: CurationIssue[])
 
 function validateRecommendationInputs(
   value: unknown,
-  issues: CurationIssue[],
+  issues: CurationIssue[]
 ): UniversityRecommendationInputs | null {
   if (!isRecord(value)) {
     pushIssue(issues, "recommendationInputs", "Expected an object.");
@@ -253,33 +266,57 @@ function validateRecommendationInputs(
   const testingRequirementsInput = isRecord(rawTestingRequirements)
     ? rawTestingRequirements
     : null;
-  const schoolControl = expectEnum(value.schoolControl, "recommendationInputs.schoolControl", schoolControls, issues);
-  const campusLocale = expectNullableString(value.campusLocale, "recommendationInputs.campusLocale", issues, true);
+  const schoolControl = expectEnum(
+    value.schoolControl,
+    "recommendationInputs.schoolControl",
+    schoolControls,
+    issues
+  );
+  const campusLocale = expectNullableString(
+    value.campusLocale,
+    "recommendationInputs.campusLocale",
+    issues,
+    true
+  );
   const internationalAidPolicy = expectEnum(
     value.internationalAidPolicy,
     "recommendationInputs.internationalAidPolicy",
     internationalAidPolicies,
-    issues,
+    issues
   );
-  const hasNeedBasedAid = value.hasNeedBasedAid === null ? null : expectBoolean(value.hasNeedBasedAid, "recommendationInputs.hasNeedBasedAid", issues);
-  const hasMeritAid = value.hasMeritAid === null ? null : expectBoolean(value.hasMeritAid, "recommendationInputs.hasMeritAid", issues);
+  const hasNeedBasedAid =
+    value.hasNeedBasedAid === null
+      ? null
+      : expectBoolean(
+          value.hasNeedBasedAid,
+          "recommendationInputs.hasNeedBasedAid",
+          issues
+        );
+  const hasMeritAid =
+    value.hasMeritAid === null
+      ? null
+      : expectBoolean(
+          value.hasMeritAid,
+          "recommendationInputs.hasMeritAid",
+          issues
+        );
   const programFitTagsValue = expectEnumArray(
     value.programFitTags,
     "recommendationInputs.programFitTags",
     issues,
-    programFitTags,
+    programFitTags
   );
   const programAdmissionModel = expectEnum(
     value.programAdmissionModel,
     "recommendationInputs.programAdmissionModel",
     programAdmissionModels,
-    issues,
+    issues
   );
   const applicationStrategyTagsValue = expectEnumArray(
     value.applicationStrategyTags,
     "recommendationInputs.applicationStrategyTags",
     issues,
-    applicationStrategyTags,
+    applicationStrategyTags
   );
   const testingRequirements = testingRequirementsInput
     ? {
@@ -287,7 +324,7 @@ function validateRecommendationInputs(
           testingRequirementsInput.acceptedExams,
           "recommendationInputs.testingRequirements.acceptedExams",
           issues,
-          standardizedTestExamKinds,
+          standardizedTestExamKinds
         ),
         minimumSatTotal:
           testingRequirementsInput.minimumSatTotal === null
@@ -295,7 +332,7 @@ function validateRecommendationInputs(
             : expectNumber(
                 testingRequirementsInput.minimumSatTotal,
                 "recommendationInputs.testingRequirements.minimumSatTotal",
-                issues,
+                issues
               ),
         minimumActComposite:
           testingRequirementsInput.minimumActComposite === null
@@ -303,37 +340,37 @@ function validateRecommendationInputs(
             : expectNumber(
                 testingRequirementsInput.minimumActComposite,
                 "recommendationInputs.testingRequirements.minimumActComposite",
-                issues,
+                issues
               ),
         latestSatTestDateNote: expectNullableString(
           testingRequirementsInput.latestSatTestDateNote,
           "recommendationInputs.testingRequirements.latestSatTestDateNote",
           issues,
-          true,
+          true
         ),
         latestActTestDateNote: expectNullableString(
           testingRequirementsInput.latestActTestDateNote,
           "recommendationInputs.testingRequirements.latestActTestDateNote",
           issues,
-          true,
+          true
         ),
         superscorePolicy: expectEnum(
           testingRequirementsInput.superscorePolicy,
           "recommendationInputs.testingRequirements.superscorePolicy",
           superscorePolicies,
-          issues,
+          issues
         ),
         writingEssayPolicy: expectEnum(
           testingRequirementsInput.writingEssayPolicy,
           "recommendationInputs.testingRequirements.writingEssayPolicy",
           writingEssayPolicies,
-          issues,
+          issues
         ),
         scoreReportingPolicy: expectEnum(
           testingRequirementsInput.scoreReportingPolicy,
           "recommendationInputs.testingRequirements.scoreReportingPolicy",
           scoreReportingPolicies,
-          issues,
+          issues
         ),
         middle50SatTotal: isRecord(testingRequirementsInput.middle50SatTotal)
           ? {
@@ -343,7 +380,7 @@ function validateRecommendationInputs(
                   : expectNumber(
                       testingRequirementsInput.middle50SatTotal.low,
                       "recommendationInputs.testingRequirements.middle50SatTotal.low",
-                      issues,
+                      issues
                     ),
               high:
                 testingRequirementsInput.middle50SatTotal.high === null
@@ -351,11 +388,13 @@ function validateRecommendationInputs(
                   : expectNumber(
                       testingRequirementsInput.middle50SatTotal.high,
                       "recommendationInputs.testingRequirements.middle50SatTotal.high",
-                      issues,
+                      issues
                     ),
             }
           : null,
-        middle50ActComposite: isRecord(testingRequirementsInput.middle50ActComposite)
+        middle50ActComposite: isRecord(
+          testingRequirementsInput.middle50ActComposite
+        )
           ? {
               low:
                 testingRequirementsInput.middle50ActComposite.low === null
@@ -363,7 +402,7 @@ function validateRecommendationInputs(
                   : expectNumber(
                       testingRequirementsInput.middle50ActComposite.low,
                       "recommendationInputs.testingRequirements.middle50ActComposite.low",
-                      issues,
+                      issues
                     ),
               high:
                 testingRequirementsInput.middle50ActComposite.high === null
@@ -371,7 +410,7 @@ function validateRecommendationInputs(
                   : expectNumber(
                       testingRequirementsInput.middle50ActComposite.high,
                       "recommendationInputs.testingRequirements.middle50ActComposite.high",
-                      issues,
+                      issues
                     ),
             }
           : null,
@@ -386,7 +425,7 @@ function validateRecommendationInputs(
     pushIssue(
       issues,
       "recommendationInputs.testingRequirements.middle50SatTotal",
-      "Expected an object with low and high values.",
+      "Expected an object with low and high values."
     );
   }
 
@@ -398,16 +437,51 @@ function validateRecommendationInputs(
     pushIssue(
       issues,
       "recommendationInputs.testingRequirements.middle50ActComposite",
-      "Expected an object with low and high values.",
+      "Expected an object with low and high values."
     );
   }
 
   const parsed = {
-    admissionRateOverall: admissionRateOverall === null ? null : expectNumber(admissionRateOverall, "recommendationInputs.admissionRateOverall", issues),
-    satAverageOverall: satAverageOverall === null ? null : expectNumber(satAverageOverall, "recommendationInputs.satAverageOverall", issues),
-    actMidpointCumulative: actMidpointCumulative === null ? null : expectNumber(actMidpointCumulative, "recommendationInputs.actMidpointCumulative", issues),
-    undergraduateSize: undergraduateSize === null ? null : expectNumber(undergraduateSize, "recommendationInputs.undergraduateSize", issues),
-    averageNetPriceUsd: averageNetPriceUsd === null ? null : expectNumber(averageNetPriceUsd, "recommendationInputs.averageNetPriceUsd", issues),
+    admissionRateOverall:
+      admissionRateOverall === null
+        ? null
+        : expectNumber(
+            admissionRateOverall,
+            "recommendationInputs.admissionRateOverall",
+            issues
+          ),
+    satAverageOverall:
+      satAverageOverall === null
+        ? null
+        : expectNumber(
+            satAverageOverall,
+            "recommendationInputs.satAverageOverall",
+            issues
+          ),
+    actMidpointCumulative:
+      actMidpointCumulative === null
+        ? null
+        : expectNumber(
+            actMidpointCumulative,
+            "recommendationInputs.actMidpointCumulative",
+            issues
+          ),
+    undergraduateSize:
+      undergraduateSize === null
+        ? null
+        : expectNumber(
+            undergraduateSize,
+            "recommendationInputs.undergraduateSize",
+            issues
+          ),
+    averageNetPriceUsd:
+      averageNetPriceUsd === null
+        ? null
+        : expectNumber(
+            averageNetPriceUsd,
+            "recommendationInputs.averageNetPriceUsd",
+            issues
+          ),
     schoolControl,
     campusLocale,
     internationalAidPolicy,
@@ -423,16 +497,18 @@ function validateRecommendationInputs(
     pushIssue(
       issues,
       "recommendationInputs.testingRequirements",
-      "Expected an object with exam rules, score reporting, and middle-50 ranges.",
+      "Expected an object with exam rules, score reporting, and middle-50 ranges."
     );
   }
 
-  return issues.length > issueCountBefore ? null : (parsed as UniversityRecommendationInputs);
+  return issues.length > issueCountBefore
+    ? null
+    : (parsed as UniversityRecommendationInputs);
 }
 
 function validateExplanationInputs(
   value: unknown,
-  issues: CurationIssue[],
+  issues: CurationIssue[]
 ): UniversityExplanationInputs | null {
   if (!isRecord(value)) {
     pushIssue(issues, "explanationInputs", "Expected an object.");
@@ -444,12 +520,12 @@ function validateExplanationInputs(
         earliestDeadline: expectNullableString(
           value.deadlineUrgencyWindows.earliestDeadline,
           "explanationInputs.deadlineUrgencyWindows.earliestDeadline",
-          issues,
+          issues
         ),
         latestMajorDeadline: expectNullableString(
           value.deadlineUrgencyWindows.latestMajorDeadline,
           "explanationInputs.deadlineUrgencyWindows.latestMajorDeadline",
-          issues,
+          issues
         ),
       }
     : null;
@@ -458,57 +534,62 @@ function validateExplanationInputs(
     value.academicSelectivityBand,
     "explanationInputs.academicSelectivityBand",
     academicSelectivityBands,
-    issues,
+    issues
   );
   const testingExpectation = expectEnum(
     value.testingExpectation,
     "explanationInputs.testingExpectation",
     testingExpectations,
-    issues,
+    issues
   );
   const englishPolicySummary = expectEnum(
     value.englishPolicySummary,
     "explanationInputs.englishPolicySummary",
     englishPolicySummaries,
-    issues,
+    issues
   );
-  const aidModel = expectEnum(value.aidModel, "explanationInputs.aidModel", aidModels, issues);
+  const aidModel = expectEnum(
+    value.aidModel,
+    "explanationInputs.aidModel",
+    aidModels,
+    issues
+  );
   const applicationComplexity = expectEnum(
     value.applicationComplexity,
     "explanationInputs.applicationComplexity",
     applicationComplexities,
-    issues,
+    issues
   );
   const internationalStudentConsiderations = expectEnumArray(
     value.internationalStudentConsiderations,
     "explanationInputs.internationalStudentConsiderations",
     issues,
-    internationalStudentConsiderationTags,
+    internationalStudentConsiderationTags
   );
   const potentialFitTags = expectEnumArray(
     value.potentialFitTags,
     "explanationInputs.potentialFitTags",
     issues,
-    schoolFitTags,
+    schoolFitTags
   );
   const potentialRiskTags = expectEnumArray(
     value.potentialRiskTags,
     "explanationInputs.potentialRiskTags",
     issues,
-    schoolRiskTags,
+    schoolRiskTags
   );
   const actionableApplicationSteps = expectEnumArray(
     value.actionableApplicationSteps,
     "explanationInputs.actionableApplicationSteps",
     issues,
-    applicationActionTags,
+    applicationActionTags
   );
 
   if (!deadlineUrgencyWindows) {
     pushIssue(
       issues,
       "explanationInputs.deadlineUrgencyWindows",
-      "Expected an object with earliestDeadline and latestMajorDeadline.",
+      "Expected an object with earliestDeadline and latestMajorDeadline."
     );
   }
 
@@ -539,7 +620,11 @@ function validateExplanationInputs(
 
 function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
   if (!isRecord(value)) {
-    pushIssue(issues, "fieldProvenance", "Expected an object of provenance arrays.");
+    pushIssue(
+      issues,
+      "fieldProvenance",
+      "Expected an object of provenance arrays."
+    );
     return null;
   }
 
@@ -548,14 +633,22 @@ function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
 
   for (const [fieldPath, entries] of Object.entries(value)) {
     if (!Array.isArray(entries) || entries.length === 0) {
-      pushIssue(issues, `fieldProvenance.${fieldPath}`, "Expected a non-empty array.");
+      pushIssue(
+        issues,
+        `fieldProvenance.${fieldPath}`,
+        "Expected a non-empty array."
+      );
       continue;
     }
 
     provenance[fieldPath] = [];
     for (const [index, entry] of entries.entries()) {
       if (!isRecord(entry)) {
-        pushIssue(issues, `fieldProvenance.${fieldPath}[${index}]`, "Expected an object.");
+        pushIssue(
+          issues,
+          `fieldProvenance.${fieldPath}[${index}]`,
+          "Expected an object."
+        );
         continue;
       }
 
@@ -563,12 +656,12 @@ function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
         entry.sourceKind,
         `fieldProvenance.${fieldPath}[${index}].sourceKind`,
         curationSourceKinds,
-        issues,
+        issues
       );
       const sourceUrl = expectString(
         entry.sourceUrl,
         `fieldProvenance.${fieldPath}[${index}].sourceUrl`,
-        issues,
+        issues
       );
       const excerpt =
         entry.excerpt === null
@@ -577,7 +670,7 @@ function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
               entry.excerpt,
               `fieldProvenance.${fieldPath}[${index}].excerpt`,
               issues,
-              true,
+              true
             );
 
       if (sourceKind && sourceUrl && excerpt !== undefined) {
@@ -588,7 +681,11 @@ function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
   }
 
   if (entryCount === 0) {
-    pushIssue(issues, "fieldProvenance", "Expected at least one provenance entry.");
+    pushIssue(
+      issues,
+      "fieldProvenance",
+      "Expected at least one provenance entry."
+    );
     return null;
   }
 
@@ -597,7 +694,7 @@ function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
 
 export function validateCurationArtifact(
   raw: unknown,
-  expectedSlug?: string,
+  expectedSlug?: string
 ): CurationValidationResult {
   const issues: CurationIssue[] = [];
   if (!isRecord(raw)) {
@@ -610,16 +707,24 @@ export function validateCurationArtifact(
     pushIssue(issues, "schoolSlug", `Expected "${expectedSlug}".`);
   }
 
-  const lastVerifiedAt = expectDateString(raw.lastVerifiedAt, "lastVerifiedAt", issues);
+  const lastVerifiedAt = expectDateString(
+    raw.lastVerifiedAt,
+    "lastVerifiedAt",
+    issues
+  );
   const identity = isRecord(raw.identity)
     ? {
-        schoolName: expectString(raw.identity.schoolName, "identity.schoolName", issues),
+        schoolName: expectString(
+          raw.identity.schoolName,
+          "identity.schoolName",
+          issues
+        ),
         city: expectString(raw.identity.city, "identity.city", issues),
         state: expectString(raw.identity.state, "identity.state", issues),
         officialAdmissionsUrl: expectString(
           raw.identity.officialAdmissionsUrl,
           "identity.officialAdmissionsUrl",
-          issues,
+          issues
         ),
       }
     : (pushIssue(issues, "identity", "Expected an object."), null);
@@ -628,7 +733,7 @@ export function validateCurationArtifact(
     raw.applicationRounds,
     "applicationRounds",
     issues,
-    applicationRoundKeys,
+    applicationRoundKeys
   );
   const deadlinesByRound = isRecord(raw.deadlinesByRound)
     ? (() => {
@@ -640,7 +745,10 @@ export function validateCurationArtifact(
             continue;
           }
 
-          result[round] = value === null ? null : expectDateString(value, `deadlinesByRound.${round}`, issues);
+          result[round] =
+            value === null
+              ? null
+              : expectDateString(value, `deadlinesByRound.${round}`, issues);
         }
         return result;
       })()
@@ -650,49 +758,77 @@ export function validateCurationArtifact(
         minimumIelts:
           raw.englishRequirements.minimumIelts === null
             ? null
-            : expectNumber(raw.englishRequirements.minimumIelts, "englishRequirements.minimumIelts", issues),
+            : expectNumber(
+                raw.englishRequirements.minimumIelts,
+                "englishRequirements.minimumIelts",
+                issues
+              ),
         minimumToeflInternetBased:
           raw.englishRequirements.minimumToeflInternetBased === null
             ? null
             : expectNumber(
                 raw.englishRequirements.minimumToeflInternetBased,
                 "englishRequirements.minimumToeflInternetBased",
-                issues,
+                issues
               ),
         waiverNotes: expectNullableString(
           raw.englishRequirements.waiverNotes,
           "englishRequirements.waiverNotes",
           issues,
-          true,
+          true
         ),
       }
     : (pushIssue(issues, "englishRequirements", "Expected an object."), null);
   const testPolicy = expectEnum(
     raw.testPolicy,
     "testPolicy",
-    ["required", "test_optional", "test_flexible", "test_blind", "unknown"] as const,
-    issues,
+    [
+      "required",
+      "test_optional",
+      "test_flexible",
+      "test_blind",
+      "unknown",
+    ] as const,
+    issues
   );
-  const requiredMaterials = expectStringArray(raw.requiredMaterials, "requiredMaterials", issues);
-  const tuitionAnnualUsd = expectNumber(raw.tuitionAnnualUsd, "tuitionAnnualUsd", issues);
+  const requiredMaterials = expectStringArray(
+    raw.requiredMaterials,
+    "requiredMaterials",
+    issues
+  );
+  const tuitionAnnualUsd = expectNumber(
+    raw.tuitionAnnualUsd,
+    "tuitionAnnualUsd",
+    issues
+  );
   const estimatedCostOfAttendanceUsd = expectNumber(
     raw.estimatedCostOfAttendanceUsd,
     "estimatedCostOfAttendanceUsd",
-    issues,
+    issues
   );
   const livingCostEstimateUsd = expectNumber(
     raw.livingCostEstimateUsd,
     "livingCostEstimateUsd",
-    issues,
+    issues
   );
   const scholarshipAvailabilityFlag = expectBoolean(
     raw.scholarshipAvailabilityFlag,
     "scholarshipAvailabilityFlag",
-    issues,
+    issues
   );
-  const scholarshipNotes = expectString(raw.scholarshipNotes, "scholarshipNotes", issues);
-  const recommendationInputs = validateRecommendationInputs(raw.recommendationInputs, issues);
-  const explanationInputs = validateExplanationInputs(raw.explanationInputs, issues);
+  const scholarshipNotes = expectString(
+    raw.scholarshipNotes,
+    "scholarshipNotes",
+    issues
+  );
+  const recommendationInputs = validateRecommendationInputs(
+    raw.recommendationInputs,
+    issues
+  );
+  const explanationInputs = validateExplanationInputs(
+    raw.explanationInputs,
+    issues
+  );
   const fieldProvenance = validateFieldProvenance(raw.fieldProvenance, issues);
 
   if (!isRecord(raw.quality)) {
@@ -700,21 +836,38 @@ export function validateCurationArtifact(
   }
 
   const qualityStatus = isRecord(raw.quality)
-    ? expectEnum(raw.quality.status, "quality.status", ["publishable", "needs_review"] as const, issues)
+    ? expectEnum(
+        raw.quality.status,
+        "quality.status",
+        ["publishable", "needs_review"] as const,
+        issues
+      )
     : null;
   const missingFields = isRecord(raw.quality)
-    ? expectStringArray(raw.quality.missingFields, "quality.missingFields", issues)
+    ? expectStringArray(
+        raw.quality.missingFields,
+        "quality.missingFields",
+        issues
+      )
     : null;
   const warnings = isRecord(raw.quality)
     ? expectStringArray(raw.quality.warnings, "quality.warnings", issues)
     : null;
 
   if (qualityStatus === "publishable" && (missingFields?.length ?? 0) > 0) {
-    pushIssue(issues, "quality.missingFields", "Publishable artifacts should not list missing fields.");
+    pushIssue(
+      issues,
+      "quality.missingFields",
+      "Publishable artifacts should not list missing fields."
+    );
   }
 
   if (qualityStatus === "needs_review" && (missingFields?.length ?? 0) === 0) {
-    pushIssue(issues, "quality.missingFields", "Needs-review artifacts must list missing fields.");
+    pushIssue(
+      issues,
+      "quality.missingFields",
+      "Needs-review artifacts must list missing fields."
+    );
   }
 
   const ok =
@@ -773,7 +926,9 @@ export function validateCurationArtifact(
   };
 }
 
-export function buildCurationArtifactExample(seed: CuratedSchoolSeed): CuratedSchoolArtifact {
+export function buildCurationArtifactExample(
+  seed: CuratedSchoolSeed
+): CuratedSchoolArtifact {
   return {
     schoolSlug: seed.slug,
     lastVerifiedAt: new Date().toISOString().slice(0, 10),
@@ -803,18 +958,20 @@ export function buildCurationArtifactExample(seed: CuratedSchoolSeed): CuratedSc
     livingCostEstimateUsd: 0,
     scholarshipAvailabilityFlag: false,
     scholarshipNotes: "UNKNOWN",
-        recommendationInputs: {
-          ...defaultUniversityRecommendationInputs,
-          testingRequirements: {
-            ...defaultUniversityRecommendationInputs.testingRequirements,
-            middle50SatTotal: {
-              ...defaultUniversityRecommendationInputs.testingRequirements.middle50SatTotal,
-            },
-            middle50ActComposite: {
-              ...defaultUniversityRecommendationInputs.testingRequirements.middle50ActComposite,
-            },
-          },
+    recommendationInputs: {
+      ...defaultUniversityRecommendationInputs,
+      testingRequirements: {
+        ...defaultUniversityRecommendationInputs.testingRequirements,
+        middle50SatTotal: {
+          ...defaultUniversityRecommendationInputs.testingRequirements
+            .middle50SatTotal,
         },
+        middle50ActComposite: {
+          ...defaultUniversityRecommendationInputs.testingRequirements
+            .middle50ActComposite,
+        },
+      },
+    },
     explanationInputs: {
       ...defaultUniversityExplanationInputs,
     },
@@ -836,8 +993,14 @@ export function buildCurationArtifactExample(seed: CuratedSchoolSeed): CuratedSc
     },
     quality: {
       status: "needs_review",
-      missingFields: ["identity.city", "identity.state", "identity.officialAdmissionsUrl"],
-      warnings: ["Example output only; replace placeholders with sourced values."],
+      missingFields: [
+        "identity.city",
+        "identity.state",
+        "identity.officialAdmissionsUrl",
+      ],
+      warnings: [
+        "Example output only; replace placeholders with sourced values.",
+      ],
     },
   };
 }

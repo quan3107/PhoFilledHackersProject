@@ -7,10 +7,7 @@
     "state": "MA",
     "officialAdmissionsUrl": "https://mitadmissions.org/apply/firstyear/"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": null,
@@ -50,10 +47,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Required tests must be taken before November 30 for Early Action and before December 31 for Regular Action.",
@@ -71,15 +65,9 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "engineering",
-      "computer_science",
-      "research_intensive"
-    ],
+    "programFitTags": ["engineering", "computer_science", "research_intensive"],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "lint": "turbo lint"
+    "lint": "turbo lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "workspaces": [
     "apps/*",
@@ -15,6 +17,7 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "playwright": "^1.58.2",
+    "prettier": "^3.8.3",
     "turbo": "^2.5.8"
   },
   "description": "An AI-consultant-chatbot for ETEST",

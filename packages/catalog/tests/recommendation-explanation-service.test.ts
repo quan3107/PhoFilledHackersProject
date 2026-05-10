@@ -68,18 +68,20 @@ test("recommendation explanation pass persists shortlist and explanation rows", 
                   topBlockers: [],
                   nextRecommendedActions: ["Submit by regular decision."],
                   budgetSummary: ["Comfortable within budget."],
-                  assumptionChanges: ["Projected GPA uplift helps maintain fit."],
+                  assumptionChanges: [
+                    "Projected GPA uplift helps maintain fit.",
+                  ],
                   explanationConfidence: "high",
                 },
               ],
-            }),
+            })
           ),
           {
             status: 200,
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
-      },
+      }
     );
 
     const bundle = await runRecommendationExplanationPassForRun({
@@ -94,10 +96,13 @@ test("recommendation explanation pass persists shortlist and explanation rows", 
     const requestBody = JSON.parse(String(requests[0]?.init.body));
     assert.equal(requestBody.model, "gpt-5-nano");
     assert.equal(requestBody.store, false);
-    assert.equal(requestBody.text.format.name, "recommendation_explanation_pass");
+    assert.equal(
+      requestBody.text.format.name,
+      "recommendation_explanation_pass"
+    );
     assert.match(
       requestBody.instructions,
-      /Shortlist only from the provided scored result ids/,
+      /Shortlist only from the provided scored result ids/
     );
 
     assert.equal(bundle.shortlist?.model, "gpt-5-nano");
@@ -108,27 +113,27 @@ test("recommendation explanation pass persists shortlist and explanation rows", 
     ]);
     assert.deepEqual(
       bundle.explanations.map((entry) => entry.recommendationResultId),
-      [seeded.results[1].id, seeded.results[0].id],
+      [seeded.results[1].id, seeded.results[0].id]
     );
     assert.equal(bundle.explanations[0]?.school.schoolName, "Beta University");
     assert.equal(bundle.explanations[1]?.school.schoolName, "Alpha University");
 
     const storedBundle = await getPersistedRecommendationExplanationBundle(
       database.db,
-      seeded.run.id,
+      seeded.run.id
     );
     assert.ok(storedBundle);
     assert.deepEqual(
       storedBundle?.shortlist?.shortlistedRecommendationResultIds,
-      [seeded.results[1].id, seeded.results[0].id],
+      [seeded.results[1].id, seeded.results[0].id]
     );
     assert.equal(
       storedBundle?.explanations[0]?.recommendationResult.id,
-      seeded.results[1].id,
+      seeded.results[1].id
     );
     assert.equal(
       storedBundle?.explanations[1]?.recommendationResult.id,
-      seeded.results[0].id,
+      seeded.results[0].id
     );
   } finally {
     await database.close();
@@ -176,13 +181,13 @@ test("invalid model output is rejected before persistence", async () => {
                   explanationConfidence: "low",
                 },
               ],
-            }),
+            })
           ),
           {
             status: 200,
             headers: { "Content-Type": "application/json" },
-          },
-        ),
+          }
+        )
     );
 
     await assert.rejects(
@@ -192,17 +197,24 @@ test("invalid model output is rejected before persistence", async () => {
           recommendationRunId: seeded.run.id,
           client,
         }),
-      RecommendationExplanationOutputError,
+      RecommendationExplanationOutputError
     );
 
-    const storedShortlists = await database.db.select().from(recommendationShortlists);
-    const storedExplanations = await database.db.select().from(recommendationExplanations);
+    const storedShortlists = await database.db
+      .select()
+      .from(recommendationShortlists);
+    const storedExplanations = await database.db
+      .select()
+      .from(recommendationExplanations);
 
     assert.equal(storedShortlists.length, 0);
     assert.equal(storedExplanations.length, 0);
     assert.equal(
-      await getPersistedRecommendationExplanationBundle(database.db, seeded.run.id),
-      null,
+      await getPersistedRecommendationExplanationBundle(
+        database.db,
+        seeded.run.id
+      ),
+      null
     );
   } finally {
     await database.close();
@@ -210,7 +222,7 @@ test("invalid model output is rejected before persistence", async () => {
 });
 
 async function seedRunState(
-  db: Awaited<ReturnType<typeof createCatalogTestDatabase>>["db"],
+  db: Awaited<ReturnType<typeof createCatalogTestDatabase>>["db"]
 ) {
   await db.insert(users).values({
     id: "user_1",
@@ -342,7 +354,7 @@ async function seedRunState(
 
 function toSnapshotProfile(
   profile: typeof studentProfiles.$inferSelect,
-  overrides: Partial<{ projectedGpa100: number | null }> = {},
+  overrides: Partial<{ projectedGpa100: number | null }> = {}
 ) {
   return {
     id: profile.id,

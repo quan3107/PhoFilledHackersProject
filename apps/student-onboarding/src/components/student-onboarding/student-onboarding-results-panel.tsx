@@ -26,7 +26,7 @@ type ResultsPanelProps = Readonly<{
   recommendationChatSessionKey: string;
   onSubmitRecommendationChatTurn: (
     message: string | null,
-    messages: RecommendationChatMessage[],
+    messages: RecommendationChatMessage[]
   ) => Promise<RecommendationChatTurnResult>;
 }>;
 
@@ -53,7 +53,8 @@ export function StudentOnboardingResultsPanel({
                   {recommendationView?.title ?? "No recommendation run yet"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {recommendationView?.summary ?? "Run recommendations to populate the shortlist and reasoning surface."}
+                  {recommendationView?.summary ??
+                    "Run recommendations to populate the shortlist and reasoning surface."}
                 </p>
               </div>
               <button
@@ -62,28 +63,45 @@ export function StudentOnboardingResultsPanel({
                 disabled={runningRecommendations}
                 className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <RefreshCcw className={`h-4 w-4 ${runningRecommendations ? "animate-spin" : ""}`} />
+                <RefreshCcw
+                  className={`h-4 w-4 ${runningRecommendations ? "animate-spin" : ""}`}
+                />
                 {runningRecommendations ? "Running" : "Run"}
               </button>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <MetricCard label="Ready" value={`${summary.completion}%`} />
-              <MetricCard label="Missing fields" value={String(summary.missingCount)} />
-              <MetricCard label="Visible items" value={String(visibleItems.length)} />
+              <MetricCard
+                label="Missing fields"
+                value={String(summary.missingCount)}
+              />
+              <MetricCard
+                label="Visible items"
+                value={String(visibleItems.length)}
+              />
             </div>
           </div>
 
           {visibleItems.length ? (
             <div className="space-y-3">
               {visibleItems.map((item) => (
-                <article key={item.label} className="rounded-[1.35rem] border border-border bg-white p-4">
+                <article
+                  key={item.label}
+                  className="rounded-[1.35rem] border border-border bg-white p-4"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.value}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        {item.value}
+                      </p>
                     </div>
-                    {item.tone ? <Pill className={toneClass(item.tone)}>{item.tone}</Pill> : null}
+                    {item.tone ? (
+                      <Pill className={toneClass(item.tone)}>{item.tone}</Pill>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -106,7 +124,10 @@ export function StudentOnboardingResultsPanel({
         <SectionCard title="Gate checks" icon={CheckCircle2}>
           <div className="space-y-2">
             {missingFields.slice(0, 7).map((field) => (
-              <FieldRow key={`${field.snapshotKind}-${field.path}`} field={field} />
+              <FieldRow
+                key={`${field.snapshotKind}-${field.path}`}
+                field={field}
+              />
             ))}
             {missingFields.length === 0 ? (
               <p className="rounded-xl border border-emerald-500/30 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">

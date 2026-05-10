@@ -9,7 +9,10 @@ import { runIntakeTurn } from "@/lib/intake-turn-processor";
 
 export const runtime = "nodejs";
 
-function parseBody(value: unknown): { locale: "en" | "vi"; message: string | null } {
+function parseBody(value: unknown): {
+  locale: "en" | "vi";
+  message: string | null;
+} {
   if (!value || typeof value !== "object") {
     return { locale: "en" as const, message: null };
   }
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
             ? error.message
             : "Unable to continue the onboarding conversation.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

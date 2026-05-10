@@ -7,9 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admissions.berkeley.edu/apply-to-berkeley/"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,

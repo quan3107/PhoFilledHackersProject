@@ -8,7 +8,12 @@ import {
   type StudentProfileMissingField,
 } from "@/lib/student-profile";
 
-export type StudentOnboardingRoute = "chat" | "profile" | "results" | "review" | "settings";
+export type StudentOnboardingRoute =
+  | "chat"
+  | "profile"
+  | "results"
+  | "review"
+  | "settings";
 export type StudentOnboardingSnapshotKind = "current" | "projected";
 
 export interface StudentOnboardingSummaryItem {
@@ -44,7 +49,9 @@ const cloneProfile = (profile: StudentProfile): StudentProfile => ({
   preferences: {
     intendedMajors: [...profile.preferences.intendedMajors],
     preferredStates: [...profile.preferences.preferredStates],
-    preferredLocationPreferences: [...profile.preferences.preferredLocationPreferences],
+    preferredLocationPreferences: [
+      ...profile.preferences.preferredLocationPreferences,
+    ],
     preferredCampusLocale: [...profile.preferences.preferredCampusLocale],
     preferredSchoolControl: [...profile.preferences.preferredSchoolControl],
     preferredUndergraduateSize: profile.preferences.preferredUndergraduateSize,
@@ -54,7 +61,7 @@ const cloneProfile = (profile: StudentProfile): StudentProfile => ({
 });
 
 export const cloneStudentProfileDocument = (
-  document: StudentProfileDocument,
+  document: StudentProfileDocument
 ): StudentProfileDocument => ({
   current: {
     assumptions: [...document.current.assumptions],
@@ -87,16 +94,17 @@ const fmt = {
           maximumFractionDigits: 0,
         }).format(value),
   list: (value: string[]) => (value.length ? value.join(", ") : "Not set"),
-  bool: (value: boolean | null) => (value === null ? "Not set" : value ? "Yes" : "No"),
+  bool: (value: boolean | null) =>
+    value === null ? "Not set" : value ? "Yes" : "No",
 };
 
 const getSnapshotMissingCount = (
   fields: StudentProfileMissingField[],
-  kind: StudentOnboardingSnapshotKind,
+  kind: StudentOnboardingSnapshotKind
 ) => fields.filter((field) => field.snapshotKind === kind).length;
 
 export const buildStudentOnboardingSummary = (
-  document: StudentProfileDocument,
+  document: StudentProfileDocument
 ): StudentOnboardingSummary => {
   const missingFields = getStudentProfileMissingFields(document);
 
@@ -105,16 +113,28 @@ export const buildStudentOnboardingSummary = (
       0,
       Math.min(
         100,
-        Math.round(((totalMissingChecks - missingFields.length) / totalMissingChecks) * 100),
-      ),
+        Math.round(
+          ((totalMissingChecks - missingFields.length) / totalMissingChecks) *
+            100
+        )
+      )
     ),
     missingCount: missingFields.length,
     currentMissingCount: getSnapshotMissingCount(missingFields, "current"),
     projectedMissingCount: getSnapshotMissingCount(missingFields, "projected"),
     currentHighlights: [
-      { label: "Country", value: document.current.profile.citizenshipCountry || "Not set" },
-      { label: "Term", value: document.current.profile.targetEntryTerm || "Not set" },
-      { label: "GPA", value: fmt.percent(document.current.profile.academic.currentGpa100) },
+      {
+        label: "Country",
+        value: document.current.profile.citizenshipCountry || "Not set",
+      },
+      {
+        label: "Term",
+        value: document.current.profile.targetEntryTerm || "Not set",
+      },
+      {
+        label: "GPA",
+        value: fmt.percent(document.current.profile.academic.currentGpa100),
+      },
       {
         label: "Tests",
         value:
@@ -124,19 +144,36 @@ export const buildStudentOnboardingSummary = (
               ? "Will submit"
               : "Will not submit",
       },
-      { label: "Majors", value: fmt.list(document.current.profile.preferences.intendedMajors) },
-      { label: "Budget", value: fmt.money(document.current.profile.budget.annualBudgetUsd) },
+      {
+        label: "Majors",
+        value: fmt.list(document.current.profile.preferences.intendedMajors),
+      },
+      {
+        label: "Budget",
+        value: fmt.money(document.current.profile.budget.annualBudgetUsd),
+      },
     ],
     projectedHighlights: [
-      { label: "Projected GPA", value: fmt.percent(document.projected.profile.academic.projectedGpa100) },
+      {
+        label: "Projected GPA",
+        value: fmt.percent(document.projected.profile.academic.projectedGpa100),
+      },
       {
         label: "Projected assumptions",
         value: document.projected.assumptions.length
           ? `${document.projected.assumptions.length} note(s)`
           : "Not set",
       },
-      { label: "Budget flexibility", value: document.projected.profile.budget.budgetFlexibility },
-      { label: "Readiness", value: fmt.bool(document.projected.profile.readiness.hasEssayDraftsStarted) },
+      {
+        label: "Budget flexibility",
+        value: document.projected.profile.budget.budgetFlexibility,
+      },
+      {
+        label: "Readiness",
+        value: fmt.bool(
+          document.projected.profile.readiness.hasEssayDraftsStarted
+        ),
+      },
     ],
     nextSteps: missingFields.slice(0, 5).map((field) => field.message),
   };
@@ -175,14 +212,18 @@ const extractItemValue = (item: unknown) => {
         .filter((value) => typeof value === "string" && value.length > 0)
         .join(", ");
       const tier =
-        typeof record.tier === "string" ? record.tier.replaceAll("_", " ") : null;
+        typeof record.tier === "string"
+          ? record.tier.replaceAll("_", " ")
+          : null;
       const outlook =
         typeof record.currentOutlook === "string"
           ? record.currentOutlook.replaceAll("_", " ")
           : null;
       const segments = [location, tier, outlook].filter(Boolean);
 
-      return segments.length ? segments.join(" | ") : (school.schoolName as string);
+      return segments.length
+        ? segments.join(" | ")
+        : (school.schoolName as string);
     }
     if (typeof record.summary === "string") return record.summary;
     if (typeof record.description === "string") return record.description;
@@ -195,7 +236,7 @@ const extractItemValue = (item: unknown) => {
 };
 
 export const normalizeRecommendationData = (
-  data: unknown,
+  data: unknown
 ): StudentOnboardingRecommendationView => {
   const items: StudentOnboardingSummaryItem[] = [];
 
@@ -230,7 +271,7 @@ export const normalizeRecommendationData = (
         ([, value]) =>
           typeof value === "string" ||
           typeof value === "number" ||
-          typeof value === "boolean",
+          typeof value === "boolean"
       )
       .slice(0, 4)
       .forEach(([key, value]) => {

@@ -7,10 +7,7 @@
     "state": "NY",
     "officialAdmissionsUrl": "https://admissions.rochester.edu/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2026-11-01",
@@ -50,10 +47,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "ED I / ED II applicants may include November SAT scores; regular decision applicants may include December SAT scores. Students who choose to submit testing can also include AP, IB, or A-level exams.",
@@ -71,9 +65,7 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "research_intensive"
-    ],
+    "programFitTags": ["research_intensive"],
     "programAdmissionModel": "unknown",
     "applicationStrategyTags": [
       "binding_early_decision",

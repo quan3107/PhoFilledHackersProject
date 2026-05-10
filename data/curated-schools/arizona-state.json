@@ -7,10 +7,7 @@
     "state": "AZ",
     "officialAdmissionsUrl": "https://admission.asu.edu/apply/first-year/admission"
   },
-  "applicationRounds": [
-    "priority",
-    "regular_decision"
-  ],
+  "applicationRounds": ["priority", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,
@@ -49,10 +46,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": 1120,
       "minimumActComposite": 22,
       "latestSatTestDateNote": null,
@@ -72,9 +66,7 @@
     "averageNetPriceUsd": null,
     "programFitTags": [],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "rolling_or_extended_timeline"
-    ]
+    "applicationStrategyTags": ["rolling_or_extended_timeline"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "broad_access",

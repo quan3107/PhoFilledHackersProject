@@ -6,10 +6,10 @@ This document defines the next branches and canonical data shapes for the recomm
 
 ## Principles
 
-* Recommendations must read only from stored catalog rows marked `publishable`.
-* The deterministic engine chooses candidate schools and score breakdowns.
-* The LLM explains and clarifies shortlisted results. It does not invent schools or facts.
-* Recommendation outputs must stay reproducible from stored profile data, published catalog data, and persisted run results.
+- Recommendations must read only from stored catalog rows marked `publishable`.
+- The deterministic engine chooses candidate schools and score breakdowns.
+- The LLM explains and clarifies shortlisted results. It does not invent schools or facts.
+- Recommendation outputs must stay reproducible from stored profile data, published catalog data, and persisted run results.
 
 ## Branch Order
 
@@ -24,20 +24,20 @@ This document defines the next branches and canonical data shapes for the recomm
 
 These already exist in the catalog and are sufficient for a first recommendation engine:
 
-* Core admissions and cost fields on `universities`
-* `recommendationInputs`
-* `explanationInputs`
-* source provenance on `university_sources`
-* publishability state via `validationStatus`
+- Core admissions and cost fields on `universities`
+- `recommendationInputs`
+- `explanationInputs`
+- source provenance on `university_sources`
+- publishability state via `validationStatus`
 
 The school-side catalog already supports:
 
-* admissions selectivity proxies
-* testing policy and structured testing requirements
-* tuition, cost of attendance, and living cost
-* coarse aid model and international aid policy
-* school-level academic-domain fit tags
-* explanation-ready risk and action tags
+- admissions selectivity proxies
+- testing policy and structured testing requirements
+- tuition, cost of attendance, and living cost
+- coarse aid model and international aid policy
+- school-level academic-domain fit tags
+- explanation-ready risk and action tags
 
 ## Branch 1: `feat/catalog-review-surface`
 
@@ -47,12 +47,12 @@ Give internal reviewers a minimal QA surface to inspect schools and decide wheth
 
 ### Scope
 
-* school review page
-* source list
-* validation status
-* `last_verified_at`
-* missing-field display
-* publish and unpublish actions
+- school review page
+- source list
+- validation status
+- `last_verified_at`
+- missing-field display
+- publish and unpublish actions
 
 ### Data Shapes
 
@@ -88,9 +88,9 @@ type PublishActionResult = {
 
 ### Acceptance
 
-* reviewer can inspect one school
-* reviewer can publish or unpublish
-* only published rows become recommendation-eligible
+- reviewer can inspect one school
+- reviewer can publish or unpublish
+- only published rows become recommendation-eligible
 
 ## Branch 2: `feat/recommendation-student-profile-schema`
 
@@ -100,8 +100,8 @@ Define the structured student profile used by the deterministic engine and suppo
 
 ### New Entities
 
-* `student_profiles`
-* `student_profile_snapshots`
+- `student_profiles`
+- `student_profile_snapshots`
 
 ### Data Shapes
 
@@ -169,9 +169,9 @@ type StudentProfileSnapshot = {
 
 ### Acceptance
 
-* app can persist one canonical student profile
-* app can persist a current snapshot and a projected snapshot
-* missing profile fields are explicit before a recommendation run starts
+- app can persist one canonical student profile
+- app can persist a current snapshot and a projected snapshot
+- missing profile fields are explicit before a recommendation run starts
 
 ## Branch 3: `feat/recommendation-catalog-read-path`
 
@@ -200,15 +200,15 @@ type RecommendationCandidateSchool = {
 
 ### Rules
 
-* exclude `draft`
-* exclude `rejected`
-* exclude unpublished rows
-* never read raw import tables in recommendation queries
+- exclude `draft`
+- exclude `rejected`
+- exclude unpublished rows
+- never read raw import tables in recommendation queries
 
 ### Acceptance
 
-* recommendation selector only receives published candidate schools
-* unpublished schools never enter shortlist or scoring paths
+- recommendation selector only receives published candidate schools
+- unpublished schools never enter shortlist or scoring paths
 
 ## Branch 4: `feat/recommendation-engine-v1`
 
@@ -218,8 +218,8 @@ Implement the deterministic scoring engine and persist recommendation runs and p
 
 ### New Entities
 
-* `recommendation_runs`
-* `recommendation_results`
+- `recommendation_runs`
+- `recommendation_results`
 
 ### Data Shapes
 
@@ -282,18 +282,18 @@ type RecommendationResult = {
 
 ### Scoring Dimensions
 
-* Admission Fit
-* Readiness Fit
-* Budget Fit
-* Preference Fit
-* Improvement Upside
+- Admission Fit
+- Readiness Fit
+- Budget Fit
+- Preference Fit
+- Improvement Upside
 
 ### Acceptance
 
-* one run produces persisted per-school results
-* each result has structured score breakdowns
-* results group into Reach / Target / Safety
-* current and projected outlook remain separate and explainable
+- one run produces persisted per-school results
+- each result has structured score breakdowns
+- results group into Reach / Target / Safety
+- current and projected outlook remain separate and explainable
 
 ## Branch 5: `feat/recommendation-llm-explanation-layer`
 
@@ -306,28 +306,28 @@ turn stored scored results into a bounded shortlist plus explanation content.
 
 The LLM must:
 
-* read stored student profile snapshots
-* read stored candidate school data
-* read stored recommendation results
-* produce a shortlist from the stored scored results
-* produce explanation content only for shortlisted schools
+- read stored student profile snapshots
+- read stored candidate school data
+- read stored recommendation results
+- produce a shortlist from the stored scored results
+- produce explanation content only for shortlisted schools
 
 The LLM must not:
 
-* choose from the full catalog without deterministic pre-filtering
-* invent school facts
-* guarantee admissions
-* guarantee scholarships
+- choose from the full catalog without deterministic pre-filtering
+- invent school facts
+- guarantee admissions
+- guarantee scholarships
 
 ### Shortlist Role
 
 The shortlist step in this branch should be LLM-assisted but still grounded in
 stored recommendation data:
 
-* input must come from persisted recommendation results, persisted profile snapshots, and stored candidate school rows
-* the LLM may interpret stored scores, tier labels, budget fit, deadline pressure, and projected deltas to decide which schools should appear in the final shortlist
-* the LLM must not pull in schools outside the deterministic scored result set
-* the shortlist must stay reproducible from the stored run inputs and stored model prompt
+- input must come from persisted recommendation results, persisted profile snapshots, and stored candidate school rows
+- the LLM may interpret stored scores, tier labels, budget fit, deadline pressure, and projected deltas to decide which schools should appear in the final shortlist
+- the LLM must not pull in schools outside the deterministic scored result set
+- the shortlist must stay reproducible from the stored run inputs and stored model prompt
 
 ### Additional Input Shape
 
@@ -372,32 +372,32 @@ type RecommendationExplanation = {
 
 ### Prompting Rules
 
-* consume supplied JSON only
-* return JSON only
-* use stored catalog facts and stored score outputs only
-* if data is missing, say it is missing
-* keep output list-shaped and structured, not essay-like
+- consume supplied JSON only
+- return JSON only
+- use stored catalog facts and stored score outputs only
+- if data is missing, say it is missing
+- keep output list-shaped and structured, not essay-like
 
 ### Required System Prompt
 
 Branch 5 must include a checked-in system prompt for the LLM shortlist and explanation pass.
 That prompt must instruct the model to:
 
-* shortlist schools only from the provided scored results
-* treat deterministic scores and labels as the primary ranking signal
-* use stored profile data and stored catalog facts to break ties or trim the shortlist
-* prefer schools with strong overall fit, acceptable budget risk, and clear next actions
-* keep Reach / Target / Safety representation visible when supported by the scored set
-* explain why each shortlisted school survived the cut and why excluded schools were not selected when asked
-* never invent new schools, new facts, or new numeric scores
-* return one structured JSON object containing both shortlist ids and explanation content
+- shortlist schools only from the provided scored results
+- treat deterministic scores and labels as the primary ranking signal
+- use stored profile data and stored catalog facts to break ties or trim the shortlist
+- prefer schools with strong overall fit, acceptable budget risk, and clear next actions
+- keep Reach / Target / Safety representation visible when supported by the scored set
+- explain why each shortlisted school survived the cut and why excluded schools were not selected when asked
+- never invent new schools, new facts, or new numeric scores
+- return one structured JSON object containing both shortlist ids and explanation content
 
 ### Acceptance
 
-* branch includes a checked-in system prompt for shortlist plus explanation generation
-* LLM can produce a bounded shortlist from stored scored results only
-* every recommendation card can show structured, reproducible explanations
-* explanation content remains bounded to stored facts and scores
+- branch includes a checked-in system prompt for shortlist plus explanation generation
+- LLM can produce a bounded shortlist from stored scored results only
+- every recommendation card can show structured, reproducible explanations
+- explanation content remains bounded to stored facts and scores
 
 ## Branch 6: `feat/recommendation-api-contracts`
 
@@ -441,9 +441,9 @@ type RecommendationCardResponse = {
 
 ### Acceptance
 
-* frontend consumes one stable recommendation contract
-* chat assistant consumes the same stored recommendation result shapes
-* the client never computes recommendation results independently
+- frontend consumes one stable recommendation contract
+- chat assistant consumes the same stored recommendation result shapes
+- the client never computes recommendation results independently
 
 ## Recommended Engine Architecture
 
@@ -459,19 +459,19 @@ This keeps the system transparent and debuggable while still allowing LLM-powere
 
 ## Explicit Non-Goals For V1 Recommendation Logic
 
-* web scraping or live-fetch at recommendation time
-* unconstrained model-based school selection
-* per-major admissions probability modeling
-* financial aid guarantees or precise net-price forecasting
-* client-side-only recommendation logic
+- web scraping or live-fetch at recommendation time
+- unconstrained model-based school selection
+- per-major admissions probability modeling
+- financial aid guarantees or precise net-price forecasting
+- client-side-only recommendation logic
 
 ## Summary
 
 The current catalog foundation is already strong enough for recommendation work. The missing pieces are:
 
-* reviewer publish control
-* structured student profile storage
-* persisted recommendation runs and result rows
-* an LLM explanation layer that operates only on stored shortlist and score data
+- reviewer publish control
+- structured student profile storage
+- persisted recommendation runs and result rows
+- an LLM explanation layer that operates only on stored shortlist and score data
 
 That is the narrowest branch sequence that keeps the product path canonical and supports a trustworthy recommendation experience.

@@ -7,9 +7,7 @@
     "state": "TX",
     "officialAdmissionsUrl": "https://admissions.tamu.edu/apply/freshman"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,
@@ -51,10 +49,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Test scores are optional. If submitted, they must be sent through the testing agency and will be reviewed as the highest total score from a single test date.",
@@ -72,11 +67,7 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "engineering",
-      "business",
-      "research_intensive"
-    ],
+    "programFitTags": ["engineering", "business", "research_intensive"],
     "programAdmissionModel": "capacity_limited",
     "applicationStrategyTags": []
   },

@@ -7,10 +7,7 @@
     "state": "NC",
     "officialAdmissionsUrl": "https://admissions.duke.edu/apply/"
   },
-  "applicationRounds": [
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": "2025-11-03",
@@ -53,10 +50,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "SAT scores last day to take standardized tests is November 8 for the current cycle.",
@@ -74,14 +68,9 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "engineering",
-      "research_intensive"
-    ],
+    "programFitTags": ["engineering", "research_intensive"],
     "programAdmissionModel": "unknown",
-    "applicationStrategyTags": [
-      "binding_early_decision"
-    ]
+    "applicationStrategyTags": ["binding_early_decision"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "highly_selective",

@@ -7,7 +7,11 @@ import {
   toUniversityFieldProvenance,
 } from "@etest/catalog";
 
-import { buildFieldImportItems, normalizeUniversityExtraction, selectFieldSources } from "./normalize.js";
+import {
+  buildFieldImportItems,
+  normalizeUniversityExtraction,
+  selectFieldSources,
+} from "./normalize.js";
 import { resolveSeedSchool } from "./manifest.js";
 import type {
   BrightDataClient,
@@ -49,12 +53,8 @@ function toFailureCode(stage: string | null) {
 }
 
 async function runStage<T>(
-  stage:
-    | "fetching"
-    | "extracting"
-    | "normalizing"
-    | "persisting",
-  action: () => Promise<T>,
+  stage: "fetching" | "extracting" | "normalizing" | "persisting",
+  action: () => Promise<T>
 ) {
   try {
     return await action();
@@ -66,29 +66,30 @@ async function runStage<T>(
 
 async function fetchSchoolPages(
   brightData: BrightDataClient,
-  seedSchool: ReturnType<typeof resolveSeedSchool>,
+  seedSchool: ReturnType<typeof resolveSeedSchool>
 ) {
   const pages = await Promise.all(
     Object.entries(seedSchool.sourceUrls).map(async ([kind, sourceUrl]) => {
       const page = await brightData.fetchPage({
-        sourceKind: kind === "admissions"
-          ? "official_admissions"
-          : kind === "tuition"
-            ? "official_tuition"
-            : kind === "costOfAttendance"
-              ? "official_cost_of_attendance"
-              : "official_scholarship",
+        sourceKind:
+          kind === "admissions"
+            ? "official_admissions"
+            : kind === "tuition"
+              ? "official_tuition"
+              : kind === "costOfAttendance"
+                ? "official_cost_of_attendance"
+                : "official_scholarship",
         sourceUrl,
       });
 
       if (page.statusCode < 200 || page.statusCode >= 300) {
         throw new Error(
-          `Bright Data returned status ${page.statusCode} for ${sourceUrl}.`,
+          `Bright Data returned status ${page.statusCode} for ${sourceUrl}.`
         );
       }
 
       return page;
-    }),
+    })
   );
 
   return pages;
@@ -96,7 +97,7 @@ async function fetchSchoolPages(
 
 export async function runIngest(
   config: IngestConfig,
-  deps: RunIngestDependencies,
+  deps: RunIngestDependencies
 ): Promise<IngestRunSummary> {
   const seedSchool = resolveSeedSchool(config.schoolSlug);
   const verifiedAt = deps.now?.() ?? new Date();
@@ -175,7 +176,8 @@ export async function runIngest(
     };
   } catch (error) {
     const stage = classifyStageError(error);
-    const failureMessage = error instanceof Error ? error.message : String(error);
+    const failureMessage =
+      error instanceof Error ? error.message : String(error);
 
     await deps.repository.persistFailedImport({
       runId: importRun.id,

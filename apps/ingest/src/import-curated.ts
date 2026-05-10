@@ -46,7 +46,9 @@ interface ProvenanceSourceRow {
 }
 
 function readSchoolSlugFromArgs(argv: string[]) {
-  const explicitFlag = argv.find((argument) => argument.startsWith("--school="));
+  const explicitFlag = argv.find((argument) =>
+    argument.startsWith("--school=")
+  );
   if (explicitFlag) {
     return explicitFlag.slice("--school=".length).trim();
   }
@@ -70,7 +72,7 @@ function mapQualityStatusToValidationStatus(status: string): ImportStatus {
 }
 
 function buildValidationReasons(
-  artifact: ReturnType<typeof validateCurationArtifact>["artifact"],
+  artifact: ReturnType<typeof validateCurationArtifact>["artifact"]
 ): UniversityValidationReason[] {
   if (!artifact || artifact.quality.status === "publishable") {
     return [];
@@ -93,7 +95,7 @@ function buildValidationReasons(
 }
 
 function toDbDeadlines(
-  deadlinesByRound: Record<string, string | null | undefined>,
+  deadlinesByRound: Record<string, string | null | undefined>
 ): DeadlinesByRound {
   const result: DeadlinesByRound = {};
 
@@ -106,9 +108,10 @@ function toDbDeadlines(
   return result;
 }
 
-function mapCurationSourceKind(
-  sourceKind: string,
-): { sourceKind: UniversitySourceKind; note: string | null } {
+function mapCurationSourceKind(sourceKind: string): {
+  sourceKind: UniversitySourceKind;
+  note: string | null;
+} {
   if (
     sourceKind === "official_admissions" ||
     sourceKind === "official_tuition" ||
@@ -126,7 +129,7 @@ function mapCurationSourceKind(
 
 function pickPreferredSourceKind(
   current: UniversitySourceKind,
-  candidate: UniversitySourceKind,
+  candidate: UniversitySourceKind
 ): UniversitySourceKind {
   if (current === candidate) {
     return current;
@@ -167,7 +170,7 @@ async function loadArtifactFileNames(options: ImportOptions) {
   return fileNames
     .filter(
       (fileName) =>
-        fileName.endsWith(".json") && fileName !== "qs-us-top-50-2026.json",
+        fileName.endsWith(".json") && fileName !== "qs-us-top-50-2026.json"
     )
     .sort();
 }
@@ -179,7 +182,7 @@ async function loadValidatedArtifact(fileName: string) {
   const validation = validateCurationArtifact(raw, slug);
   if (!validation.ok || !validation.artifact) {
     throw new Error(
-      `Curated artifact "${fileName}" is invalid: ${JSON.stringify(validation.issues)}`,
+      `Curated artifact "${fileName}" is invalid: ${JSON.stringify(validation.issues)}`
     );
   }
 
@@ -210,9 +213,11 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
     for (const fileName of fileNames) {
       const artifact = await loadValidatedArtifact(fileName);
       const validationStatus = mapQualityStatusToValidationStatus(
-        artifact.quality.status,
+        artifact.quality.status
       );
-      const lastVerifiedAt = new Date(`${artifact.lastVerifiedAt}T00:00:00.000Z`);
+      const lastVerifiedAt = new Date(
+        `${artifact.lastVerifiedAt}T00:00:00.000Z`
+      );
       const deadlinesByRound = toDbDeadlines(artifact.deadlinesByRound);
       const validationReasons = buildValidationReasons(artifact);
 
@@ -252,7 +257,8 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
               testPolicy: artifact.testPolicy,
               requiredMaterials: artifact.requiredMaterials,
               tuitionAnnualUsd: artifact.tuitionAnnualUsd,
-              estimatedCostOfAttendanceUsd: artifact.estimatedCostOfAttendanceUsd,
+              estimatedCostOfAttendanceUsd:
+                artifact.estimatedCostOfAttendanceUsd,
               livingCostEstimateUsd: artifact.livingCostEstimateUsd,
               scholarshipAvailabilityFlag: artifact.scholarshipAvailabilityFlag,
               scholarshipNotes: artifact.scholarshipNotes,
@@ -269,7 +275,7 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
 
         if (!upsertedUniversity) {
           throw new Error(
-            `Failed to upsert university for "${artifact.identity.schoolName}".`,
+            `Failed to upsert university for "${artifact.identity.schoolName}".`
           );
         }
 
@@ -279,7 +285,7 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
 
         const provenanceRowsByKey = new Map<string, ProvenanceSourceRow>();
         for (const [fieldKey, entries] of Object.entries(
-          artifact.fieldProvenance,
+          artifact.fieldProvenance
         )) {
           entries.forEach((entry, index) => {
             const mapped = mapCurationSourceKind(entry.sourceKind);
@@ -289,7 +295,7 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
             if (existing) {
               existing.sourceKind = pickPreferredSourceKind(
                 existing.sourceKind,
-                mapped.sourceKind,
+                mapped.sourceKind
               );
               existing.excerpt = mergeExcerpts(existing.excerpt, entry.excerpt);
               if (mapped.note) {
@@ -334,8 +340,8 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
           mode: options.schoolSlug ? "single" : "all",
         },
         null,
-        2,
-      ),
+        2
+      )
     );
   } finally {
     await client.end({ timeout: 5 });
@@ -349,7 +355,7 @@ const isEntrypoint =
 if (isEntrypoint) {
   importCuratedSchools().catch((error: unknown) => {
     console.error(
-      `[import-curated] ${error instanceof Error ? error.message : String(error)}`,
+      `[import-curated] ${error instanceof Error ? error.message : String(error)}`
     );
     process.exitCode = 1;
   });

@@ -336,7 +336,7 @@ test("recommendation runs and results round-trip through the schema", async () =
           projectedScore: 74,
           rankOrder: 2,
         },
-      ],
+      ]
     );
   } finally {
     await database.close();
@@ -348,7 +348,7 @@ function toSnapshotProfile(
   overrides: Partial<{
     academic: StudentProfileRow["academic"];
     projectedGpa100: number | null;
-  }>,
+  }>
 ) {
   return {
     id: profile.id,
@@ -357,7 +357,8 @@ function toSnapshotProfile(
     targetEntryTerm: profile.targetEntryTerm,
     academic: overrides.academic ?? {
       ...profile.academic,
-      projectedGpa100: overrides.projectedGpa100 ?? profile.academic.projectedGpa100,
+      projectedGpa100:
+        overrides.projectedGpa100 ?? profile.academic.projectedGpa100,
     },
     testing: profile.testing,
     preferences: profile.preferences,
@@ -387,7 +388,8 @@ function buildUniversityInsert(schoolName: string, satAverageOverall: number) {
     estimatedCostOfAttendanceUsd: 71000,
     livingCostEstimateUsd: 16000,
     scholarshipAvailabilityFlag: true,
-    scholarshipNotes: "Merit scholarships available for international applicants.",
+    scholarshipNotes:
+      "Merit scholarships available for international applicants.",
     recommendationInputs: {
       admissionRateOverall: 0.45,
       satAverageOverall,

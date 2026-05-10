@@ -7,10 +7,7 @@
     "state": "MA",
     "officialAdmissionsUrl": "https://college.harvard.edu/admissions"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": null,
@@ -51,10 +48,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "For Restrictive Early Action, Harvard would like testing results by the end of October. For Regular Decision, scores can be submitted as late as the February test date, though earlier is recommended.",
@@ -79,9 +73,7 @@
       "research_intensive"
     ],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "restrictive_early_action"
-    ]
+    "applicationStrategyTags": ["restrictive_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "ultra_selective",
@@ -93,9 +85,7 @@
       "earliestDeadline": "2026-11-01",
       "latestMajorDeadline": "2027-01-01"
     },
-    "internationalStudentConsiderations": [
-      "need_based_aid_available"
-    ],
+    "internationalStudentConsiderations": ["need_based_aid_available"],
     "potentialFitTags": [
       "research_or_innovation_oriented",
       "urban_access",

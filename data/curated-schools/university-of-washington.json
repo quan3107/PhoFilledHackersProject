@@ -7,9 +7,7 @@
     "state": "WA",
     "officialAdmissionsUrl": "https://admit.washington.edu/"
   },
-  "applicationRounds": [
-    "regular_decision"
-  ],
+  "applicationRounds": ["regular_decision"],
   "deadlinesByRound": {
     "early_action": null,
     "early_decision": null,
@@ -48,10 +46,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": null,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "Send scores by December 31 of the application year.",
@@ -69,11 +64,7 @@
       }
     },
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "research_intensive",
-      "computer_science",
-      "engineering"
-    ],
+    "programFitTags": ["research_intensive", "computer_science", "engineering"],
     "programAdmissionModel": "capacity_limited",
     "applicationStrategyTags": []
   },

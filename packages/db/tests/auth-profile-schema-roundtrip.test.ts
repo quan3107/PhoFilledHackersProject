@@ -152,11 +152,14 @@ test("auth rows and student profile snapshots round-trip through the schema", as
       "us_west_coast",
       "us_east_coast",
     ]);
-    assert.equal(storedProfile.preferences.preferredUndergraduateSize, "medium");
+    assert.equal(
+      storedProfile.preferences.preferredUndergraduateSize,
+      "medium"
+    );
     assert.equal(storedProfile.snapshots.length, 2);
 
     const projectedSnapshot = storedProfile.snapshots.find(
-      (snapshot) => snapshot.snapshotKind === "projected",
+      (snapshot) => snapshot.snapshotKind === "projected"
     );
 
     assert.ok(projectedSnapshot);
@@ -174,11 +177,14 @@ test("auth rows and student profile snapshots round-trip through the schema", as
       "Raise GPA to 94",
       "Complete counselor documents",
     ]);
-    assert.deepEqual(projectedSnapshot.profile.preferences.preferredLocationPreferences, [
-      "us_west_coast",
-      "us_east_coast",
-    ]);
-    assert.equal(projectedSnapshot.profile.readiness.hasEssayDraftsStarted, true);
+    assert.deepEqual(
+      projectedSnapshot.profile.preferences.preferredLocationPreferences,
+      ["us_west_coast", "us_east_coast"]
+    );
+    assert.equal(
+      projectedSnapshot.profile.readiness.hasEssayDraftsStarted,
+      true
+    );
     assert.equal(projectedSnapshot.profile.targetEntryTerm, "fall_2027");
 
     const reloadedCurrentProfile = {
@@ -239,8 +245,8 @@ test("auth rows and student profile snapshots round-trip through the schema", as
       .where(
         and(
           eq(studentProfileSnapshots.studentProfileId, insertedProfile.id),
-          eq(studentProfileSnapshots.snapshotKind, "current"),
-        ),
+          eq(studentProfileSnapshots.snapshotKind, "current")
+        )
       );
 
     await database.db
@@ -252,8 +258,8 @@ test("auth rows and student profile snapshots round-trip through the schema", as
       .where(
         and(
           eq(studentProfileSnapshots.studentProfileId, insertedProfile.id),
-          eq(studentProfileSnapshots.snapshotKind, "projected"),
-        ),
+          eq(studentProfileSnapshots.snapshotKind, "projected")
+        )
       );
 
     const reloadedProfile = await database.db.query.studentProfiles.findFirst({
@@ -268,17 +274,16 @@ test("auth rows and student profile snapshots round-trip through the schema", as
     assert.equal(reloadedProfile.academic.currentGpa100, 95);
     assert.equal(reloadedProfile.testing.satTotal, 1520);
     assert.deepEqual(reloadedProfile.preferences.preferredStates, ["NY"]);
-    assert.deepEqual(
-      reloadedProfile.preferences.preferredLocationPreferences,
-      ["us_east_coast"],
-    );
+    assert.deepEqual(reloadedProfile.preferences.preferredLocationPreferences, [
+      "us_east_coast",
+    ]);
     assert.equal(reloadedProfile.snapshots.length, 2);
 
     const reloadedCurrentSnapshot = reloadedProfile.snapshots.find(
-      (snapshot) => snapshot.snapshotKind === "current",
+      (snapshot) => snapshot.snapshotKind === "current"
     );
     const reloadedProjectedSnapshot = reloadedProfile.snapshots.find(
-      (snapshot) => snapshot.snapshotKind === "projected",
+      (snapshot) => snapshot.snapshotKind === "projected"
     );
 
     assert.ok(reloadedCurrentSnapshot);
@@ -290,16 +295,17 @@ test("auth rows and student profile snapshots round-trip through the schema", as
     ]);
     assert.deepEqual(
       reloadedProjectedSnapshot.profile,
-      reloadedProjectedProfile,
+      reloadedProjectedProfile
     );
     assert.deepEqual(reloadedProjectedSnapshot.assumptions, [
       "Reach 99 GPA",
       "Finalize essays early",
     ]);
 
-    const storedIntake = await database.db.query.studentIntakeSessions.findFirst({
-      where: eq(studentIntakeSessions.userId, "user_1"),
-    });
+    const storedIntake =
+      await database.db.query.studentIntakeSessions.findFirst({
+        where: eq(studentIntakeSessions.userId, "user_1"),
+      });
 
     assert.ok(storedIntake);
     assert.equal(storedIntake.currentStepIndex, 3);
@@ -408,7 +414,10 @@ test("student profile sentinel values and caveat assumptions persist without nor
     assert.ok(storedProfile);
     assert.equal(storedProfile?.academic.curriculumStrength, "unknown");
     assert.equal(storedProfile?.testing.englishExamType, "unknown");
-    assert.equal(storedProfile?.preferences.preferredUndergraduateSize, "unknown");
+    assert.equal(
+      storedProfile?.preferences.preferredUndergraduateSize,
+      "unknown"
+    );
     assert.equal(storedProfile?.budget.budgetFlexibility, "unknown");
     assert.deepEqual(storedProfile?.readiness, {
       wantsEarlyRound: null,

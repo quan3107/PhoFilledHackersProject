@@ -2,7 +2,10 @@
 // Canonical student profile types and helpers for the web app slice.
 // Keeps the profile editor, session persistence, and missing-field checks aligned.
 
-import type { StudentLocationPreferenceKind, StudentProfileState } from "@etest/auth";
+import type {
+  StudentLocationPreferenceKind,
+  StudentProfileState,
+} from "@etest/auth";
 
 export const curriculumStrengthOptions = [
   "baseline",
@@ -148,16 +151,17 @@ export const createEmptyStudentProfile = (): StudentProfile => ({
   readiness: blankReadiness(),
 });
 
-export const createEmptyStudentProfileDocument = (): StudentProfileDocument => ({
-  current: {
-    assumptions: [],
-    profile: createEmptyStudentProfile(),
-  },
-  projected: {
-    assumptions: [],
-    profile: createEmptyStudentProfile(),
-  },
-});
+export const createEmptyStudentProfileDocument =
+  (): StudentProfileDocument => ({
+    current: {
+      assumptions: [],
+      profile: createEmptyStudentProfile(),
+    },
+    projected: {
+      assumptions: [],
+      profile: createEmptyStudentProfile(),
+    },
+  });
 
 export const splitListValue = (value: string): string[] =>
   value
@@ -179,9 +183,9 @@ export const serializeBooleanChoice = (value: ReadinessFlag): string => {
   return "";
 };
 
-const safeParse = <T,>(
+const safeParse = <T>(
   value: string | null | undefined,
-  fallback: T | undefined,
+  fallback: T | undefined
 ): T | undefined => {
   if (!value) return fallback;
 
@@ -194,64 +198,135 @@ const safeParse = <T,>(
 
 const mergeProfile = (
   fallback: StudentProfile,
-  value: Partial<StudentProfile> | null | undefined,
+  value: Partial<StudentProfile> | null | undefined
 ): StudentProfile => {
   if (!value) return fallback;
 
   return {
-    citizenshipCountry: typeof value.citizenshipCountry === "string" ? value.citizenshipCountry : fallback.citizenshipCountry,
-    targetEntryTerm: typeof value.targetEntryTerm === "string" ? value.targetEntryTerm : fallback.targetEntryTerm,
+    citizenshipCountry:
+      typeof value.citizenshipCountry === "string"
+        ? value.citizenshipCountry
+        : fallback.citizenshipCountry,
+    targetEntryTerm:
+      typeof value.targetEntryTerm === "string"
+        ? value.targetEntryTerm
+        : fallback.targetEntryTerm,
     academic: {
-      currentGpa100: typeof value.academic?.currentGpa100 === "number" ? value.academic.currentGpa100 : fallback.academic.currentGpa100,
-      projectedGpa100: typeof value.academic?.projectedGpa100 === "number" ? value.academic.projectedGpa100 : fallback.academic.projectedGpa100,
-      curriculumStrength: curriculumStrengthOptions.includes(value.academic?.curriculumStrength as CurriculumStrength)
+      currentGpa100:
+        typeof value.academic?.currentGpa100 === "number"
+          ? value.academic.currentGpa100
+          : fallback.academic.currentGpa100,
+      projectedGpa100:
+        typeof value.academic?.projectedGpa100 === "number"
+          ? value.academic.projectedGpa100
+          : fallback.academic.projectedGpa100,
+      curriculumStrength: curriculumStrengthOptions.includes(
+        value.academic?.curriculumStrength as CurriculumStrength
+      )
         ? (value.academic?.curriculumStrength as CurriculumStrength)
         : fallback.academic.curriculumStrength,
-      classRankPercent: typeof value.academic?.classRankPercent === "number" ? value.academic.classRankPercent : fallback.academic.classRankPercent,
+      classRankPercent:
+        typeof value.academic?.classRankPercent === "number"
+          ? value.academic.classRankPercent
+          : fallback.academic.classRankPercent,
     },
     testing: {
-      satTotal: typeof value.testing?.satTotal === "number" ? value.testing.satTotal : fallback.testing.satTotal,
-      actComposite: typeof value.testing?.actComposite === "number" ? value.testing.actComposite : fallback.testing.actComposite,
-      englishExamType: englishExamTypeOptions.includes(value.testing?.englishExamType as EnglishExamType)
+      satTotal:
+        typeof value.testing?.satTotal === "number"
+          ? value.testing.satTotal
+          : fallback.testing.satTotal,
+      actComposite:
+        typeof value.testing?.actComposite === "number"
+          ? value.testing.actComposite
+          : fallback.testing.actComposite,
+      englishExamType: englishExamTypeOptions.includes(
+        value.testing?.englishExamType as EnglishExamType
+      )
         ? (value.testing?.englishExamType as EnglishExamType)
         : fallback.testing.englishExamType,
-      englishExamScore: typeof value.testing?.englishExamScore === "number" ? value.testing.englishExamScore : fallback.testing.englishExamScore,
-      willSubmitTests: typeof value.testing?.willSubmitTests === "boolean" ? value.testing.willSubmitTests : fallback.testing.willSubmitTests,
+      englishExamScore:
+        typeof value.testing?.englishExamScore === "number"
+          ? value.testing.englishExamScore
+          : fallback.testing.englishExamScore,
+      willSubmitTests:
+        typeof value.testing?.willSubmitTests === "boolean"
+          ? value.testing.willSubmitTests
+          : fallback.testing.willSubmitTests,
     },
     preferences: {
-      intendedMajors: Array.isArray(value.preferences?.intendedMajors) ? value.preferences.intendedMajors.filter(Boolean) : fallback.preferences.intendedMajors,
-      preferredStates: Array.isArray(value.preferences?.preferredStates) ? value.preferences.preferredStates.filter(Boolean) : fallback.preferences.preferredStates,
-      preferredLocationPreferences: Array.isArray(value.preferences?.preferredLocationPreferences)
+      intendedMajors: Array.isArray(value.preferences?.intendedMajors)
+        ? value.preferences.intendedMajors.filter(Boolean)
+        : fallback.preferences.intendedMajors,
+      preferredStates: Array.isArray(value.preferences?.preferredStates)
+        ? value.preferences.preferredStates.filter(Boolean)
+        : fallback.preferences.preferredStates,
+      preferredLocationPreferences: Array.isArray(
+        value.preferences?.preferredLocationPreferences
+      )
         ? value.preferences.preferredLocationPreferences.filter(Boolean)
         : fallback.preferences.preferredLocationPreferences,
-      preferredCampusLocale: Array.isArray(value.preferences?.preferredCampusLocale) ? value.preferences.preferredCampusLocale.filter(Boolean) : fallback.preferences.preferredCampusLocale,
-      preferredSchoolControl: Array.isArray(value.preferences?.preferredSchoolControl)
-        ? value.preferences.preferredSchoolControl.filter((item): item is "public" | "private_nonprofit" => item === "public" || item === "private_nonprofit")
+      preferredCampusLocale: Array.isArray(
+        value.preferences?.preferredCampusLocale
+      )
+        ? value.preferences.preferredCampusLocale.filter(Boolean)
+        : fallback.preferences.preferredCampusLocale,
+      preferredSchoolControl: Array.isArray(
+        value.preferences?.preferredSchoolControl
+      )
+        ? value.preferences.preferredSchoolControl.filter(
+            (item): item is "public" | "private_nonprofit" =>
+              item === "public" || item === "private_nonprofit"
+          )
         : fallback.preferences.preferredSchoolControl,
-      preferredUndergraduateSize: preferredUndergraduateSizeOptions.includes(value.preferences?.preferredUndergraduateSize as PreferredUndergraduateSize)
-        ? (value.preferences?.preferredUndergraduateSize as PreferredUndergraduateSize)
+      preferredUndergraduateSize: preferredUndergraduateSizeOptions.includes(
+        value.preferences
+          ?.preferredUndergraduateSize as PreferredUndergraduateSize
+      )
+        ? (value.preferences
+            ?.preferredUndergraduateSize as PreferredUndergraduateSize)
         : fallback.preferences.preferredUndergraduateSize,
     },
     budget: {
-      annualBudgetUsd: typeof value.budget?.annualBudgetUsd === "number" ? value.budget.annualBudgetUsd : fallback.budget.annualBudgetUsd,
-      needsFinancialAid: typeof value.budget?.needsFinancialAid === "boolean" ? value.budget.needsFinancialAid : fallback.budget.needsFinancialAid,
-      needsMeritAid: typeof value.budget?.needsMeritAid === "boolean" ? value.budget.needsMeritAid : fallback.budget.needsMeritAid,
-      budgetFlexibility: budgetFlexibilityOptions.includes(value.budget?.budgetFlexibility as BudgetFlexibility)
+      annualBudgetUsd:
+        typeof value.budget?.annualBudgetUsd === "number"
+          ? value.budget.annualBudgetUsd
+          : fallback.budget.annualBudgetUsd,
+      needsFinancialAid:
+        typeof value.budget?.needsFinancialAid === "boolean"
+          ? value.budget.needsFinancialAid
+          : fallback.budget.needsFinancialAid,
+      needsMeritAid:
+        typeof value.budget?.needsMeritAid === "boolean"
+          ? value.budget.needsMeritAid
+          : fallback.budget.needsMeritAid,
+      budgetFlexibility: budgetFlexibilityOptions.includes(
+        value.budget?.budgetFlexibility as BudgetFlexibility
+      )
         ? (value.budget?.budgetFlexibility as BudgetFlexibility)
         : fallback.budget.budgetFlexibility,
     },
     readiness: {
-      wantsEarlyRound: typeof value.readiness?.wantsEarlyRound === "boolean" ? value.readiness.wantsEarlyRound : fallback.readiness.wantsEarlyRound,
-      hasTeacherRecommendationsReady: typeof value.readiness?.hasTeacherRecommendationsReady === "boolean" ? value.readiness.hasTeacherRecommendationsReady : fallback.readiness.hasTeacherRecommendationsReady,
-      hasCounselorDocumentsReady: typeof value.readiness?.hasCounselorDocumentsReady === "boolean" ? value.readiness.hasCounselorDocumentsReady : fallback.readiness.hasCounselorDocumentsReady,
-      hasEssayDraftsStarted: typeof value.readiness?.hasEssayDraftsStarted === "boolean" ? value.readiness.hasEssayDraftsStarted : fallback.readiness.hasEssayDraftsStarted,
+      wantsEarlyRound:
+        typeof value.readiness?.wantsEarlyRound === "boolean"
+          ? value.readiness.wantsEarlyRound
+          : fallback.readiness.wantsEarlyRound,
+      hasTeacherRecommendationsReady:
+        typeof value.readiness?.hasTeacherRecommendationsReady === "boolean"
+          ? value.readiness.hasTeacherRecommendationsReady
+          : fallback.readiness.hasTeacherRecommendationsReady,
+      hasCounselorDocumentsReady:
+        typeof value.readiness?.hasCounselorDocumentsReady === "boolean"
+          ? value.readiness.hasCounselorDocumentsReady
+          : fallback.readiness.hasCounselorDocumentsReady,
+      hasEssayDraftsStarted:
+        typeof value.readiness?.hasEssayDraftsStarted === "boolean"
+          ? value.readiness.hasEssayDraftsStarted
+          : fallback.readiness.hasEssayDraftsStarted,
     },
   };
 };
 
-const parseAssumptions = (
-  value: string | null | undefined,
-): string[] => {
+const parseAssumptions = (value: string | null | undefined): string[] => {
   const parsed = safeParse<unknown>(value, []);
 
   return Array.isArray(parsed)
@@ -265,32 +340,39 @@ export const parseStudentProfileDocument = (
   currentProfileJson: string | null | undefined,
   currentAssumptionsJson: string | null | undefined,
   projectedProfileJson: string | null | undefined,
-  projectedAssumptionsJson: string | null | undefined,
+  projectedAssumptionsJson: string | null | undefined
 ): StudentProfileDocument => ({
   current: {
     assumptions: parseAssumptions(currentAssumptionsJson),
-    profile: mergeProfile(createEmptyStudentProfile(), safeParse<Partial<StudentProfile>>(currentProfileJson, undefined)),
+    profile: mergeProfile(
+      createEmptyStudentProfile(),
+      safeParse<Partial<StudentProfile>>(currentProfileJson, undefined)
+    ),
   },
   projected: {
     assumptions: parseAssumptions(projectedAssumptionsJson),
-    profile: mergeProfile(createEmptyStudentProfile(), safeParse<Partial<StudentProfile>>(projectedProfileJson, undefined)),
+    profile: mergeProfile(
+      createEmptyStudentProfile(),
+      safeParse<Partial<StudentProfile>>(projectedProfileJson, undefined)
+    ),
   },
 });
 
-export const serializeStudentProfile = (profile: StudentProfile): string => JSON.stringify(profile);
+export const serializeStudentProfile = (profile: StudentProfile): string =>
+  JSON.stringify(profile);
 
 export const serializeAssumptions = (assumptions: string[]): string =>
   JSON.stringify(assumptions.map((item) => item.trim()).filter(Boolean));
 
 export const getStudentProfileMissingFields = (
-  document: StudentProfileDocument,
+  document: StudentProfileDocument
 ): StudentProfileMissingField[] => {
   const gaps: StudentProfileMissingField[] = [];
   const add = (
     snapshotKind: "current" | "projected",
     path: string,
     message: string,
-    missing: boolean,
+    missing: boolean
   ) => {
     if (missing) {
       gaps.push({ snapshotKind, path, message });
@@ -298,12 +380,42 @@ export const getStudentProfileMissingFields = (
   };
 
   const current = document.current.profile;
-  add("current", "citizenshipCountry", "Citizenship country is required.", !current.citizenshipCountry.trim());
-  add("current", "targetEntryTerm", "Target entry term is required.", !current.targetEntryTerm.trim());
-  add("current", "academic.currentGpa100", "Current GPA is required.", current.academic.currentGpa100 === null);
-  add("current", "academic.curriculumStrength", "Curriculum strength is required.", current.academic.curriculumStrength === "unknown");
-  add("current", "academic.classRankPercent", "Class rank percentile is required.", current.academic.classRankPercent === null);
-  add("current", "testing.willSubmitTests", "Test submission intent is required.", current.testing.willSubmitTests === null);
+  add(
+    "current",
+    "citizenshipCountry",
+    "Citizenship country is required.",
+    !current.citizenshipCountry.trim()
+  );
+  add(
+    "current",
+    "targetEntryTerm",
+    "Target entry term is required.",
+    !current.targetEntryTerm.trim()
+  );
+  add(
+    "current",
+    "academic.currentGpa100",
+    "Current GPA is required.",
+    current.academic.currentGpa100 === null
+  );
+  add(
+    "current",
+    "academic.curriculumStrength",
+    "Curriculum strength is required.",
+    current.academic.curriculumStrength === "unknown"
+  );
+  add(
+    "current",
+    "academic.classRankPercent",
+    "Class rank percentile is required.",
+    current.academic.classRankPercent === null
+  );
+  add(
+    "current",
+    "testing.willSubmitTests",
+    "Test submission intent is required.",
+    current.testing.willSubmitTests === null
+  );
   add(
     "current",
     "testing.scoresOrExam",
@@ -311,9 +423,14 @@ export const getStudentProfileMissingFields = (
     current.testing.willSubmitTests !== false &&
       current.testing.satTotal === null &&
       current.testing.actComposite === null &&
-      current.testing.englishExamType === "unknown",
+      current.testing.englishExamType === "unknown"
   );
-  add("current", "preferences.intendedMajors", "At least one intended major is required.", current.preferences.intendedMajors.length === 0);
+  add(
+    "current",
+    "preferences.intendedMajors",
+    "At least one intended major is required.",
+    current.preferences.intendedMajors.length === 0
+  );
   const hasPreferredLocation =
     current.preferences.preferredStates.length > 0 ||
     current.preferences.preferredLocationPreferences.length > 0;
@@ -321,23 +438,88 @@ export const getStudentProfileMissingFields = (
     "current",
     "preferences.preferredLocationPreferences",
     "At least one preferred location is required.",
-    !hasPreferredLocation,
+    !hasPreferredLocation
   );
-  add("current", "preferences.preferredCampusLocale", "At least one preferred campus locale is required.", current.preferences.preferredCampusLocale.length === 0);
-  add("current", "preferences.preferredSchoolControl", "At least one school control preference is required.", current.preferences.preferredSchoolControl.length === 0);
-  add("current", "preferences.preferredUndergraduateSize", "Preferred undergraduate size is required.", current.preferences.preferredUndergraduateSize === "unknown");
-  add("current", "budget.annualBudgetUsd", "Annual budget is required.", current.budget.annualBudgetUsd === null);
-  add("current", "budget.needsFinancialAid", "Financial aid need is required.", current.budget.needsFinancialAid === null);
-  add("current", "budget.needsMeritAid", "Merit aid preference is required.", current.budget.needsMeritAid === null);
-  add("current", "budget.budgetFlexibility", "Budget flexibility is required.", current.budget.budgetFlexibility === "unknown");
-  add("current", "readiness.wantsEarlyRound", "Early-round intent is required.", current.readiness.wantsEarlyRound === null);
-  add("current", "readiness.hasTeacherRecommendationsReady", "Teacher recommendation readiness is required.", current.readiness.hasTeacherRecommendationsReady === null);
-  add("current", "readiness.hasCounselorDocumentsReady", "Counselor document readiness is required.", current.readiness.hasCounselorDocumentsReady === null);
-  add("current", "readiness.hasEssayDraftsStarted", "Essay readiness is required.", current.readiness.hasEssayDraftsStarted === null);
+  add(
+    "current",
+    "preferences.preferredCampusLocale",
+    "At least one preferred campus locale is required.",
+    current.preferences.preferredCampusLocale.length === 0
+  );
+  add(
+    "current",
+    "preferences.preferredSchoolControl",
+    "At least one school control preference is required.",
+    current.preferences.preferredSchoolControl.length === 0
+  );
+  add(
+    "current",
+    "preferences.preferredUndergraduateSize",
+    "Preferred undergraduate size is required.",
+    current.preferences.preferredUndergraduateSize === "unknown"
+  );
+  add(
+    "current",
+    "budget.annualBudgetUsd",
+    "Annual budget is required.",
+    current.budget.annualBudgetUsd === null
+  );
+  add(
+    "current",
+    "budget.needsFinancialAid",
+    "Financial aid need is required.",
+    current.budget.needsFinancialAid === null
+  );
+  add(
+    "current",
+    "budget.needsMeritAid",
+    "Merit aid preference is required.",
+    current.budget.needsMeritAid === null
+  );
+  add(
+    "current",
+    "budget.budgetFlexibility",
+    "Budget flexibility is required.",
+    current.budget.budgetFlexibility === "unknown"
+  );
+  add(
+    "current",
+    "readiness.wantsEarlyRound",
+    "Early-round intent is required.",
+    current.readiness.wantsEarlyRound === null
+  );
+  add(
+    "current",
+    "readiness.hasTeacherRecommendationsReady",
+    "Teacher recommendation readiness is required.",
+    current.readiness.hasTeacherRecommendationsReady === null
+  );
+  add(
+    "current",
+    "readiness.hasCounselorDocumentsReady",
+    "Counselor document readiness is required.",
+    current.readiness.hasCounselorDocumentsReady === null
+  );
+  add(
+    "current",
+    "readiness.hasEssayDraftsStarted",
+    "Essay readiness is required.",
+    current.readiness.hasEssayDraftsStarted === null
+  );
 
   const projected = document.projected;
-  add("projected", "academic.projectedGpa100", "Projected GPA is required.", projected.profile.academic.projectedGpa100 === null);
-  add("projected", "assumptions", "At least one projected-state assumption is required.", projected.assumptions.length === 0);
+  add(
+    "projected",
+    "academic.projectedGpa100",
+    "Projected GPA is required.",
+    projected.profile.academic.projectedGpa100 === null
+  );
+  add(
+    "projected",
+    "assumptions",
+    "At least one projected-state assumption is required.",
+    projected.assumptions.length === 0
+  );
 
   return gaps;
 };
@@ -348,13 +530,13 @@ export const buildStudentProfileDocumentFromUserFields = (
     profileCurrentAssumptionsJson: string | null;
     profileProjectedJson: string | null;
     profileProjectedAssumptionsJson: string | null;
-  }>,
+  }>
 ): StudentProfileDocument => {
   const current = parseStudentProfileDocument(
     fields.profileCurrentJson,
     fields.profileCurrentAssumptionsJson,
     fields.profileProjectedJson,
-    fields.profileProjectedAssumptionsJson,
+    fields.profileProjectedAssumptionsJson
   );
 
   return {
@@ -364,7 +546,7 @@ export const buildStudentProfileDocumentFromUserFields = (
 };
 
 export const buildStudentProfileDocumentFromState = (
-  state: StudentProfileState,
+  state: StudentProfileState
 ): StudentProfileDocument => {
   const profile = state.profile
     ? {
@@ -390,7 +572,8 @@ export const buildStudentProfileDocumentFromState = (
     : profile;
   const projectedSnapshotProfile = state.snapshots.projected.profile
     ? {
-        citizenshipCountry: state.snapshots.projected.profile.citizenshipCountry,
+        citizenshipCountry:
+          state.snapshots.projected.profile.citizenshipCountry,
         targetEntryTerm: state.snapshots.projected.profile.targetEntryTerm,
         academic: state.snapshots.projected.profile.academic,
         testing: state.snapshots.projected.profile.testing,

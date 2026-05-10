@@ -29,12 +29,12 @@ import {
 
 export const universityValidationStatusEnum = pgEnum(
   "university_validation_status",
-  universityValidationStatuses,
+  universityValidationStatuses
 );
 
 export const universitySourceKindEnum = pgEnum(
   "university_source_kind",
-  universitySourceKinds,
+  universitySourceKinds
 );
 
 export const universities = pgTable(
@@ -63,11 +63,11 @@ export const universities = pgTable(
       .default(sql`'[]'::jsonb`),
     tuitionAnnualUsd: integer("tuition_annual_usd").notNull(),
     estimatedCostOfAttendanceUsd: integer(
-      "estimated_cost_of_attendance_usd",
+      "estimated_cost_of_attendance_usd"
     ).notNull(),
     livingCostEstimateUsd: integer("living_cost_estimate_usd").notNull(),
     scholarshipAvailabilityFlag: boolean(
-      "scholarship_availability_flag",
+      "scholarship_availability_flag"
     ).notNull(),
     scholarshipNotes: text("scholarship_notes").notNull(),
     recommendationInputs: jsonb("recommendation_inputs")
@@ -95,12 +95,12 @@ export const universities = pgTable(
   },
   (table) => ({
     validationStatusIdx: index("universities_validation_status_idx").on(
-      table.validationStatus,
+      table.validationStatus
     ),
     admissionsUrlIdx: uniqueIndex("universities_admissions_url_idx").on(
-      table.officialAdmissionsUrl,
+      table.officialAdmissionsUrl
     ),
-  }),
+  })
 );
 
 export const universitySources = pgTable(
@@ -128,10 +128,10 @@ export const universitySources = pgTable(
   },
   (table) => ({
     universityFieldSourceIdx: uniqueIndex(
-      "university_sources_university_field_url_idx",
+      "university_sources_university_field_url_idx"
     ).on(table.universityId, table.fieldKey, table.sourceUrl),
     universityIdIdx: index("university_sources_university_id_idx").on(
-      table.universityId,
+      table.universityId
     ),
-  }),
+  })
 );

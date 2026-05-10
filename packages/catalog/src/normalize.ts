@@ -24,7 +24,7 @@ import {
 
 export function normalizeUniversityCatalogRecord(
   selectedSources: SelectedCatalogFieldSource[],
-  lastVerifiedAt: Date,
+  lastVerifiedAt: Date
 ): CatalogNormalizationResult {
   const issues: CatalogNormalizationResult["issues"] = [];
   const sourceMap = buildSourceMap(selectedSources);
@@ -35,29 +35,33 @@ export function normalizeUniversityCatalogRecord(
   const officialAdmissionsUrl = parseRequiredString(
     "officialAdmissionsUrl",
     sourceMap,
-    issues,
+    issues
   );
   const applicationRounds = parseRounds(sourceMap, issues);
   const deadlinesByRound = parseDeadlines(sourceMap, issues);
   const englishRequirements = parseEnglishRequirements(sourceMap, issues);
   const testPolicy = parseRequiredString("testPolicy", sourceMap, issues);
   const requiredMaterials = parseRequiredMaterials(sourceMap, issues);
-  const tuitionAnnualUsd = parsePositiveInteger("tuitionAnnualUsd", sourceMap, issues);
+  const tuitionAnnualUsd = parsePositiveInteger(
+    "tuitionAnnualUsd",
+    sourceMap,
+    issues
+  );
   const estimatedCostOfAttendanceUsd = parsePositiveInteger(
     "estimatedCostOfAttendanceUsd",
     sourceMap,
-    issues,
+    issues
   );
   const livingCostEstimateUsd = parsePositiveInteger(
     "livingCostEstimateUsd",
     sourceMap,
-    issues,
+    issues
   );
   const scholarshipAvailabilityFlag = parseScholarshipFlag(sourceMap, issues);
   const scholarshipNotes = parseRequiredString(
     "scholarshipNotes",
     sourceMap,
-    issues,
+    issues
   );
 
   if (Number.isNaN(lastVerifiedAt.valueOf())) {

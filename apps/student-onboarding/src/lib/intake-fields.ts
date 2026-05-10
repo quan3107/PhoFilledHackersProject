@@ -48,7 +48,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Citizenship country",
     priority: 10,
     recommendationCritical: true,
-    whyItMatters: "Citizenship changes admissions context, testing, and aid expectations.",
+    whyItMatters:
+      "Citizenship changes admissions context, testing, and aid expectations.",
     answerHint: "A country name such as Vietnam or Canada.",
   },
   {
@@ -56,7 +57,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Target entry term",
     priority: 20,
     recommendationCritical: true,
-    whyItMatters: "Application timing changes deadlines and readiness pressure.",
+    whyItMatters:
+      "Application timing changes deadlines and readiness pressure.",
     answerHint: "A term like Fall 2027 or Spring 2028.",
   },
   {
@@ -73,14 +75,16 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     priority: 40,
     recommendationCritical: true,
     whyItMatters: "Course rigor affects how schools interpret GPA.",
-    answerHint: "Examples: baseline, rigorous, most rigorous, IB, AP, A-Levels.",
+    answerHint:
+      "Examples: baseline, rigorous, most rigorous, IB, AP, A-Levels.",
   },
   {
     path: "academic.classRankPercent",
     label: "Class rank percentile",
     priority: 50,
     recommendationCritical: true,
-    whyItMatters: "Class rank helps calibrate academic standing when available.",
+    whyItMatters:
+      "Class rank helps calibrate academic standing when available.",
     answerHint: "A percentile such as top 10% or 15.",
   },
   {
@@ -88,7 +92,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Test submission intent",
     priority: 60,
     recommendationCritical: true,
-    whyItMatters: "Recommendations need to know whether test scores will be part of the application.",
+    whyItMatters:
+      "Recommendations need to know whether test scores will be part of the application.",
     answerHint: "Yes or no.",
   },
   {
@@ -96,7 +101,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "SAT score",
     priority: 70,
     recommendationCritical: true,
-    whyItMatters: "A submitted SAT score affects academic fit and shortlist calibration.",
+    whyItMatters:
+      "A submitted SAT score affects academic fit and shortlist calibration.",
     answerHint: "A total score such as 1450.",
   },
   {
@@ -104,7 +110,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "ACT score",
     priority: 80,
     recommendationCritical: true,
-    whyItMatters: "A submitted ACT score affects academic fit and shortlist calibration.",
+    whyItMatters:
+      "A submitted ACT score affects academic fit and shortlist calibration.",
     answerHint: "A composite score such as 32.",
   },
   {
@@ -112,7 +119,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "English exam type",
     priority: 90,
     recommendationCritical: true,
-    whyItMatters: "International English testing affects admissibility for many schools.",
+    whyItMatters:
+      "International English testing affects admissibility for many schools.",
     answerHint: "IELTS, TOEFL, Duolingo, none, or unknown.",
   },
   {
@@ -120,7 +128,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "English exam score",
     priority: 100,
     recommendationCritical: true,
-    whyItMatters: "English score thresholds can block otherwise strong candidates.",
+    whyItMatters:
+      "English score thresholds can block otherwise strong candidates.",
     answerHint: "A score like IELTS 7.5 or TOEFL 100.",
   },
   {
@@ -136,7 +145,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Annual budget",
     priority: 120,
     recommendationCritical: true,
-    whyItMatters: "Budget is the fastest way to avoid unrealistic recommendations.",
+    whyItMatters:
+      "Budget is the fastest way to avoid unrealistic recommendations.",
     answerHint: "A yearly USD budget such as 40000.",
   },
   {
@@ -144,7 +154,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Need for financial aid",
     priority: 130,
     recommendationCritical: true,
-    whyItMatters: "Need-based aid changes the realistic school set for international students.",
+    whyItMatters:
+      "Need-based aid changes the realistic school set for international students.",
     answerHint: "Yes or no.",
   },
   {
@@ -152,7 +163,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Need for merit aid",
     priority: 140,
     recommendationCritical: true,
-    whyItMatters: "Merit aid interest helps refine budget strategy and school mix.",
+    whyItMatters:
+      "Merit aid interest helps refine budget strategy and school mix.",
     answerHint: "Yes or no.",
   },
   {
@@ -160,7 +172,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Budget flexibility",
     priority: 150,
     recommendationCritical: false,
-    whyItMatters: "Flexibility shows whether the shortlist can stretch or must stay strict.",
+    whyItMatters:
+      "Flexibility shows whether the shortlist can stretch or must stay strict.",
     answerHint: "Low, medium, high, or unknown.",
   },
   {
@@ -168,15 +181,18 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Preferred broad locations",
     priority: 160,
     recommendationCritical: true,
-    whyItMatters: "Location preferences help narrow the list to realistic regions.",
-    answerHint: "Examples: US East Coast, US West Coast, Canada, UK, no preference.",
+    whyItMatters:
+      "Location preferences help narrow the list to realistic regions.",
+    answerHint:
+      "Examples: US East Coast, US West Coast, Canada, UK, no preference.",
   },
   {
     path: "preferences.preferredStates",
     label: "Preferred US states",
     priority: 170,
     recommendationCritical: false,
-    whyItMatters: "State preferences can further refine recommendations within the US.",
+    whyItMatters:
+      "State preferences can further refine recommendations within the US.",
     answerHint: "Two-letter states such as CA or MA.",
   },
   {
@@ -192,7 +208,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Preferred school control",
     priority: 190,
     recommendationCritical: false,
-    whyItMatters: "Public versus private preference changes school mix and cost patterns.",
+    whyItMatters:
+      "Public versus private preference changes school mix and cost patterns.",
     answerHint: "Public, private nonprofit, or both.",
   },
   {
@@ -200,7 +217,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Preferred school size",
     priority: 200,
     recommendationCritical: false,
-    whyItMatters: "School size is a fit preference that helps rank otherwise similar options.",
+    whyItMatters:
+      "School size is a fit preference that helps rank otherwise similar options.",
     answerHint: "Small, medium, large, or unknown.",
   },
   {
@@ -208,7 +226,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Early round intent",
     priority: 210,
     recommendationCritical: false,
-    whyItMatters: "Application strategy changes when the student wants an early round.",
+    whyItMatters:
+      "Application strategy changes when the student wants an early round.",
     answerHint: "Yes or no.",
   },
   {
@@ -224,7 +243,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Counselor documents ready",
     priority: 230,
     recommendationCritical: false,
-    whyItMatters: "Missing school documents can block an otherwise good application plan.",
+    whyItMatters:
+      "Missing school documents can block an otherwise good application plan.",
     answerHint: "Yes or no.",
   },
   {
@@ -232,7 +252,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Essay drafts started",
     priority: 240,
     recommendationCritical: false,
-    whyItMatters: "Essay readiness affects how aggressive the application plan can be.",
+    whyItMatters:
+      "Essay readiness affects how aggressive the application plan can be.",
     answerHint: "Yes or no.",
   },
   {
@@ -240,7 +261,8 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Projected GPA",
     priority: 250,
     recommendationCritical: false,
-    whyItMatters: "Projected GPA supports upside scenarios and stretch planning.",
+    whyItMatters:
+      "Projected GPA supports upside scenarios and stretch planning.",
     answerHint: "A future GPA on any common scale.",
   },
   {
@@ -248,13 +270,15 @@ export const intakeFieldDefinitions: IntakeFieldDefinition[] = [
     label: "Projected assumptions",
     priority: 260,
     recommendationCritical: false,
-    whyItMatters: "Projected assumptions explain what must improve for a stronger outcome.",
-    answerHint: "One or more short assumptions such as retake SAT or finish essays early.",
+    whyItMatters:
+      "Projected assumptions explain what must improve for a stronger outcome.",
+    answerHint:
+      "One or more short assumptions such as retake SAT or finish essays early.",
   },
 ];
 
 export const intakeFieldDefinitionByPath = new Map(
-  intakeFieldDefinitions.map((field) => [field.path, field]),
+  intakeFieldDefinitions.map((field) => [field.path, field])
 );
 
 export const totalIntakeFieldCount = intakeFieldDefinitions.length;

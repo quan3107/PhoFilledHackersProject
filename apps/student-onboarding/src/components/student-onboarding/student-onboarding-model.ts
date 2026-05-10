@@ -10,7 +10,12 @@ import {
 
 export type Locale = "en" | "vi";
 export type ThemeMode = "light" | "dark" | "system";
-export type StudentOnboardingRoute = "chat" | "profile" | "results" | "review" | "settings";
+export type StudentOnboardingRoute =
+  | "chat"
+  | "profile"
+  | "results"
+  | "review"
+  | "settings";
 
 export interface Viewer {
   name: string;
@@ -56,11 +61,15 @@ export interface StudentOnboardingMissingField {
   message: string;
 }
 
-export const cloneProfile = (profile: StudentProfileDraft): StudentProfileDraft => ({
+export const cloneProfile = (
+  profile: StudentProfileDraft
+): StudentProfileDraft => ({
   ...profile,
 });
 
-export const cloneDocument = (document: StudentOnboardingDocument): StudentOnboardingDocument => ({
+export const cloneDocument = (
+  document: StudentOnboardingDocument
+): StudentOnboardingDocument => ({
   current: {
     profile: cloneProfile(document.current.profile),
     assumptions: [...document.current.assumptions],
@@ -71,7 +80,9 @@ export const cloneDocument = (document: StudentOnboardingDocument): StudentOnboa
   },
 });
 
-export const createEmptyDocument = (viewerName = ""): StudentOnboardingDocument => ({
+export const createEmptyDocument = (
+  viewerName = ""
+): StudentOnboardingDocument => ({
   current: {
     profile: { ...initialProfileDraft, fullName: viewerName },
     assumptions: [],
@@ -85,7 +96,8 @@ export const createEmptyDocument = (viewerName = ""): StudentOnboardingDocument 
 export const syncProjectedBase = (document: StudentOnboardingDocument) => {
   document.projected.profile = {
     ...cloneProfile(document.current.profile),
-    fullName: document.projected.profile.fullName || document.current.profile.fullName,
+    fullName:
+      document.projected.profile.fullName || document.current.profile.fullName,
   };
 };
 
@@ -113,7 +125,7 @@ const isMissing = (value: string) => value.trim().length === 0;
 
 export const getMissingFields = (
   snapshot: StudentOnboardingSnapshot,
-  snapshotKind: "current" | "projected",
+  snapshotKind: "current" | "projected"
 ) => {
   const missing: StudentOnboardingMissingField[] = [];
 
@@ -139,12 +151,14 @@ export const getMissingFields = (
 };
 
 export const buildSummary = (
-  document: StudentOnboardingDocument,
+  document: StudentOnboardingDocument
 ): StudentOnboardingSummary => {
   const currentMissing = getMissingFields(document.current, "current");
   const projectedMissing = getMissingFields(document.projected, "projected");
   const totalChecks = requiredProfileFields.length;
-  const filled = requiredProfileFields.filter((field) => !isMissing(document.current.profile[field])).length;
+  const filled = requiredProfileFields.filter(
+    (field) => !isMissing(document.current.profile[field])
+  ).length;
   const completion = Math.round((filled / totalChecks) * 100);
 
   return {
@@ -154,13 +168,28 @@ export const buildSummary = (
     projectedMissingCount: projectedMissing.length,
     currentHighlights: [
       { label: "Name", value: document.current.profile.fullName || "Not set" },
-      { label: "Major", value: document.current.profile.intendedMajors || "Not set" },
-      { label: "Budget", value: document.current.profile.annualBudget || "Not set" },
+      {
+        label: "Major",
+        value: document.current.profile.intendedMajors || "Not set",
+      },
+      {
+        label: "Budget",
+        value: document.current.profile.annualBudget || "Not set",
+      },
     ],
     projectedHighlights: [
-      { label: "Projected GPA", value: document.projected.profile.gpa || "Not set" },
-      { label: "Location", value: document.projected.profile.geographyPreferences || "Not set" },
-      { label: "Readiness", value: document.projected.profile.essayDraftsStarted || "Not set" },
+      {
+        label: "Projected GPA",
+        value: document.projected.profile.gpa || "Not set",
+      },
+      {
+        label: "Location",
+        value: document.projected.profile.geographyPreferences || "Not set",
+      },
+      {
+        label: "Readiness",
+        value: document.projected.profile.essayDraftsStarted || "Not set",
+      },
     ],
     nextSteps: currentMissing.slice(0, 4).map((field) => field.message),
   };
@@ -171,19 +200,24 @@ const normalize = (value: string) => value.trim().replace(/\s+/g, " ");
 export const applyChatPrompt = (
   prompt: string,
   document: StudentOnboardingDocument,
-  viewerName: string,
+  viewerName: string
 ) => {
   const next = cloneDocument(document);
   const lower = prompt.toLowerCase();
   const changes: string[] = [];
   let nextViewerName = viewerName;
 
-  const updateCurrentAndProjected = (key: keyof StudentProfileDraft, value: string) => {
+  const updateCurrentAndProjected = (
+    key: keyof StudentProfileDraft,
+    value: string
+  ) => {
     next.current.profile[key] = value;
     next.projected.profile[key] = value;
   };
 
-  const nameMatch = prompt.match(/\b(?:my name is|i am|i'm|call me)\s+([A-Za-z][A-Za-z.'\-]*(?:\s+[A-Za-z][A-Za-z.'\-]*)*)/i);
+  const nameMatch = prompt.match(
+    /\b(?:my name is|i am|i'm|call me)\s+([A-Za-z][A-Za-z.'\-]*(?:\s+[A-Za-z][A-Za-z.'\-]*)*)/i
+  );
   if (nameMatch?.[1]) {
     nextViewerName = normalize(nameMatch[1]);
     updateCurrentAndProjected("fullName", nextViewerName);
@@ -203,7 +237,9 @@ export const applyChatPrompt = (
     changes.push(`Set graduation year to ${yearMatch[1]}.`);
   }
 
-  const majorMatch = prompt.match(/\b(?:major(?:ing)? in|majors?:|interested in)\s+([^.;\n]+)/i);
+  const majorMatch = prompt.match(
+    /\b(?:major(?:ing)? in|majors?:|interested in)\s+([^.;\n]+)/i
+  );
   if (majorMatch?.[1]) {
     const major = normalize(majorMatch[1]);
     updateCurrentAndProjected("intendedMajors", major);
@@ -222,28 +258,42 @@ export const applyChatPrompt = (
   if (lower.includes("financial aid") || lower.includes("scholarship")) {
     updateCurrentAndProjected(
       "scholarshipNeed",
-      lower.includes("essential") ? "Essential - can't attend without it" : "Important but not critical",
+      lower.includes("essential")
+        ? "Essential - can't attend without it"
+        : "Important but not critical"
     );
     changes.push("Updated scholarship preferences.");
   }
 
   if (lower.includes("essay")) {
-    updateCurrentAndProjected("essayDraftsStarted", lower.includes("not started") ? "No" : "Yes");
+    updateCurrentAndProjected(
+      "essayDraftsStarted",
+      lower.includes("not started") ? "No" : "Yes"
+    );
     changes.push("Updated essay readiness.");
   }
 
   if (lower.includes("recommendation")) {
-    updateCurrentAndProjected("teacherRecommendationsReady", lower.includes("not yet") ? "No" : "Yes");
+    updateCurrentAndProjected(
+      "teacherRecommendationsReady",
+      lower.includes("not yet") ? "No" : "Yes"
+    );
     changes.push("Updated recommendation readiness.");
   }
 
   if (lower.includes("counselor")) {
-    updateCurrentAndProjected("counselorDocumentsReady", lower.includes("not yet") ? "No" : "Yes");
+    updateCurrentAndProjected(
+      "counselorDocumentsReady",
+      lower.includes("not yet") ? "No" : "Yes"
+    );
     changes.push("Updated counselor document readiness.");
   }
 
   if (lower.includes("early round") || lower.includes("early")) {
-    updateCurrentAndProjected("wantsEarlyRound", lower.includes("no") ? "No - regular rounds" : "Yes - planning early");
+    updateCurrentAndProjected(
+      "wantsEarlyRound",
+      lower.includes("no") ? "No - regular rounds" : "Yes - planning early"
+    );
     changes.push("Updated early-round plan.");
   }
 

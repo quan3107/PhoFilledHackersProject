@@ -7,10 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admission.stanford.edu/"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": null,
@@ -53,20 +50,11 @@
     "internationalAidPolicy": "meets_full_demonstrated_need_if_eligible",
     "hasNeedBasedAid": true,
     "hasMeritAid": false,
-    "programFitTags": [
-      "engineering",
-      "computer_science",
-      "research_intensive"
-    ],
+    "programFitTags": ["engineering", "computer_science", "research_intensive"],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "restrictive_early_action"
-    ],
+    "applicationStrategyTags": ["restrictive_early_action"],
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "by the end of October for Restrictive Early Action and by the end of December for Regular Decision",

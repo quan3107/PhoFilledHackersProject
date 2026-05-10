@@ -42,16 +42,20 @@ test("student intake sessions round-trip through the schema", async () => {
       ],
     });
 
-    const storedSession = await database.db.query.studentIntakeSessions.findFirst({
-      where: eq(studentIntakeSessions.userId, "user_1"),
-    });
+    const storedSession =
+      await database.db.query.studentIntakeSessions.findFirst({
+        where: eq(studentIntakeSessions.userId, "user_1"),
+      });
 
     assert.ok(storedSession);
     assert.equal(storedSession?.currentStepIndex, 3);
     assert.equal(storedSession?.conversationDone, false);
     assert.equal(storedSession?.messages.length, 2);
     assert.equal(storedSession?.messages[0].role, "assistant");
-    assert.equal(storedSession?.messages[1].text, "I want to major in computer science.");
+    assert.equal(
+      storedSession?.messages[1].text,
+      "I want to major in computer science."
+    );
 
     await database.db
       .update(studentIntakeSessions)
@@ -70,9 +74,10 @@ test("student intake sessions round-trip through the schema", async () => {
       })
       .where(eq(studentIntakeSessions.userId, "user_1"));
 
-    const reloadedSession = await database.db.query.studentIntakeSessions.findFirst({
-      where: eq(studentIntakeSessions.userId, "user_1"),
-    });
+    const reloadedSession =
+      await database.db.query.studentIntakeSessions.findFirst({
+        where: eq(studentIntakeSessions.userId, "user_1"),
+      });
 
     assert.ok(reloadedSession);
     assert.equal(reloadedSession.currentStepIndex, 5);
@@ -153,9 +158,10 @@ test("student intake sessions preserve richer LLM metadata inside message payloa
       messages: messages as never,
     });
 
-    const storedSession = await database.db.query.studentIntakeSessions.findFirst({
-      where: eq(studentIntakeSessions.userId, "user_2"),
-    });
+    const storedSession =
+      await database.db.query.studentIntakeSessions.findFirst({
+        where: eq(studentIntakeSessions.userId, "user_2"),
+      });
 
     assert.ok(storedSession);
     assert.deepEqual(storedSession?.messages, messages);

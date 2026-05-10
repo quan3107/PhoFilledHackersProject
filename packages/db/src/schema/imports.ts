@@ -23,7 +23,7 @@ import { universities, universitySourceKindEnum } from "./universities.js";
 
 export const catalogImportStatusEnum = pgEnum(
   "catalog_import_status",
-  catalogImportStatuses,
+  catalogImportStatuses
 );
 
 export const catalogImportRuns = pgTable(
@@ -54,7 +54,7 @@ export const catalogImportRuns = pgTable(
   },
   (table) => ({
     statusIdx: index("catalog_import_runs_status_idx").on(table.status),
-  }),
+  })
 );
 
 export const catalogImportItems = pgTable(
@@ -92,8 +92,8 @@ export const catalogImportItems = pgTable(
     runFieldSourceIdx: uniqueIndex("catalog_import_items_run_field_url_idx").on(
       table.importRunId,
       table.fieldKey,
-      table.sourceUrl,
+      table.sourceUrl
     ),
     runIdIdx: index("catalog_import_items_run_id_idx").on(table.importRunId),
-  }),
+  })
 );

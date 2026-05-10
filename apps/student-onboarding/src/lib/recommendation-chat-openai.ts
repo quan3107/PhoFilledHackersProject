@@ -50,7 +50,9 @@ function readOutputText(body: OpenAiResponseBody) {
   return null;
 }
 
-export function createRecommendationChatOpenAiClient(fetchImpl: typeof fetch = fetch) {
+export function createRecommendationChatOpenAiClient(
+  fetchImpl: typeof fetch = fetch
+) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("Missing OPENAI_API_KEY.");
@@ -92,14 +94,20 @@ export function createRecommendationChatOpenAiClient(fetchImpl: typeof fetch = f
         }),
       });
 
-      const body = (await response.json().catch(() => null)) as OpenAiResponseBody | null;
+      const body = (await response
+        .json()
+        .catch(() => null)) as OpenAiResponseBody | null;
       if (!response.ok) {
-        throw new Error(body?.error?.message ?? "Recommendation chat request failed.");
+        throw new Error(
+          body?.error?.message ?? "Recommendation chat request failed."
+        );
       }
 
       const text = body ? readOutputText(body) : null;
       if (!text) {
-        throw new Error("Recommendation chat response did not include JSON output text.");
+        throw new Error(
+          "Recommendation chat response did not include JSON output text."
+        );
       }
 
       return JSON.parse(text) as RecommendationChatModelOutput;

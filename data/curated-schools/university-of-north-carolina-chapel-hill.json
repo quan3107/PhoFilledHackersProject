@@ -7,10 +7,7 @@
     "state": "NC",
     "officialAdmissionsUrl": "https://admissions.unc.edu/apply/types-of-applications/first-year/"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-10-15",
     "early_decision": null,
@@ -43,10 +40,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": 930,
       "minimumActComposite": 17,
       "latestSatTestDateNote": "For Early Action, supporting materials and test scores are due November 7. For Regular Decision, supporting materials and test scores are due February 21.",
@@ -69,15 +63,9 @@
     "undergraduateSize": 20556,
     "campusLocale": null,
     "averageNetPriceUsd": null,
-    "programFitTags": [
-      "research_intensive",
-      "humanities",
-      "social_sciences"
-    ],
+    "programFitTags": ["research_intensive", "humanities", "social_sciences"],
     "programAdmissionModel": "open",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "highly_selective",

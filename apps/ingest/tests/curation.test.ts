@@ -21,24 +21,21 @@ test("findNextCuratedSchool returns the first missing QS artifact", async () => 
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "ingest-curation-"));
   await writeFile(
     path.join(tempDir, "massachusetts-institute-of-technology.json"),
-    "{}\n",
+    "{}\n"
   );
 
   const result = await findNextCuratedSchool({
     curatedSchoolsDir: tempDir,
     seedListPath: new URL(
       "../../../data/curated-schools/qs-us-top-50-2026.json",
-      import.meta.url,
+      import.meta.url
     ).pathname,
   });
 
   assert.equal(result.done, false);
   if (!result.done) {
     assert.equal(result.school.slug, "stanford");
-    assert.equal(
-      path.basename(result.artifactPath),
-      "stanford.json",
-    );
+    assert.equal(path.basename(result.artifactPath), "stanford.json");
   }
 });
 
@@ -46,7 +43,7 @@ test("buildCurationPrompt includes school-specific guidance and the output examp
   const prompt = await buildCurationPrompt("stanford", {
     seedListPath: new URL(
       "../../../data/curated-schools/qs-us-top-50-2026.json",
-      import.meta.url,
+      import.meta.url
     ).pathname,
   });
 
@@ -64,8 +61,8 @@ test("validateCurationArtifact accepts the current Stanford artifact shape", asy
   const raw = JSON.parse(
     await readFile(
       new URL("../../../data/curated-schools/stanford.json", import.meta.url),
-      "utf8",
-    ),
+      "utf8"
+    )
   );
 
   const result = validateCurationArtifact(raw, "stanford");
@@ -76,7 +73,9 @@ test("validateCurationArtifact accepts the current Stanford artifact shape", asy
 });
 
 test("writeCuratedSchoolArtifact writes a validated artifact to disk", async () => {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), "ingest-curation-write-"));
+  const tempDir = await mkdtemp(
+    path.join(os.tmpdir(), "ingest-curation-write-")
+  );
   const example = buildCurationArtifactExample({
     usRank: 2,
     slug: "stanford",
@@ -98,9 +97,11 @@ test("writeCuratedSchoolArtifact writes a validated artifact to disk", async () 
 });
 
 test("loadCurationArtifact reads from a file path", async () => {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), "ingest-curation-load-"));
+  const tempDir = await mkdtemp(
+    path.join(os.tmpdir(), "ingest-curation-load-")
+  );
   const filePath = path.join(tempDir, "sample.json");
-  await writeFile(filePath, "{\"hello\":\"world\"}\n");
+  await writeFile(filePath, '{"hello":"world"}\n');
 
   const loaded = await loadCurationArtifact(filePath);
   assert.deepEqual(loaded, { hello: "world" });

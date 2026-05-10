@@ -2,10 +2,7 @@
 // Normalization and provenance helpers for the branch-3 ingest runner.
 // Converts the model draft into the canonical catalog shape and keeps field provenance explicit.
 
-import {
-  type CatalogImportStatus,
-  type UniversitySourceKind,
-} from "@etest/db";
+import { type CatalogImportStatus, type UniversitySourceKind } from "@etest/db";
 
 import {
   normalizeUniversityCatalogRecord,
@@ -15,7 +12,11 @@ import {
   type SelectedCatalogFieldSource,
 } from "@etest/catalog";
 
-import type { FieldImportItemInput, SchoolExtractionDraft, SeedSchool } from "./types.js";
+import type {
+  FieldImportItemInput,
+  SchoolExtractionDraft,
+  SeedSchool,
+} from "./types.js";
 import {
   assertMatchingIdentity,
   normalizeApplicationRounds,
@@ -39,12 +40,27 @@ const fieldSourceMap: Record<
   schoolName: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
   city: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
   state: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
-  officialAdmissionsUrl: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
-  applicationRounds: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
-  deadlinesByRound: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
-  englishRequirements: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
+  officialAdmissionsUrl: {
+    sourceKind: "official_admissions",
+    sourceUrlKey: "admissions",
+  },
+  applicationRounds: {
+    sourceKind: "official_admissions",
+    sourceUrlKey: "admissions",
+  },
+  deadlinesByRound: {
+    sourceKind: "official_admissions",
+    sourceUrlKey: "admissions",
+  },
+  englishRequirements: {
+    sourceKind: "official_admissions",
+    sourceUrlKey: "admissions",
+  },
   testPolicy: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
-  requiredMaterials: { sourceKind: "official_admissions", sourceUrlKey: "admissions" },
+  requiredMaterials: {
+    sourceKind: "official_admissions",
+    sourceUrlKey: "admissions",
+  },
   tuitionAnnualUsd: { sourceKind: "official_tuition", sourceUrlKey: "tuition" },
   estimatedCostOfAttendanceUsd: {
     sourceKind: "official_cost_of_attendance",
@@ -67,7 +83,7 @@ const fieldSourceMap: Record<
 function buildFieldCandidate(
   fieldKey: ExtractedCatalogFieldCandidate["fieldKey"],
   seed: SeedSchool,
-  value: unknown,
+  value: unknown
 ): ExtractedCatalogFieldCandidate {
   const source = fieldSourceMap[fieldKey];
   return {
@@ -79,13 +95,17 @@ function buildFieldCandidate(
   };
 }
 
-function formatSelectionIssues(issues: Array<{ fieldKey: string; message: string }>) {
-  return issues.map((issue) => `${issue.fieldKey}: ${issue.message}`).join("; ");
+function formatSelectionIssues(
+  issues: Array<{ fieldKey: string; message: string }>
+) {
+  return issues
+    .map((issue) => `${issue.fieldKey}: ${issue.message}`)
+    .join("; ");
 }
 
 export function selectFieldSources(
   draft: SchoolExtractionDraft,
-  seed: SeedSchool,
+  seed: SeedSchool
 ): SelectedCatalogFieldSource[] {
   assertMatchingIdentity(seed, draft.identity);
 
@@ -96,65 +116,69 @@ export function selectFieldSources(
     buildFieldCandidate(
       "officialAdmissionsUrl",
       seed,
-      seed.officialAdmissionsUrl,
+      seed.officialAdmissionsUrl
     ),
     buildFieldCandidate(
       "applicationRounds",
       seed,
-      normalizeApplicationRounds(draft.applicationRounds),
+      normalizeApplicationRounds(draft.applicationRounds)
     ),
     buildFieldCandidate(
       "deadlinesByRound",
       seed,
-      normalizeDeadlinesByRound(draft.deadlinesByRound),
+      normalizeDeadlinesByRound(draft.deadlinesByRound)
     ),
     buildFieldCandidate(
       "englishRequirements",
       seed,
-      normalizeEnglishRequirements(draft.englishRequirements),
+      normalizeEnglishRequirements(draft.englishRequirements)
     ),
-    buildFieldCandidate("testPolicy", seed, normalizeString(draft.testPolicy, "testPolicy")),
+    buildFieldCandidate(
+      "testPolicy",
+      seed,
+      normalizeString(draft.testPolicy, "testPolicy")
+    ),
     buildFieldCandidate(
       "requiredMaterials",
       seed,
-      normalizeStringArray(draft.requiredMaterials, "requiredMaterials"),
+      normalizeStringArray(draft.requiredMaterials, "requiredMaterials")
     ),
     buildFieldCandidate(
       "tuitionAnnualUsd",
       seed,
-      normalizeCurrency(draft.tuitionAnnualUsd, "tuitionAnnualUsd"),
+      normalizeCurrency(draft.tuitionAnnualUsd, "tuitionAnnualUsd")
     ),
     buildFieldCandidate(
       "estimatedCostOfAttendanceUsd",
       seed,
       normalizeCurrency(
         draft.estimatedCostOfAttendanceUsd,
-        "estimatedCostOfAttendanceUsd",
-      ),
+        "estimatedCostOfAttendanceUsd"
+      )
     ),
     buildFieldCandidate(
       "livingCostEstimateUsd",
       seed,
-      normalizeCurrency(draft.livingCostEstimateUsd, "livingCostEstimateUsd"),
+      normalizeCurrency(draft.livingCostEstimateUsd, "livingCostEstimateUsd")
     ),
     buildFieldCandidate(
       "scholarshipAvailabilityFlag",
       seed,
       normalizeBoolean(
         draft.scholarshipAvailabilityFlag,
-        "scholarshipAvailabilityFlag",
-      ),
+        "scholarshipAvailabilityFlag"
+      )
     ),
     buildFieldCandidate(
       "scholarshipNotes",
       seed,
-      normalizeString(draft.scholarshipNotes, "scholarshipNotes"),
+      normalizeString(draft.scholarshipNotes, "scholarshipNotes")
     ),
   ]);
 
   if (selection.issues.length > 0) {
     throw new Error(
-      `Missing required official sources: ${formatSelectionIssues(selection.issues)}`,
+      `Missing required official sources: ${formatSelectionIssues(selection.issues)}`
     );
   }
 
@@ -164,26 +188,32 @@ export function selectFieldSources(
 export function normalizeUniversityExtraction(
   selectedSources: SelectedCatalogFieldSource[],
   verifiedAt: Date,
-  draft?: Pick<SchoolExtractionDraft, "recommendationInputs" | "explanationInputs">,
+  draft?: Pick<
+    SchoolExtractionDraft,
+    "recommendationInputs" | "explanationInputs"
+  >
 ): NormalizedUniversityCatalogRecord {
-  const normalization = normalizeUniversityCatalogRecord(selectedSources, verifiedAt);
+  const normalization = normalizeUniversityCatalogRecord(
+    selectedSources,
+    verifiedAt
+  );
   if (!normalization.record) {
     throw new Error(
-      `Normalization failed: ${formatSelectionIssues(normalization.issues)}`,
+      `Normalization failed: ${formatSelectionIssues(normalization.issues)}`
     );
   }
 
   return {
     ...normalization.record,
     recommendationInputs: normalizeRecommendationInputs(
-      draft?.recommendationInputs,
+      draft?.recommendationInputs
     ),
     explanationInputs: normalizeExplanationInputs(draft?.explanationInputs),
   };
 }
 
 export function buildFieldImportItems(
-  selectedSources: SelectedCatalogFieldSource[],
+  selectedSources: SelectedCatalogFieldSource[]
 ): FieldImportItemInput[] {
   return selectedSources.map((source) => ({
     fieldKey: source.fieldKey,

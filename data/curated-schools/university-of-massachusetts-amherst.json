@@ -7,10 +7,7 @@
     "state": "MA",
     "officialAdmissionsUrl": "https://www.umass.edu/admissions/undergraduate-admissions/apply/first-year-students"
   },
-  "applicationRounds": [
-    "early_action",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-05",
     "early_decision": null,
@@ -49,10 +46,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": null,
@@ -78,9 +72,7 @@
       "public_policy"
     ],
     "programAdmissionModel": "unknown",
-    "applicationStrategyTags": [
-      "non_binding_early_action"
-    ]
+    "applicationStrategyTags": ["non_binding_early_action"]
   },
   "explanationInputs": {
     "academicSelectivityBand": "moderately_selective",

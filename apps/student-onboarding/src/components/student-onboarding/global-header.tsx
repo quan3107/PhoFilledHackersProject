@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Compass, LogOut, Mail, Monitor, Moon, Settings, Sun } from "lucide-react";
+import {
+  Compass,
+  LogOut,
+  Mail,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { type Locale, type ThemeMode, copy } from "@/lib/onboarding-data";
 
 export interface Viewer {
@@ -21,10 +29,18 @@ interface GlobalHeaderProps {
   onNavigateSettings?: () => void;
 }
 
-const themeOptions: Array<{ value: ThemeMode; label: string; icon: React.ReactNode }> = [
+const themeOptions: Array<{
+  value: ThemeMode;
+  label: string;
+  icon: React.ReactNode;
+}> = [
   { value: "light", label: "Light", icon: <Sun className="h-3.5 w-3.5" /> },
   { value: "dark", label: "Dark", icon: <Moon className="h-3.5 w-3.5" /> },
-  { value: "system", label: "System", icon: <Monitor className="h-3.5 w-3.5" /> },
+  {
+    value: "system",
+    label: "System",
+    icon: <Monitor className="h-3.5 w-3.5" />,
+  },
 ];
 
 function getInitials(name: string) {
@@ -77,7 +93,9 @@ export function GlobalHeader({
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Compass className="h-4 w-4" />
         </div>
-        <span className="text-sm tracking-tight text-foreground">{text.headerTitle}</span>
+        <span className="text-sm tracking-tight text-foreground">
+          {text.headerTitle}
+        </span>
       </div>
 
       <div className="flex items-center gap-2">
@@ -86,7 +104,9 @@ export function GlobalHeader({
             type="button"
             onClick={() => onLocaleChange("en")}
             className={`cursor-pointer rounded-md px-3 py-1 text-xs transition ${
-              locale === "en" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              locale === "en"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             EN
@@ -95,7 +115,9 @@ export function GlobalHeader({
             type="button"
             onClick={() => onLocaleChange("vi")}
             className={`cursor-pointer rounded-md px-3 py-1 text-xs transition ${
-              locale === "vi" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              locale === "vi"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             VI
@@ -109,7 +131,11 @@ export function GlobalHeader({
             className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            {theme === "dark" ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Sun className="h-4 w-4" />
+            )}
           </button>
 
           {themeMenuOpen ? (
@@ -130,7 +156,9 @@ export function GlobalHeader({
                 >
                   {option.icon}
                   {option.label}
-                  {option.value === theme ? <span className="ml-auto text-primary">✓</span> : null}
+                  {option.value === theme ? (
+                    <span className="ml-auto text-primary">✓</span>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -151,7 +179,9 @@ export function GlobalHeader({
               <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-card py-2 shadow-xl">
                 <div className="px-3 py-2">
                   <p className="text-sm text-foreground">{viewer.name}</p>
-                  <p className="text-xs text-muted-foreground">{viewer.email}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {viewer.email}
+                  </p>
                 </div>
                 <div className="my-1 h-px bg-border" />
                 <button

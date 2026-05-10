@@ -7,11 +7,7 @@
     "state": "CA",
     "officialAdmissionsUrl": "https://admission.usc.edu/prospective-students/how-to-apply/first-year-students/"
   },
-  "applicationRounds": [
-    "early_action",
-    "early_decision",
-    "regular_decision"
-  ],
+  "applicationRounds": ["early_action", "early_decision", "regular_decision"],
   "deadlinesByRound": {
     "early_action": "2026-11-01",
     "early_decision": "2026-11-01",
@@ -53,10 +49,7 @@
     "hasNeedBasedAid": true,
     "hasMeritAid": true,
     "testingRequirements": {
-      "acceptedExams": [
-        "sat",
-        "act"
-      ],
+      "acceptedExams": ["sat", "act"],
       "minimumSatTotal": null,
       "minimumActComposite": null,
       "latestSatTestDateNote": "To ensure scores can be included with application materials, standardized tests should be completed at least one month before the application date.",

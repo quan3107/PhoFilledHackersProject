@@ -2,10 +2,7 @@
 // Deterministic source-selection helpers for ingest normalization.
 // Keeps field-to-source rules in one package-owned place for branch-3 ingest.
 
-import type {
-  CatalogRequiredField,
-  UniversitySourceKind,
-} from "@etest/db";
+import type { CatalogRequiredField, UniversitySourceKind } from "@etest/db";
 
 import type {
   CatalogSourceSelectionResult,
@@ -55,7 +52,7 @@ function hasContent(value: unknown) {
 }
 
 function toSelectedSource(
-  candidate: ExtractedCatalogFieldCandidate,
+  candidate: ExtractedCatalogFieldCandidate
 ): SelectedCatalogFieldSource {
   return {
     fieldKey: candidate.fieldKey,
@@ -74,13 +71,13 @@ function toSelectedSource(
 }
 
 export function selectUniversityFieldSources(
-  candidates: ExtractedCatalogFieldCandidate[],
+  candidates: ExtractedCatalogFieldCandidate[]
 ): CatalogSourceSelectionResult {
   const selectedSources: SelectedCatalogFieldSource[] = [];
   const issues: CatalogSourceSelectionResult["issues"] = [];
 
   for (const [fieldKey, preferredSourceKind] of Object.entries(
-    preferredSourceByField,
+    preferredSourceByField
   ) as Array<
     [
       Exclude<CatalogRequiredField, "lastVerifiedAt">,
@@ -92,7 +89,7 @@ export function selectUniversityFieldSources(
         candidate.fieldKey === fieldKey &&
         candidate.sourceKind === preferredSourceKind &&
         hasContent(candidate.value) &&
-        candidate.sourceUrl.trim().length > 0,
+        candidate.sourceUrl.trim().length > 0
     );
 
     if (!selectedCandidate) {
@@ -112,7 +109,7 @@ export function selectUniversityFieldSources(
 
 export function toUniversityFieldProvenance(
   selectedSources: SelectedCatalogFieldSource[],
-  lastVerifiedAt: Date,
+  lastVerifiedAt: Date
 ): UniversityFieldProvenance[] {
   return selectedSources.map((source) => ({
     fieldKey: source.fieldKey,

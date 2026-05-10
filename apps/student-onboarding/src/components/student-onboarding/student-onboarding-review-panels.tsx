@@ -72,7 +72,8 @@ export function StudentOnboardingResultsPanel({
                   {recommendationView?.title ?? "No recommendation run yet"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {recommendationView?.summary ?? "Run recommendations to populate the shortlist and reasoning surface."}
+                  {recommendationView?.summary ??
+                    "Run recommendations to populate the shortlist and reasoning surface."}
                 </p>
               </div>
               <button
@@ -81,35 +82,55 @@ export function StudentOnboardingResultsPanel({
                 disabled={runningRecommendations}
                 className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <RefreshCcw className={`h-4 w-4 ${runningRecommendations ? "animate-spin" : ""}`} />
+                <RefreshCcw
+                  className={`h-4 w-4 ${runningRecommendations ? "animate-spin" : ""}`}
+                />
                 {runningRecommendations ? "Running" : "Run"}
               </button>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <ResultStat label="Ready" value={`${summary.completion}%`} />
-              <ResultStat label="Missing fields" value={String(summary.missingCount)} />
-              <ResultStat label="Visible items" value={String(visibleItems.length)} />
+              <ResultStat
+                label="Missing fields"
+                value={String(summary.missingCount)}
+              />
+              <ResultStat
+                label="Visible items"
+                value={String(visibleItems.length)}
+              />
             </div>
           </div>
 
           {visibleItems.length ? (
             <div className="space-y-3">
               {visibleItems.map((item) => (
-                <article key={item.label} className="rounded-[1.35rem] border border-border bg-white p-4">
+                <article
+                  key={item.label}
+                  className="rounded-[1.35rem] border border-border bg-white p-4"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.value}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        {item.value}
+                      </p>
                     </div>
-                    {item.tone ? <Pill className={itemToneClass(item.tone)}>{item.tone}</Pill> : null}
+                    {item.tone ? (
+                      <Pill className={itemToneClass(item.tone)}>
+                        {item.tone}
+                      </Pill>
+                    ) : null}
                   </div>
                 </article>
               ))}
             </div>
           ) : (
             <div className="rounded-[1.35rem] border border-dashed border-border bg-white/80 p-5 text-sm text-muted-foreground">
-              Run recommendations after the backend saves a profile to populate the shortlist and reasoning surface.
+              Run recommendations after the backend saves a profile to populate
+              the shortlist and reasoning surface.
             </div>
           )}
 
@@ -125,7 +146,10 @@ export function StudentOnboardingResultsPanel({
         <SectionCard title="Gate checks" icon={CheckCircle2}>
           <div className="space-y-2">
             {missingFields.slice(0, 7).map((field) => (
-              <FieldRow key={`${field.snapshotKind}-${field.path}`} field={field} />
+              <FieldRow
+                key={`${field.snapshotKind}-${field.path}`}
+                field={field}
+              />
             ))}
             {missingFields.length === 0 ? (
               <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
@@ -175,10 +199,17 @@ export function StudentOnboardingReviewPanel({
                   {dirty ? "Draft has unsaved changes" : "Draft is in sync"}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {saveMessage ?? "Save once the profile is ready, then move into recommendations."}
+                  {saveMessage ??
+                    "Save once the profile is ready, then move into recommendations."}
                 </p>
               </div>
-              <Pill className={dirty ? "bg-warning text-warning-foreground" : "bg-success/10 text-success"}>
+              <Pill
+                className={
+                  dirty
+                    ? "bg-warning text-warning-foreground"
+                    : "bg-success/10 text-success"
+                }
+              >
                 {summary.completion}% ready
               </Pill>
             </div>
@@ -191,15 +222,26 @@ export function StudentOnboardingReviewPanel({
 
           <div className="grid gap-3 sm:grid-cols-3">
             <ResultStat label="Missing" value={String(summary.missingCount)} />
-            <ResultStat label="Current gaps" value={String(summary.currentMissingCount)} />
-            <ResultStat label="Projected gaps" value={String(summary.projectedMissingCount)} />
+            <ResultStat
+              label="Current gaps"
+              value={String(summary.currentMissingCount)}
+            />
+            <ResultStat
+              label="Projected gaps"
+              value={String(summary.projectedMissingCount)}
+            />
           </div>
 
           <div className="rounded-[1.35rem] border border-border bg-white p-4">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Critical missing fields</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Critical missing fields
+            </p>
             <div className="mt-3 space-y-2">
               {missingFields.slice(0, 6).map((field) => (
-                <FieldRow key={`${field.snapshotKind}-${field.path}`} field={field} />
+                <FieldRow
+                  key={`${field.snapshotKind}-${field.path}`}
+                  field={field}
+                />
               ))}
             </div>
           </div>
@@ -230,10 +272,12 @@ export function StudentOnboardingReviewPanel({
         <SectionCard title="Assumptions and notes" icon={AlertTriangle}>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              This surface reflects the canonical profile, intake, and recommendation state owned by the backend.
+              This surface reflects the canonical profile, intake, and
+              recommendation state owned by the backend.
             </p>
             <p>
-              Use the save action to persist the current canonical document before generating recommendations.
+              Use the save action to persist the current canonical document
+              before generating recommendations.
             </p>
           </div>
         </SectionCard>
@@ -241,7 +285,16 @@ export function StudentOnboardingReviewPanel({
         <SectionCard title="Readiness summary" icon={CheckCircle2}>
           <div className="space-y-2">
             {summary.nextSteps.length ? (
-              summary.nextSteps.map((step) => <FieldRow key={step} field={{ snapshotKind: "current", path: "next-step", message: step }} />)
+              summary.nextSteps.map((step) => (
+                <FieldRow
+                  key={step}
+                  field={{
+                    snapshotKind: "current",
+                    path: "next-step",
+                    message: step,
+                  }}
+                />
+              ))
             ) : (
               <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
                 No blocking gaps are left in the visible onboarding surface.
@@ -283,9 +336,18 @@ export function StudentOnboardingSettingsPanel({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <InfoCard title="Canonical profile" description="The backend owns the saved student profile and snapshot records." />
-            <InfoCard title="Intake transcript" description="The chat transcript can be restored from the persisted intake session." />
-            <InfoCard title="Recommendation runs" description="Recommendation history is owned by the canonical API and catalog tables." />
+            <InfoCard
+              title="Canonical profile"
+              description="The backend owns the saved student profile and snapshot records."
+            />
+            <InfoCard
+              title="Intake transcript"
+              description="The chat transcript can be restored from the persisted intake session."
+            />
+            <InfoCard
+              title="Recommendation runs"
+              description="Recommendation history is owned by the canonical API and catalog tables."
+            />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -323,7 +385,10 @@ export function StudentOnboardingSettingsPanel({
         <SectionCard title="Backend-owned notes" icon={AlertTriangle}>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>This pane now documents the backend-backed surfaces only.</p>
-            <p>This workspace only exposes profile, intake, and recommendation surfaces with real backend dependencies.</p>
+            <p>
+              This workspace only exposes profile, intake, and recommendation
+              surfaces with real backend dependencies.
+            </p>
           </div>
         </SectionCard>
       </div>
@@ -340,7 +405,9 @@ function Field({
 }>) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-[12px] font-medium text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );
@@ -355,7 +422,9 @@ function ResultStat({
 }>) {
   return (
     <div className="rounded-2xl border border-border bg-surface-soft p-3">
-      <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{label}</p>
+      <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </p>
       <p className="mt-1 text-[15px] font-semibold text-foreground">{value}</p>
     </div>
   );
@@ -407,12 +476,18 @@ function InfoCard({
   return (
     <div className="rounded-[1.25rem] border border-dashed border-border bg-surface-soft p-4">
       <p className="text-sm font-semibold text-foreground">{title}</p>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
     </div>
   );
 }
 
-function itemToneClass(tone: NonNullable<StudentOnboardingSummary["currentHighlights"][number]["tone"]>) {
+function itemToneClass(
+  tone: NonNullable<
+    StudentOnboardingSummary["currentHighlights"][number]["tone"]
+  >
+) {
   if (tone === "success") return "bg-success/10 text-success";
   if (tone === "warning") return "bg-warning text-warning-foreground";
   return "bg-primary/10 text-primary";
