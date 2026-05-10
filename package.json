@@ -3,12 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "npm@11.11.0",
+  "engines": {
+    "node": ">=22.22.1"
+  },
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "workspaces": [
     "apps/*",
@@ -16,6 +20,8 @@
   ],
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.4",
     "playwright": "^1.58.2",
     "prettier": "^3.8.3",
     "turbo": "^2.5.8"
