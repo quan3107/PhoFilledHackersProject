@@ -24,7 +24,7 @@ export default defineConfig(
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "off",
-      complexity: ["error", { "max": 20 }],
+      complexity: ["error", { max: 20 }],
     },
   }
 );

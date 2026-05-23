@@ -205,88 +205,87 @@ function findActiveFieldFromTranscript(input: {
   );
 }
 
+type StudentProfileDocumentState = ReturnType<
+  typeof buildStudentProfileDocumentFromState
+>;
+
+const fieldSatisfactionChecks: Record<
+  IntakeFieldPath,
+  (document: StudentProfileDocumentState) => boolean
+> = {
+  citizenshipCountry: (document) =>
+    isKnownFreeTextValue(document.current.profile.citizenshipCountry),
+  targetEntryTerm: (document) =>
+    isKnownFreeTextValue(document.current.profile.targetEntryTerm),
+  "academic.currentGpa100": (document) =>
+    document.current.profile.academic.currentGpa100 !== null,
+  "academic.projectedGpa100": (document) =>
+    document.projected.profile.academic.projectedGpa100 !== null,
+  "academic.curriculumStrength": (document) =>
+    document.current.profile.academic.curriculumStrength !== "unknown",
+  "academic.classRankPercent": (document) =>
+    document.current.profile.academic.classRankPercent !== null,
+  "testing.willSubmitTests": (document) =>
+    document.current.profile.testing.willSubmitTests !== null,
+  "testing.satTotal": (document) =>
+    document.current.profile.testing.willSubmitTests === false ||
+    document.current.profile.testing.satTotal !== null,
+  "testing.actComposite": (document) =>
+    document.current.profile.testing.willSubmitTests === false ||
+    document.current.profile.testing.actComposite !== null,
+  "testing.englishExamType": (document) =>
+    document.current.profile.testing.willSubmitTests === false ||
+    document.current.profile.testing.englishExamType !== "unknown",
+  "testing.englishExamScore": (document) =>
+    document.current.profile.testing.willSubmitTests === false ||
+    document.current.profile.testing.englishExamType === "none" ||
+    document.current.profile.testing.englishExamScore !== null,
+  "preferences.intendedMajors": (document) =>
+    document.current.profile.preferences.intendedMajors.length > 0,
+  "preferences.preferredStates": (document) => hasPreferredLocation(document),
+  "preferences.preferredLocationPreferences": (document) =>
+    hasPreferredLocation(document),
+  "preferences.preferredCampusLocale": (document) =>
+    document.current.profile.preferences.preferredCampusLocale.length > 0,
+  "preferences.preferredSchoolControl": (document) =>
+    document.current.profile.preferences.preferredSchoolControl.length > 0,
+  "preferences.preferredUndergraduateSize": (document) =>
+    document.current.profile.preferences.preferredUndergraduateSize !==
+    "unknown",
+  "budget.annualBudgetUsd": (document) =>
+    document.current.profile.budget.annualBudgetUsd !== null,
+  "budget.needsFinancialAid": (document) =>
+    document.current.profile.budget.needsFinancialAid !== null,
+  "budget.needsMeritAid": (document) =>
+    document.current.profile.budget.needsMeritAid !== null,
+  "budget.budgetFlexibility": (document) =>
+    document.current.profile.budget.budgetFlexibility !== "unknown",
+  "readiness.wantsEarlyRound": (document) =>
+    document.current.profile.readiness.wantsEarlyRound !== null,
+  "readiness.hasTeacherRecommendationsReady": (document) =>
+    document.current.profile.readiness.hasTeacherRecommendationsReady !== null,
+  "readiness.hasCounselorDocumentsReady": (document) =>
+    document.current.profile.readiness.hasCounselorDocumentsReady !== null,
+  "readiness.hasEssayDraftsStarted": (document) =>
+    document.current.profile.readiness.hasEssayDraftsStarted !== null,
+  "projected.assumptions": (document) =>
+    document.projected.assumptions.length > 0,
+};
+
+function hasPreferredLocation(document: StudentProfileDocumentState) {
+  const current = document.current.profile;
+
+  return (
+    current.preferences.preferredStates.length > 0 ||
+    current.preferences.preferredLocationPreferences.length > 0
+  );
+}
+
 function isFieldSatisfied(
-  document: ReturnType<typeof buildStudentProfileDocumentFromState>,
+  document: StudentProfileDocumentState,
   path: IntakeFieldPath
 ) {
-  const current = document.current.profile;
-  const projected = document.projected.profile;
-
-  switch (path) {
-    case "citizenshipCountry":
-      return isKnownFreeTextValue(current.citizenshipCountry);
-    case "targetEntryTerm":
-      return isKnownFreeTextValue(current.targetEntryTerm);
-    case "academic.currentGpa100":
-      return current.academic.currentGpa100 !== null;
-    case "academic.projectedGpa100":
-      return projected.academic.projectedGpa100 !== null;
-    case "academic.curriculumStrength":
-      return current.academic.curriculumStrength !== "unknown";
-    case "academic.classRankPercent":
-      return current.academic.classRankPercent !== null;
-    case "testing.willSubmitTests":
-      return current.testing.willSubmitTests !== null;
-    case "testing.satTotal":
-      return (
-        current.testing.willSubmitTests === false ||
-        current.testing.satTotal !== null
-      );
-    case "testing.actComposite":
-      return (
-        current.testing.willSubmitTests === false ||
-        current.testing.actComposite !== null
-      );
-    case "testing.englishExamType":
-      return (
-        current.testing.willSubmitTests === false ||
-        current.testing.englishExamType !== "unknown"
-      );
-    case "testing.englishExamScore":
-      return (
-        current.testing.willSubmitTests === false ||
-        current.testing.englishExamType === "none" ||
-        current.testing.englishExamScore !== null
-      );
-    case "preferences.intendedMajors":
-      return current.preferences.intendedMajors.length > 0;
-    case "preferences.preferredStates":
-      return (
-        current.preferences.preferredStates.length > 0 ||
-        current.preferences.preferredLocationPreferences.length > 0
-      );
-    case "preferences.preferredLocationPreferences":
-      return (
-        current.preferences.preferredLocationPreferences.length > 0 ||
-        current.preferences.preferredStates.length > 0
-      );
-    case "preferences.preferredCampusLocale":
-      return current.preferences.preferredCampusLocale.length > 0;
-    case "preferences.preferredSchoolControl":
-      return current.preferences.preferredSchoolControl.length > 0;
-    case "preferences.preferredUndergraduateSize":
-      return current.preferences.preferredUndergraduateSize !== "unknown";
-    case "budget.annualBudgetUsd":
-      return current.budget.annualBudgetUsd !== null;
-    case "budget.needsFinancialAid":
-      return current.budget.needsFinancialAid !== null;
-    case "budget.needsMeritAid":
-      return current.budget.needsMeritAid !== null;
-    case "budget.budgetFlexibility":
-      return current.budget.budgetFlexibility !== "unknown";
-    case "readiness.wantsEarlyRound":
-      return current.readiness.wantsEarlyRound !== null;
-    case "readiness.hasTeacherRecommendationsReady":
-      return current.readiness.hasTeacherRecommendationsReady !== null;
-    case "readiness.hasCounselorDocumentsReady":
-      return current.readiness.hasCounselorDocumentsReady !== null;
-    case "readiness.hasEssayDraftsStarted":
-      return current.readiness.hasEssayDraftsStarted !== null;
-    case "projected.assumptions":
-      return document.projected.assumptions.length > 0;
-    default:
-      return false;
-  }
+  return fieldSatisfactionChecks[path]?.(document) ?? false;
 }
 
 function computeOutstandingFields(
@@ -741,263 +740,429 @@ function mergePatchObject(
   return merged;
 }
 
+type DeterministicFieldUpdate = {
+  currentProfilePatch: Record<string, unknown>;
+  projectedProfilePatch: Record<string, unknown>;
+  projectedAssumptions: string[] | null;
+  resolution: "filled";
+};
+
+type DeterministicFieldParser = (
+  message: string,
+  fieldPath: IntakeFieldPath
+) => DeterministicFieldUpdate | null;
+
+function buildDeterministicFieldUpdate(input: {
+  currentProfilePatch?: Record<string, unknown>;
+  projectedProfilePatch?: Record<string, unknown>;
+  projectedAssumptions?: string[] | null;
+}): DeterministicFieldUpdate {
+  return {
+    currentProfilePatch: input.currentProfilePatch ?? {},
+    projectedProfilePatch: input.projectedProfilePatch ?? {},
+    projectedAssumptions: input.projectedAssumptions ?? null,
+    resolution: "filled",
+  };
+}
+
+function parseRootTextUpdate(
+  message: string,
+  fieldPath: IntakeFieldPath,
+  parser: (message: string) => string | null
+) {
+  const value = parser(message);
+  return value
+    ? buildDeterministicFieldUpdate({
+        currentProfilePatch: { [fieldPath]: value },
+      })
+    : null;
+}
+
+function parseCurrentSectionUpdate(
+  message: string,
+  section: string,
+  leaf: string,
+  parser: (message: string) => unknown
+) {
+  const value = parser(message);
+  return value !== null
+    ? buildDeterministicFieldUpdate({
+        currentProfilePatch: { [section]: { [leaf]: value } },
+      })
+    : null;
+}
+
+function parseProjectedSectionUpdate(
+  message: string,
+  section: string,
+  leaf: string,
+  parser: (message: string) => unknown
+) {
+  const value = parser(message);
+  return value !== null
+    ? buildDeterministicFieldUpdate({
+        projectedProfilePatch: { [section]: { [leaf]: value } },
+      })
+    : null;
+}
+
+function parseBooleanSectionUpdate(
+  message: string,
+  fieldPath: IntakeFieldPath
+) {
+  const value = parseBooleanAnswer(message);
+  if (value === null) {
+    return null;
+  }
+
+  const [section, leaf] = fieldPath.split(".");
+  return buildDeterministicFieldUpdate({
+    currentProfilePatch: { [section]: { [leaf]: value } },
+  });
+}
+
+function parseLocationUpdate(message: string) {
+  const values = parseLocationPreferences(message);
+  if (
+    values.preferredStates.length === 0 &&
+    values.preferredLocationPreferences.length === 0
+  ) {
+    return null;
+  }
+
+  return buildDeterministicFieldUpdate({
+    currentProfilePatch: {
+      preferences: {
+        preferredStates: values.preferredStates,
+        preferredLocationPreferences: values.preferredLocationPreferences,
+      },
+    },
+  });
+}
+
+const deterministicFieldParsers: Record<
+  IntakeFieldPath,
+  DeterministicFieldParser
+> = {
+  citizenshipCountry: (message, fieldPath) =>
+    parseRootTextUpdate(message, fieldPath, parseCitizenshipCountry),
+  targetEntryTerm: (message, fieldPath) =>
+    parseRootTextUpdate(message, fieldPath, parseTargetEntryTerm),
+  "academic.currentGpa100": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "academic",
+      "currentGpa100",
+      parseGpaToHundred
+    ),
+  "academic.projectedGpa100": (message) =>
+    parseProjectedSectionUpdate(
+      message,
+      "academic",
+      "projectedGpa100",
+      parseGpaToHundred
+    ),
+  "academic.curriculumStrength": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "academic",
+      "curriculumStrength",
+      parseCurriculumStrength
+    ),
+  "academic.classRankPercent": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "academic",
+      "classRankPercent",
+      parseClassRankPercent
+    ),
+  "testing.willSubmitTests": parseBooleanSectionUpdate,
+  "testing.satTotal": (message) => {
+    const value = parseSat(message);
+    return value !== null
+      ? buildDeterministicFieldUpdate({
+          currentProfilePatch: {
+            testing: { satTotal: value, willSubmitTests: true },
+          },
+        })
+      : null;
+  },
+  "testing.actComposite": (message) => {
+    const value = parseAct(message);
+    return value !== null
+      ? buildDeterministicFieldUpdate({
+          currentProfilePatch: {
+            testing: { actComposite: value, willSubmitTests: true },
+          },
+        })
+      : null;
+  },
+  "testing.englishExamType": (message) => {
+    const value = parseEnglishExam(message);
+    return value
+      ? buildDeterministicFieldUpdate({
+          currentProfilePatch: { testing: value },
+        })
+      : null;
+  },
+  "testing.englishExamScore": (message) => {
+    const value = parseEnglishExam(message);
+    return value
+      ? buildDeterministicFieldUpdate({
+          currentProfilePatch: { testing: value },
+        })
+      : null;
+  },
+  "preferences.intendedMajors": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "preferences",
+      "intendedMajors",
+      parseIntendedMajors
+    ),
+  "preferences.preferredStates": parseLocationUpdate,
+  "preferences.preferredLocationPreferences": parseLocationUpdate,
+  "preferences.preferredCampusLocale": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "preferences",
+      "preferredCampusLocale",
+      parseCampusLocale
+    ),
+  "preferences.preferredSchoolControl": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "preferences",
+      "preferredSchoolControl",
+      parseSchoolControl
+    ),
+  "preferences.preferredUndergraduateSize": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "preferences",
+      "preferredUndergraduateSize",
+      parsePreferredSize
+    ),
+  "budget.annualBudgetUsd": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "budget",
+      "annualBudgetUsd",
+      parseMoneyRange
+    ),
+  "budget.needsFinancialAid": parseBooleanSectionUpdate,
+  "budget.needsMeritAid": parseBooleanSectionUpdate,
+  "budget.budgetFlexibility": (message) =>
+    parseCurrentSectionUpdate(
+      message,
+      "budget",
+      "budgetFlexibility",
+      parseBudgetFlexibility
+    ),
+  "readiness.wantsEarlyRound": parseBooleanSectionUpdate,
+  "readiness.hasTeacherRecommendationsReady": parseBooleanSectionUpdate,
+  "readiness.hasCounselorDocumentsReady": parseBooleanSectionUpdate,
+  "readiness.hasEssayDraftsStarted": parseBooleanSectionUpdate,
+  "projected.assumptions": (message) => {
+    const values = parseProjectedAssumptions(message);
+    return values
+      ? buildDeterministicFieldUpdate({ projectedAssumptions: values })
+      : null;
+  },
+};
+
 function inferDeterministicFieldUpdate(input: {
   fieldPath: IntakeFieldPath | null;
   message: string | null;
 }) {
-  if (!input.fieldPath || !input.message) {
+  const message = input.message?.trim();
+  if (!input.fieldPath || !message) {
     return null;
   }
 
-  const message = input.message.trim();
-  if (!message) {
-    return null;
+  return (
+    deterministicFieldParsers[input.fieldPath]?.(message, input.fieldPath) ??
+    null
+  );
+}
+
+type IntakeModelOutput = {
+  assistantMessage: string;
+  currentProfilePatch: Record<string, unknown>;
+  projectedProfilePatch: Record<string, unknown>;
+  projectedAssumptions: string[] | null;
+  resolutions: Array<{
+    path: string;
+    status: "filled" | "unknown" | "declined" | "needs_clarification";
+    note: string | null;
+  }>;
+};
+
+function modelCoveredField(input: {
+  activeFieldPath: IntakeFieldPath | null;
+  output: IntakeModelOutput;
+}) {
+  if (!input.activeFieldPath) {
+    return false;
   }
 
-  switch (input.fieldPath) {
-    case "citizenshipCountry": {
-      const value = parseCitizenshipCountry(message);
-      return value
-        ? {
-            currentProfilePatch: { citizenshipCountry: value },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "targetEntryTerm": {
-      const value = parseTargetEntryTerm(message);
-      return value
-        ? {
-            currentProfilePatch: { targetEntryTerm: value },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "academic.currentGpa100": {
-      const value = parseGpaToHundred(message);
-      return value !== null
-        ? {
-            currentProfilePatch: { academic: { currentGpa100: value } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "academic.projectedGpa100": {
-      const value = parseGpaToHundred(message);
-      return value !== null
-        ? {
-            currentProfilePatch: {},
-            projectedProfilePatch: { academic: { projectedGpa100: value } },
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "academic.curriculumStrength": {
-      const value = parseCurriculumStrength(message);
-      return value
-        ? {
-            currentProfilePatch: { academic: { curriculumStrength: value } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "academic.classRankPercent": {
-      const value = parseClassRankPercent(message);
-      return value !== null
-        ? {
-            currentProfilePatch: { academic: { classRankPercent: value } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "testing.willSubmitTests": {
-      const value = parseBooleanAnswer(message);
-      return value !== null
-        ? {
-            currentProfilePatch: { testing: { willSubmitTests: value } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "testing.satTotal": {
-      const value = parseSat(message);
-      return value !== null
-        ? {
-            currentProfilePatch: {
-              testing: { satTotal: value, willSubmitTests: true },
-            },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "testing.actComposite": {
-      const value = parseAct(message);
-      return value !== null
-        ? {
-            currentProfilePatch: {
-              testing: { actComposite: value, willSubmitTests: true },
-            },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "testing.englishExamType":
-    case "testing.englishExamScore": {
-      const value = parseEnglishExam(message);
-      return value
-        ? {
-            currentProfilePatch: { testing: value },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "preferences.intendedMajors": {
-      const values = parseIntendedMajors(message);
-      return values
-        ? {
-            currentProfilePatch: { preferences: { intendedMajors: values } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "preferences.preferredStates":
-    case "preferences.preferredLocationPreferences": {
-      const values = parseLocationPreferences(message);
-      if (
-        values.preferredStates.length === 0 &&
-        values.preferredLocationPreferences.length === 0
-      ) {
-        return null;
-      }
+  return (
+    input.output.resolutions.some(
+      (resolution) => resolution.path === input.activeFieldPath
+    ) ||
+    getPatchValueForField({
+      fieldPath: input.activeFieldPath,
+      currentProfilePatch: input.output.currentProfilePatch,
+      projectedProfilePatch: input.output.projectedProfilePatch,
+      projectedAssumptions: input.output.projectedAssumptions,
+    }) !== undefined
+  );
+}
 
-      return {
-        currentProfilePatch: {
-          preferences: {
-            preferredStates: values.preferredStates,
-            preferredLocationPreferences: values.preferredLocationPreferences,
-          },
+function appendResolutionIfMissing(input: {
+  output: IntakeModelOutput;
+  activeFieldPath: IntakeFieldPath;
+  status: "filled" | "unknown" | "declined";
+  note: string;
+}) {
+  const hasResolution = input.output.resolutions.some(
+    (resolution) => resolution.path === input.activeFieldPath
+  );
+
+  return hasResolution
+    ? input.output.resolutions
+    : [
+        ...input.output.resolutions,
+        {
+          path: input.activeFieldPath,
+          status: input.status,
+          note: input.note,
         },
-        projectedProfilePatch: {},
-        projectedAssumptions: null,
-        resolution: "filled" as const,
-      };
-    }
-    case "preferences.preferredCampusLocale": {
-      const values = parseCampusLocale(message);
-      return values
-        ? {
-            currentProfilePatch: {
-              preferences: { preferredCampusLocale: values },
-            },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "preferences.preferredSchoolControl": {
-      const values = parseSchoolControl(message);
-      return values
-        ? {
-            currentProfilePatch: {
-              preferences: { preferredSchoolControl: values },
-            },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "preferences.preferredUndergraduateSize": {
-      const value = parsePreferredSize(message);
-      return value
-        ? {
-            currentProfilePatch: {
-              preferences: { preferredUndergraduateSize: value },
-            },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "budget.annualBudgetUsd": {
-      const value = parseMoneyRange(message);
-      return value !== null
-        ? {
-            currentProfilePatch: { budget: { annualBudgetUsd: value } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "budget.needsFinancialAid":
-    case "budget.needsMeritAid":
-    case "readiness.wantsEarlyRound":
-    case "readiness.hasTeacherRecommendationsReady":
-    case "readiness.hasCounselorDocumentsReady":
-    case "readiness.hasEssayDraftsStarted": {
-      const value = parseBooleanAnswer(message);
-      if (value === null) {
-        return null;
-      }
+      ];
+}
 
-      const section = input.fieldPath.split(".")[0];
-      const leaf = input.fieldPath.split(".")[1];
-      return {
-        currentProfilePatch: { [section]: { [leaf]: value } },
-        projectedProfilePatch: {},
-        projectedAssumptions: null,
-        resolution: "filled" as const,
-      };
-    }
-    case "budget.budgetFlexibility": {
-      const value = parseBudgetFlexibility(message);
-      return value
-        ? {
-            currentProfilePatch: { budget: { budgetFlexibility: value } },
-            projectedProfilePatch: {},
-            projectedAssumptions: null,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    case "projected.assumptions": {
-      const values = parseProjectedAssumptions(message);
-      return values
-        ? {
-            currentProfilePatch: {},
-            projectedProfilePatch: {},
-            projectedAssumptions: values,
-            resolution: "filled" as const,
-          }
-        : null;
-    }
-    default:
-      return null;
+function buildEffectiveTurnUpdates(input: {
+  output: IntakeModelOutput;
+  activeFieldPath: IntakeFieldPath | null;
+  explicitFieldIntent: "unknown" | "declined" | null;
+  deterministicFieldUpdate: DeterministicFieldUpdate | null;
+}) {
+  const modelCoveredActiveField = modelCoveredField({
+    activeFieldPath: input.activeFieldPath,
+    output: input.output,
+  });
+  const effectiveCurrentProfilePatch = input.output.currentProfilePatch;
+  const effectiveProjectedProfilePatch = input.output.projectedProfilePatch;
+  const effectiveProjectedAssumptions = input.output.projectedAssumptions;
+
+  if (
+    input.deterministicFieldUpdate &&
+    input.activeFieldPath &&
+    !modelCoveredActiveField
+  ) {
+    const deterministicFieldUpdate = input.deterministicFieldUpdate;
+    return {
+      modelCoveredActiveField,
+      fallbackResolutions: buildFallbackResolutions({
+        ...input,
+        shouldApplyDeterministicUpdate: true,
+      }),
+      effectiveCurrentProfilePatch: mergePatchObject(
+        effectiveCurrentProfilePatch,
+        deterministicFieldUpdate.currentProfilePatch
+      ),
+      effectiveProjectedProfilePatch: mergePatchObject(
+        effectiveProjectedProfilePatch,
+        deterministicFieldUpdate.projectedProfilePatch
+      ),
+      effectiveProjectedAssumptions:
+        input.activeFieldPath === "projected.assumptions"
+          ? deterministicFieldUpdate.projectedAssumptions
+          : effectiveProjectedAssumptions,
+    };
   }
+
+  return {
+    modelCoveredActiveField,
+    fallbackResolutions: buildFallbackResolutions({
+      ...input,
+      shouldApplyDeterministicUpdate: false,
+    }),
+    effectiveCurrentProfilePatch,
+    effectiveProjectedProfilePatch,
+    effectiveProjectedAssumptions,
+  };
+}
+
+function buildFallbackResolutions(input: {
+  output: IntakeModelOutput;
+  activeFieldPath: IntakeFieldPath | null;
+  explicitFieldIntent: "unknown" | "declined" | null;
+  deterministicFieldUpdate: DeterministicFieldUpdate | null;
+  shouldApplyDeterministicUpdate: boolean;
+}) {
+  if (input.explicitFieldIntent && input.activeFieldPath) {
+    return appendResolutionIfMissing({
+      output: input.output,
+      activeFieldPath: input.activeFieldPath,
+      status: input.explicitFieldIntent,
+      note: "Inferred directly from the student's explicit response.",
+    });
+  }
+
+  if (
+    input.shouldApplyDeterministicUpdate &&
+    input.activeFieldPath &&
+    input.deterministicFieldUpdate
+  ) {
+    return appendResolutionIfMissing({
+      output: input.output,
+      activeFieldPath: input.activeFieldPath,
+      status: input.deterministicFieldUpdate.resolution,
+      note: "Inferred deterministically from the student's direct answer.",
+    });
+  }
+
+  return input.output.resolutions;
+}
+
+function buildAssistantText(input: {
+  output: IntakeModelOutput;
+  activeFieldPath: IntakeFieldPath | null;
+  explicitFieldIntent: "unknown" | "declined" | null;
+  deterministicFieldUpdate: DeterministicFieldUpdate | null;
+  modelCoveredActiveField: boolean;
+  effectiveCurrentProfilePatch: Record<string, unknown>;
+  effectiveProjectedProfilePatch: Record<string, unknown>;
+  effectiveProjectedAssumptions: string[] | null;
+  nextOutstandingFields: string[];
+}) {
+  const nextOutstandingFieldPath =
+    (input.nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null;
+
+  if (input.explicitFieldIntent && input.activeFieldPath) {
+    return buildExplicitIntentFollowUp({
+      resolution: input.explicitFieldIntent,
+      resolvedFieldPath: input.activeFieldPath,
+      nextOutstandingFieldPath,
+    }).trim();
+  }
+
+  if (
+    input.deterministicFieldUpdate &&
+    input.activeFieldPath &&
+    !input.modelCoveredActiveField
+  ) {
+    return buildDeterministicFilledFollowUp({
+      resolvedFieldPath: input.activeFieldPath,
+      currentProfilePatch: input.effectiveCurrentProfilePatch,
+      projectedProfilePatch: input.effectiveProjectedProfilePatch,
+      projectedAssumptions: input.effectiveProjectedAssumptions,
+      nextOutstandingFieldPath,
+    }).trim();
+  }
+
+  return input.output.assistantMessage.trim();
 }
 
 export async function runIntakeTurn(input: {
@@ -1051,73 +1216,24 @@ export async function runIntakeTurn(input: {
           message: userMessage,
         })
       : null;
-  const modelCoveredActiveField =
-    activeFieldPath !== null &&
-    (output.resolutions.some(
-      (resolution) => resolution.path === activeFieldPath
-    ) ||
-      getPatchValueForField({
-        fieldPath: activeFieldPath,
-        currentProfilePatch: output.currentProfilePatch,
-        projectedProfilePatch: output.projectedProfilePatch,
-        projectedAssumptions: output.projectedAssumptions,
-      }) !== undefined);
-  const fallbackResolutions =
-    explicitFieldIntent && activeFieldPath
-      ? output.resolutions.some(
-          (resolution) => resolution.path === activeFieldPath
-        )
-        ? output.resolutions
-        : [
-            ...output.resolutions,
-            {
-              path: activeFieldPath,
-              status: explicitFieldIntent,
-              note: "Inferred directly from the student's explicit response.",
-            },
-          ]
-      : deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
-        ? [
-            ...output.resolutions,
-            {
-              path: activeFieldPath,
-              status: deterministicFieldUpdate.resolution,
-              note: "Inferred deterministically from the student's direct answer.",
-            },
-          ]
-        : output.resolutions;
-  const effectiveCurrentProfilePatch =
-    deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
-      ? mergePatchObject(
-          output.currentProfilePatch,
-          deterministicFieldUpdate.currentProfilePatch
-        )
-      : output.currentProfilePatch;
-  const effectiveProjectedProfilePatch =
-    deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
-      ? mergePatchObject(
-          output.projectedProfilePatch,
-          deterministicFieldUpdate.projectedProfilePatch
-        )
-      : output.projectedProfilePatch;
-  const effectiveProjectedAssumptions =
-    deterministicFieldUpdate &&
-    activeFieldPath === "projected.assumptions" &&
-    !modelCoveredActiveField
-      ? deterministicFieldUpdate.projectedAssumptions
-      : output.projectedAssumptions;
+  const effectiveUpdates = buildEffectiveTurnUpdates({
+    output,
+    activeFieldPath,
+    explicitFieldIntent,
+    deterministicFieldUpdate,
+  });
   const nextDocument = shouldApplyModelUpdates
     ? applyIntakeProfilePatches({
         document,
-        currentProfilePatch: effectiveCurrentProfilePatch,
-        projectedProfilePatch: effectiveProjectedProfilePatch,
-        projectedAssumptions: effectiveProjectedAssumptions,
+        currentProfilePatch: effectiveUpdates.effectiveCurrentProfilePatch,
+        projectedProfilePatch: effectiveUpdates.effectiveProjectedProfilePatch,
+        projectedAssumptions: effectiveUpdates.effectiveProjectedAssumptions,
       })
     : document;
   const nextFieldStatuses = shouldApplyModelUpdates
     ? mergeFieldStatuses({
         existing: currentStatuses,
-        next: fallbackResolutions,
+        next: effectiveUpdates.fallbackResolutions,
         sourceMessageId: nextUserMessage?.id ?? null,
       })
     : currentStatuses;
@@ -1144,24 +1260,19 @@ export async function runIntakeTurn(input: {
   );
   const resolvedFieldCount =
     totalIntakeFieldCount - nextOutstandingFields.length;
-  const assistantText =
-    explicitFieldIntent && activeFieldPath
-      ? buildExplicitIntentFollowUp({
-          resolution: explicitFieldIntent,
-          resolvedFieldPath: activeFieldPath,
-          nextOutstandingFieldPath:
-            (nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null,
-        }).trim()
-      : deterministicFieldUpdate && activeFieldPath && !modelCoveredActiveField
-        ? buildDeterministicFilledFollowUp({
-            resolvedFieldPath: activeFieldPath,
-            currentProfilePatch: effectiveCurrentProfilePatch,
-            projectedProfilePatch: effectiveProjectedProfilePatch,
-            projectedAssumptions: effectiveProjectedAssumptions,
-            nextOutstandingFieldPath:
-              (nextOutstandingFields[0] as IntakeFieldPath | undefined) ?? null,
-          }).trim()
-        : output.assistantMessage.trim();
+  const assistantText = buildAssistantText({
+    output,
+    activeFieldPath,
+    explicitFieldIntent,
+    deterministicFieldUpdate,
+    modelCoveredActiveField: effectiveUpdates.modelCoveredActiveField,
+    effectiveCurrentProfilePatch: effectiveUpdates.effectiveCurrentProfilePatch,
+    effectiveProjectedProfilePatch:
+      effectiveUpdates.effectiveProjectedProfilePatch,
+    effectiveProjectedAssumptions:
+      effectiveUpdates.effectiveProjectedAssumptions,
+    nextOutstandingFields,
+  });
   if (!assistantText) {
     throw new Error(
       "OpenAI intake response did not include an assistant message."

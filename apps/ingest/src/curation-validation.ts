@@ -108,6 +108,8 @@ export interface CurationValidationResult {
   artifact: CuratedSchoolArtifact | null;
 }
 
+type CurationArtifactCandidate = Record<keyof CuratedSchoolArtifact, unknown>;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -247,6 +249,100 @@ function expectDateString(
   return parsed;
 }
 
+function expectNullableNumber(
+  value: unknown,
+  path: string,
+  issues: CurationIssue[]
+) {
+  return value === null ? null : expectNumber(value, path, issues);
+}
+
+function validateMiddle50Range(
+  value: unknown,
+  path: string,
+  issues: CurationIssue[]
+) {
+  if (!isRecord(value)) {
+    pushIssue(issues, path, "Expected an object with low and high values.");
+    return null;
+  }
+
+  return {
+    low: expectNullableNumber(value.low, `${path}.low`, issues),
+    high: expectNullableNumber(value.high, `${path}.high`, issues),
+  };
+}
+
+function validateTestingRequirements(value: unknown, issues: CurationIssue[]) {
+  if (!isRecord(value)) {
+    pushIssue(
+      issues,
+      "recommendationInputs.testingRequirements",
+      "Expected an object with exam rules, score reporting, and middle-50 ranges."
+    );
+    return null;
+  }
+
+  return {
+    acceptedExams: expectEnumArray(
+      value.acceptedExams,
+      "recommendationInputs.testingRequirements.acceptedExams",
+      issues,
+      standardizedTestExamKinds
+    ),
+    minimumSatTotal: expectNullableNumber(
+      value.minimumSatTotal,
+      "recommendationInputs.testingRequirements.minimumSatTotal",
+      issues
+    ),
+    minimumActComposite: expectNullableNumber(
+      value.minimumActComposite,
+      "recommendationInputs.testingRequirements.minimumActComposite",
+      issues
+    ),
+    latestSatTestDateNote: expectNullableString(
+      value.latestSatTestDateNote,
+      "recommendationInputs.testingRequirements.latestSatTestDateNote",
+      issues,
+      true
+    ),
+    latestActTestDateNote: expectNullableString(
+      value.latestActTestDateNote,
+      "recommendationInputs.testingRequirements.latestActTestDateNote",
+      issues,
+      true
+    ),
+    superscorePolicy: expectEnum(
+      value.superscorePolicy,
+      "recommendationInputs.testingRequirements.superscorePolicy",
+      superscorePolicies,
+      issues
+    ),
+    writingEssayPolicy: expectEnum(
+      value.writingEssayPolicy,
+      "recommendationInputs.testingRequirements.writingEssayPolicy",
+      writingEssayPolicies,
+      issues
+    ),
+    scoreReportingPolicy: expectEnum(
+      value.scoreReportingPolicy,
+      "recommendationInputs.testingRequirements.scoreReportingPolicy",
+      scoreReportingPolicies,
+      issues
+    ),
+    middle50SatTotal: validateMiddle50Range(
+      value.middle50SatTotal,
+      "recommendationInputs.testingRequirements.middle50SatTotal",
+      issues
+    ),
+    middle50ActComposite: validateMiddle50Range(
+      value.middle50ActComposite,
+      "recommendationInputs.testingRequirements.middle50ActComposite",
+      issues
+    ),
+  };
+}
+
 function validateRecommendationInputs(
   value: unknown,
   issues: CurationIssue[]
@@ -262,10 +358,6 @@ function validateRecommendationInputs(
   const actMidpointCumulative = value.actMidpointCumulative;
   const undergraduateSize = value.undergraduateSize;
   const averageNetPriceUsd = value.averageNetPriceUsd;
-  const rawTestingRequirements = value.testingRequirements;
-  const testingRequirementsInput = isRecord(rawTestingRequirements)
-    ? rawTestingRequirements
-    : null;
   const schoolControl = expectEnum(
     value.schoolControl,
     "recommendationInputs.schoolControl",
@@ -318,170 +410,37 @@ function validateRecommendationInputs(
     issues,
     applicationStrategyTags
   );
-  const testingRequirements = testingRequirementsInput
-    ? {
-        acceptedExams: expectEnumArray(
-          testingRequirementsInput.acceptedExams,
-          "recommendationInputs.testingRequirements.acceptedExams",
-          issues,
-          standardizedTestExamKinds
-        ),
-        minimumSatTotal:
-          testingRequirementsInput.minimumSatTotal === null
-            ? null
-            : expectNumber(
-                testingRequirementsInput.minimumSatTotal,
-                "recommendationInputs.testingRequirements.minimumSatTotal",
-                issues
-              ),
-        minimumActComposite:
-          testingRequirementsInput.minimumActComposite === null
-            ? null
-            : expectNumber(
-                testingRequirementsInput.minimumActComposite,
-                "recommendationInputs.testingRequirements.minimumActComposite",
-                issues
-              ),
-        latestSatTestDateNote: expectNullableString(
-          testingRequirementsInput.latestSatTestDateNote,
-          "recommendationInputs.testingRequirements.latestSatTestDateNote",
-          issues,
-          true
-        ),
-        latestActTestDateNote: expectNullableString(
-          testingRequirementsInput.latestActTestDateNote,
-          "recommendationInputs.testingRequirements.latestActTestDateNote",
-          issues,
-          true
-        ),
-        superscorePolicy: expectEnum(
-          testingRequirementsInput.superscorePolicy,
-          "recommendationInputs.testingRequirements.superscorePolicy",
-          superscorePolicies,
-          issues
-        ),
-        writingEssayPolicy: expectEnum(
-          testingRequirementsInput.writingEssayPolicy,
-          "recommendationInputs.testingRequirements.writingEssayPolicy",
-          writingEssayPolicies,
-          issues
-        ),
-        scoreReportingPolicy: expectEnum(
-          testingRequirementsInput.scoreReportingPolicy,
-          "recommendationInputs.testingRequirements.scoreReportingPolicy",
-          scoreReportingPolicies,
-          issues
-        ),
-        middle50SatTotal: isRecord(testingRequirementsInput.middle50SatTotal)
-          ? {
-              low:
-                testingRequirementsInput.middle50SatTotal.low === null
-                  ? null
-                  : expectNumber(
-                      testingRequirementsInput.middle50SatTotal.low,
-                      "recommendationInputs.testingRequirements.middle50SatTotal.low",
-                      issues
-                    ),
-              high:
-                testingRequirementsInput.middle50SatTotal.high === null
-                  ? null
-                  : expectNumber(
-                      testingRequirementsInput.middle50SatTotal.high,
-                      "recommendationInputs.testingRequirements.middle50SatTotal.high",
-                      issues
-                    ),
-            }
-          : null,
-        middle50ActComposite: isRecord(
-          testingRequirementsInput.middle50ActComposite
-        )
-          ? {
-              low:
-                testingRequirementsInput.middle50ActComposite.low === null
-                  ? null
-                  : expectNumber(
-                      testingRequirementsInput.middle50ActComposite.low,
-                      "recommendationInputs.testingRequirements.middle50ActComposite.low",
-                      issues
-                    ),
-              high:
-                testingRequirementsInput.middle50ActComposite.high === null
-                  ? null
-                  : expectNumber(
-                      testingRequirementsInput.middle50ActComposite.high,
-                      "recommendationInputs.testingRequirements.middle50ActComposite.high",
-                      issues
-                    ),
-            }
-          : null,
-      }
-    : null;
-
-  if (
-    testingRequirements &&
-    testingRequirementsInput &&
-    !isRecord(testingRequirementsInput.middle50SatTotal)
-  ) {
-    pushIssue(
-      issues,
-      "recommendationInputs.testingRequirements.middle50SatTotal",
-      "Expected an object with low and high values."
-    );
-  }
-
-  if (
-    testingRequirements &&
-    testingRequirementsInput &&
-    !isRecord(testingRequirementsInput.middle50ActComposite)
-  ) {
-    pushIssue(
-      issues,
-      "recommendationInputs.testingRequirements.middle50ActComposite",
-      "Expected an object with low and high values."
-    );
-  }
+  const testingRequirements = validateTestingRequirements(
+    value.testingRequirements,
+    issues
+  );
 
   const parsed = {
-    admissionRateOverall:
-      admissionRateOverall === null
-        ? null
-        : expectNumber(
-            admissionRateOverall,
-            "recommendationInputs.admissionRateOverall",
-            issues
-          ),
-    satAverageOverall:
-      satAverageOverall === null
-        ? null
-        : expectNumber(
-            satAverageOverall,
-            "recommendationInputs.satAverageOverall",
-            issues
-          ),
-    actMidpointCumulative:
-      actMidpointCumulative === null
-        ? null
-        : expectNumber(
-            actMidpointCumulative,
-            "recommendationInputs.actMidpointCumulative",
-            issues
-          ),
-    undergraduateSize:
-      undergraduateSize === null
-        ? null
-        : expectNumber(
-            undergraduateSize,
-            "recommendationInputs.undergraduateSize",
-            issues
-          ),
-    averageNetPriceUsd:
-      averageNetPriceUsd === null
-        ? null
-        : expectNumber(
-            averageNetPriceUsd,
-            "recommendationInputs.averageNetPriceUsd",
-            issues
-          ),
+    admissionRateOverall: expectNullableNumber(
+      admissionRateOverall,
+      "recommendationInputs.admissionRateOverall",
+      issues
+    ),
+    satAverageOverall: expectNullableNumber(
+      satAverageOverall,
+      "recommendationInputs.satAverageOverall",
+      issues
+    ),
+    actMidpointCumulative: expectNullableNumber(
+      actMidpointCumulative,
+      "recommendationInputs.actMidpointCumulative",
+      issues
+    ),
+    undergraduateSize: expectNullableNumber(
+      undergraduateSize,
+      "recommendationInputs.undergraduateSize",
+      issues
+    ),
+    averageNetPriceUsd: expectNullableNumber(
+      averageNetPriceUsd,
+      "recommendationInputs.averageNetPriceUsd",
+      issues
+    ),
     schoolControl,
     campusLocale,
     internationalAidPolicy,
@@ -492,14 +451,6 @@ function validateRecommendationInputs(
     applicationStrategyTags: applicationStrategyTagsValue,
     testingRequirements,
   };
-
-  if (!testingRequirements) {
-    pushIssue(
-      issues,
-      "recommendationInputs.testingRequirements",
-      "Expected an object with exam rules, score reporting, and middle-50 ranges."
-    );
-  }
 
   return issues.length > issueCountBefore
     ? null
@@ -692,6 +643,174 @@ function validateFieldProvenance(value: unknown, issues: CurationIssue[]) {
   return provenance;
 }
 
+function validateIdentity(value: unknown, issues: CurationIssue[]) {
+  if (!isRecord(value)) {
+    pushIssue(issues, "identity", "Expected an object.");
+    return null;
+  }
+
+  return {
+    schoolName: expectString(value.schoolName, "identity.schoolName", issues),
+    city: expectString(value.city, "identity.city", issues),
+    state: expectString(value.state, "identity.state", issues),
+    officialAdmissionsUrl: expectString(
+      value.officialAdmissionsUrl,
+      "identity.officialAdmissionsUrl",
+      issues
+    ),
+  };
+}
+
+function validateDeadlinesByRound(value: unknown, issues: CurationIssue[]) {
+  if (!isRecord(value)) {
+    pushIssue(issues, "deadlinesByRound", "Expected an object.");
+    return null;
+  }
+
+  const result: Partial<Record<ApplicationRound, string | null>> = {};
+  for (const round of applicationRoundKeys) {
+    const deadline = value[round];
+    if (deadline === undefined) {
+      pushIssue(issues, `deadlinesByRound.${round}`, "Expected a value.");
+      continue;
+    }
+
+    result[round] =
+      deadline === null
+        ? null
+        : expectDateString(deadline, `deadlinesByRound.${round}`, issues);
+  }
+
+  return result;
+}
+
+function validateEnglishRequirements(value: unknown, issues: CurationIssue[]) {
+  if (!isRecord(value)) {
+    pushIssue(issues, "englishRequirements", "Expected an object.");
+    return null;
+  }
+
+  return {
+    minimumIelts: expectNullableNumber(
+      value.minimumIelts,
+      "englishRequirements.minimumIelts",
+      issues
+    ),
+    minimumToeflInternetBased: expectNullableNumber(
+      value.minimumToeflInternetBased,
+      "englishRequirements.minimumToeflInternetBased",
+      issues
+    ),
+    waiverNotes: expectNullableString(
+      value.waiverNotes,
+      "englishRequirements.waiverNotes",
+      issues,
+      true
+    ),
+  };
+}
+
+function validateQuality(value: unknown, issues: CurationIssue[]) {
+  if (!isRecord(value)) {
+    pushIssue(issues, "quality", "Expected an object.");
+    return null;
+  }
+
+  const status = expectEnum(
+    value.status,
+    "quality.status",
+    ["publishable", "needs_review"] as const,
+    issues
+  );
+  const missingFields = expectStringArray(
+    value.missingFields,
+    "quality.missingFields",
+    issues
+  );
+  const warnings = expectStringArray(
+    value.warnings,
+    "quality.warnings",
+    issues
+  );
+
+  if (status === "publishable" && (missingFields?.length ?? 0) > 0) {
+    pushIssue(
+      issues,
+      "quality.missingFields",
+      "Publishable artifacts should not list missing fields."
+    );
+  }
+
+  if (status === "needs_review" && (missingFields?.length ?? 0) === 0) {
+    pushIssue(
+      issues,
+      "quality.missingFields",
+      "Needs-review artifacts must list missing fields."
+    );
+  }
+
+  return { status, missingFields, warnings };
+}
+
+function hasRequiredIdentity(artifact: CurationArtifactCandidate) {
+  const identity = artifact.identity;
+  if (!isRecord(identity)) {
+    return false;
+  }
+
+  return Boolean(
+    identity.schoolName &&
+    identity.city &&
+    identity.state &&
+    identity.officialAdmissionsUrl
+  );
+}
+
+function hasRequiredCostFields(artifact: CurationArtifactCandidate) {
+  return Boolean(
+    artifact.tuitionAnnualUsd !== null &&
+    artifact.estimatedCostOfAttendanceUsd !== null &&
+    artifact.livingCostEstimateUsd !== null &&
+    artifact.scholarshipAvailabilityFlag !== null &&
+    artifact.scholarshipNotes
+  );
+}
+
+function hasRequiredNestedFields(artifact: CurationArtifactCandidate) {
+  const quality = artifact.quality;
+  if (!isRecord(quality)) {
+    return false;
+  }
+
+  return Boolean(
+    artifact.recommendationInputs &&
+    artifact.explanationInputs &&
+    artifact.fieldProvenance &&
+    quality.status &&
+    quality.missingFields &&
+    quality.warnings
+  );
+}
+
+function isValidCurationArtifact(
+  artifact: CurationArtifactCandidate,
+  issues: CurationIssue[]
+) {
+  return Boolean(
+    artifact.schoolSlug &&
+    artifact.lastVerifiedAt &&
+    hasRequiredIdentity(artifact) &&
+    artifact.applicationRounds &&
+    artifact.deadlinesByRound &&
+    artifact.englishRequirements &&
+    artifact.testPolicy &&
+    artifact.requiredMaterials &&
+    hasRequiredCostFields(artifact) &&
+    hasRequiredNestedFields(artifact) &&
+    issues.length === 0
+  );
+}
+
 export function validateCurationArtifact(
   raw: unknown,
   expectedSlug?: string
@@ -712,22 +831,7 @@ export function validateCurationArtifact(
     "lastVerifiedAt",
     issues
   );
-  const identity = isRecord(raw.identity)
-    ? {
-        schoolName: expectString(
-          raw.identity.schoolName,
-          "identity.schoolName",
-          issues
-        ),
-        city: expectString(raw.identity.city, "identity.city", issues),
-        state: expectString(raw.identity.state, "identity.state", issues),
-        officialAdmissionsUrl: expectString(
-          raw.identity.officialAdmissionsUrl,
-          "identity.officialAdmissionsUrl",
-          issues
-        ),
-      }
-    : (pushIssue(issues, "identity", "Expected an object."), null);
+  const identity = validateIdentity(raw.identity, issues);
 
   const applicationRounds = expectEnumArray(
     raw.applicationRounds,
@@ -735,50 +839,14 @@ export function validateCurationArtifact(
     issues,
     applicationRoundKeys
   );
-  const deadlinesByRound = isRecord(raw.deadlinesByRound)
-    ? (() => {
-        const result: Partial<Record<ApplicationRound, string | null>> = {};
-        for (const round of applicationRoundKeys) {
-          const value = raw.deadlinesByRound[round];
-          if (value === undefined) {
-            pushIssue(issues, `deadlinesByRound.${round}`, "Expected a value.");
-            continue;
-          }
-
-          result[round] =
-            value === null
-              ? null
-              : expectDateString(value, `deadlinesByRound.${round}`, issues);
-        }
-        return result;
-      })()
-    : (pushIssue(issues, "deadlinesByRound", "Expected an object."), null);
-  const englishRequirements = isRecord(raw.englishRequirements)
-    ? {
-        minimumIelts:
-          raw.englishRequirements.minimumIelts === null
-            ? null
-            : expectNumber(
-                raw.englishRequirements.minimumIelts,
-                "englishRequirements.minimumIelts",
-                issues
-              ),
-        minimumToeflInternetBased:
-          raw.englishRequirements.minimumToeflInternetBased === null
-            ? null
-            : expectNumber(
-                raw.englishRequirements.minimumToeflInternetBased,
-                "englishRequirements.minimumToeflInternetBased",
-                issues
-              ),
-        waiverNotes: expectNullableString(
-          raw.englishRequirements.waiverNotes,
-          "englishRequirements.waiverNotes",
-          issues,
-          true
-        ),
-      }
-    : (pushIssue(issues, "englishRequirements", "Expected an object."), null);
+  const deadlinesByRound = validateDeadlinesByRound(
+    raw.deadlinesByRound,
+    issues
+  );
+  const englishRequirements = validateEnglishRequirements(
+    raw.englishRequirements,
+    issues
+  );
   const testPolicy = expectEnum(
     raw.testPolicy,
     "testPolicy",
@@ -830,99 +898,39 @@ export function validateCurationArtifact(
     issues
   );
   const fieldProvenance = validateFieldProvenance(raw.fieldProvenance, issues);
+  const quality = validateQuality(raw.quality, issues);
 
-  if (!isRecord(raw.quality)) {
-    pushIssue(issues, "quality", "Expected an object.");
-  }
-
-  const qualityStatus = isRecord(raw.quality)
-    ? expectEnum(
-        raw.quality.status,
-        "quality.status",
-        ["publishable", "needs_review"] as const,
-        issues
-      )
-    : null;
-  const missingFields = isRecord(raw.quality)
-    ? expectStringArray(
-        raw.quality.missingFields,
-        "quality.missingFields",
-        issues
-      )
-    : null;
-  const warnings = isRecord(raw.quality)
-    ? expectStringArray(raw.quality.warnings, "quality.warnings", issues)
-    : null;
-
-  if (qualityStatus === "publishable" && (missingFields?.length ?? 0) > 0) {
-    pushIssue(
-      issues,
-      "quality.missingFields",
-      "Publishable artifacts should not list missing fields."
-    );
-  }
-
-  if (qualityStatus === "needs_review" && (missingFields?.length ?? 0) === 0) {
-    pushIssue(
-      issues,
-      "quality.missingFields",
-      "Needs-review artifacts must list missing fields."
-    );
-  }
-
-  const ok =
-    !!schoolSlug &&
-    !!lastVerifiedAt &&
-    !!identity?.schoolName &&
-    !!identity?.city &&
-    !!identity?.state &&
-    !!identity?.officialAdmissionsUrl &&
-    !!applicationRounds &&
-    !!deadlinesByRound &&
-    !!englishRequirements &&
-    !!testPolicy &&
-    !!requiredMaterials &&
-    tuitionAnnualUsd !== null &&
-    estimatedCostOfAttendanceUsd !== null &&
-    livingCostEstimateUsd !== null &&
-    scholarshipAvailabilityFlag !== null &&
-    !!scholarshipNotes &&
-    !!recommendationInputs &&
-    !!explanationInputs &&
-    !!fieldProvenance &&
-    !!qualityStatus &&
-    !!missingFields &&
-    !!warnings &&
-    issues.length === 0;
+  const artifact = {
+    schoolSlug,
+    lastVerifiedAt,
+    identity,
+    applicationRounds,
+    deadlinesByRound,
+    englishRequirements,
+    testPolicy,
+    requiredMaterials,
+    tuitionAnnualUsd,
+    estimatedCostOfAttendanceUsd,
+    livingCostEstimateUsd,
+    scholarshipAvailabilityFlag,
+    scholarshipNotes,
+    recommendationInputs,
+    explanationInputs,
+    fieldProvenance,
+    quality: quality
+      ? {
+          status: quality.status,
+          missingFields: quality.missingFields,
+          warnings: quality.warnings,
+        }
+      : null,
+  };
+  const ok = isValidCurationArtifact(artifact, issues);
 
   return {
     ok,
     issues,
-    artifact: ok
-      ? ({
-          schoolSlug,
-          lastVerifiedAt,
-          identity,
-          applicationRounds,
-          deadlinesByRound,
-          englishRequirements,
-          testPolicy,
-          requiredMaterials,
-          tuitionAnnualUsd,
-          estimatedCostOfAttendanceUsd,
-          livingCostEstimateUsd,
-          scholarshipAvailabilityFlag,
-          scholarshipNotes,
-          recommendationInputs,
-          explanationInputs,
-          fieldProvenance,
-          quality: {
-            status: qualityStatus,
-            missingFields,
-            warnings,
-          },
-        } as CuratedSchoolArtifact)
-      : null,
+    artifact: ok ? (artifact as CuratedSchoolArtifact) : null,
   };
 }
 

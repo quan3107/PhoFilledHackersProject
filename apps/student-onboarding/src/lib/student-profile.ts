@@ -196,6 +196,130 @@ const safeParse = <T>(
   }
 };
 
+const mergeAcademicProfile = (
+  fallback: StudentAcademicProfile,
+  value: Partial<StudentAcademicProfile> | undefined
+): StudentAcademicProfile => ({
+  currentGpa100:
+    typeof value?.currentGpa100 === "number"
+      ? value.currentGpa100
+      : fallback.currentGpa100,
+  projectedGpa100:
+    typeof value?.projectedGpa100 === "number"
+      ? value.projectedGpa100
+      : fallback.projectedGpa100,
+  curriculumStrength: curriculumStrengthOptions.includes(
+    value?.curriculumStrength as CurriculumStrength
+  )
+    ? (value?.curriculumStrength as CurriculumStrength)
+    : fallback.curriculumStrength,
+  classRankPercent:
+    typeof value?.classRankPercent === "number"
+      ? value.classRankPercent
+      : fallback.classRankPercent,
+});
+
+const mergeTestingProfile = (
+  fallback: StudentTestingProfile,
+  value: Partial<StudentTestingProfile> | undefined
+): StudentTestingProfile => ({
+  satTotal:
+    typeof value?.satTotal === "number" ? value.satTotal : fallback.satTotal,
+  actComposite:
+    typeof value?.actComposite === "number"
+      ? value.actComposite
+      : fallback.actComposite,
+  englishExamType: englishExamTypeOptions.includes(
+    value?.englishExamType as EnglishExamType
+  )
+    ? (value?.englishExamType as EnglishExamType)
+    : fallback.englishExamType,
+  englishExamScore:
+    typeof value?.englishExamScore === "number"
+      ? value.englishExamScore
+      : fallback.englishExamScore,
+  willSubmitTests:
+    typeof value?.willSubmitTests === "boolean"
+      ? value.willSubmitTests
+      : fallback.willSubmitTests,
+});
+
+const mergePreferenceProfile = (
+  fallback: StudentPreferenceProfile,
+  value: Partial<StudentPreferenceProfile> | undefined
+): StudentPreferenceProfile => ({
+  intendedMajors: Array.isArray(value?.intendedMajors)
+    ? value.intendedMajors.filter(Boolean)
+    : fallback.intendedMajors,
+  preferredStates: Array.isArray(value?.preferredStates)
+    ? value.preferredStates.filter(Boolean)
+    : fallback.preferredStates,
+  preferredLocationPreferences: Array.isArray(
+    value?.preferredLocationPreferences
+  )
+    ? value.preferredLocationPreferences.filter(Boolean)
+    : fallback.preferredLocationPreferences,
+  preferredCampusLocale: Array.isArray(value?.preferredCampusLocale)
+    ? value.preferredCampusLocale.filter(Boolean)
+    : fallback.preferredCampusLocale,
+  preferredSchoolControl: Array.isArray(value?.preferredSchoolControl)
+    ? value.preferredSchoolControl.filter(
+        (item): item is "public" | "private_nonprofit" =>
+          item === "public" || item === "private_nonprofit"
+      )
+    : fallback.preferredSchoolControl,
+  preferredUndergraduateSize: preferredUndergraduateSizeOptions.includes(
+    value?.preferredUndergraduateSize as PreferredUndergraduateSize
+  )
+    ? (value?.preferredUndergraduateSize as PreferredUndergraduateSize)
+    : fallback.preferredUndergraduateSize,
+});
+
+const mergeBudgetProfile = (
+  fallback: StudentBudgetProfile,
+  value: Partial<StudentBudgetProfile> | undefined
+): StudentBudgetProfile => ({
+  annualBudgetUsd:
+    typeof value?.annualBudgetUsd === "number"
+      ? value.annualBudgetUsd
+      : fallback.annualBudgetUsd,
+  needsFinancialAid:
+    typeof value?.needsFinancialAid === "boolean"
+      ? value.needsFinancialAid
+      : fallback.needsFinancialAid,
+  needsMeritAid:
+    typeof value?.needsMeritAid === "boolean"
+      ? value.needsMeritAid
+      : fallback.needsMeritAid,
+  budgetFlexibility: budgetFlexibilityOptions.includes(
+    value?.budgetFlexibility as BudgetFlexibility
+  )
+    ? (value?.budgetFlexibility as BudgetFlexibility)
+    : fallback.budgetFlexibility,
+});
+
+const mergeReadinessProfile = (
+  fallback: StudentReadinessProfile,
+  value: Partial<StudentReadinessProfile> | undefined
+): StudentReadinessProfile => ({
+  wantsEarlyRound:
+    typeof value?.wantsEarlyRound === "boolean"
+      ? value.wantsEarlyRound
+      : fallback.wantsEarlyRound,
+  hasTeacherRecommendationsReady:
+    typeof value?.hasTeacherRecommendationsReady === "boolean"
+      ? value.hasTeacherRecommendationsReady
+      : fallback.hasTeacherRecommendationsReady,
+  hasCounselorDocumentsReady:
+    typeof value?.hasCounselorDocumentsReady === "boolean"
+      ? value.hasCounselorDocumentsReady
+      : fallback.hasCounselorDocumentsReady,
+  hasEssayDraftsStarted:
+    typeof value?.hasEssayDraftsStarted === "boolean"
+      ? value.hasEssayDraftsStarted
+      : fallback.hasEssayDraftsStarted,
+});
+
 const mergeProfile = (
   fallback: StudentProfile,
   value: Partial<StudentProfile> | null | undefined
@@ -211,118 +335,14 @@ const mergeProfile = (
       typeof value.targetEntryTerm === "string"
         ? value.targetEntryTerm
         : fallback.targetEntryTerm,
-    academic: {
-      currentGpa100:
-        typeof value.academic?.currentGpa100 === "number"
-          ? value.academic.currentGpa100
-          : fallback.academic.currentGpa100,
-      projectedGpa100:
-        typeof value.academic?.projectedGpa100 === "number"
-          ? value.academic.projectedGpa100
-          : fallback.academic.projectedGpa100,
-      curriculumStrength: curriculumStrengthOptions.includes(
-        value.academic?.curriculumStrength as CurriculumStrength
-      )
-        ? (value.academic?.curriculumStrength as CurriculumStrength)
-        : fallback.academic.curriculumStrength,
-      classRankPercent:
-        typeof value.academic?.classRankPercent === "number"
-          ? value.academic.classRankPercent
-          : fallback.academic.classRankPercent,
-    },
-    testing: {
-      satTotal:
-        typeof value.testing?.satTotal === "number"
-          ? value.testing.satTotal
-          : fallback.testing.satTotal,
-      actComposite:
-        typeof value.testing?.actComposite === "number"
-          ? value.testing.actComposite
-          : fallback.testing.actComposite,
-      englishExamType: englishExamTypeOptions.includes(
-        value.testing?.englishExamType as EnglishExamType
-      )
-        ? (value.testing?.englishExamType as EnglishExamType)
-        : fallback.testing.englishExamType,
-      englishExamScore:
-        typeof value.testing?.englishExamScore === "number"
-          ? value.testing.englishExamScore
-          : fallback.testing.englishExamScore,
-      willSubmitTests:
-        typeof value.testing?.willSubmitTests === "boolean"
-          ? value.testing.willSubmitTests
-          : fallback.testing.willSubmitTests,
-    },
-    preferences: {
-      intendedMajors: Array.isArray(value.preferences?.intendedMajors)
-        ? value.preferences.intendedMajors.filter(Boolean)
-        : fallback.preferences.intendedMajors,
-      preferredStates: Array.isArray(value.preferences?.preferredStates)
-        ? value.preferences.preferredStates.filter(Boolean)
-        : fallback.preferences.preferredStates,
-      preferredLocationPreferences: Array.isArray(
-        value.preferences?.preferredLocationPreferences
-      )
-        ? value.preferences.preferredLocationPreferences.filter(Boolean)
-        : fallback.preferences.preferredLocationPreferences,
-      preferredCampusLocale: Array.isArray(
-        value.preferences?.preferredCampusLocale
-      )
-        ? value.preferences.preferredCampusLocale.filter(Boolean)
-        : fallback.preferences.preferredCampusLocale,
-      preferredSchoolControl: Array.isArray(
-        value.preferences?.preferredSchoolControl
-      )
-        ? value.preferences.preferredSchoolControl.filter(
-            (item): item is "public" | "private_nonprofit" =>
-              item === "public" || item === "private_nonprofit"
-          )
-        : fallback.preferences.preferredSchoolControl,
-      preferredUndergraduateSize: preferredUndergraduateSizeOptions.includes(
-        value.preferences
-          ?.preferredUndergraduateSize as PreferredUndergraduateSize
-      )
-        ? (value.preferences
-            ?.preferredUndergraduateSize as PreferredUndergraduateSize)
-        : fallback.preferences.preferredUndergraduateSize,
-    },
-    budget: {
-      annualBudgetUsd:
-        typeof value.budget?.annualBudgetUsd === "number"
-          ? value.budget.annualBudgetUsd
-          : fallback.budget.annualBudgetUsd,
-      needsFinancialAid:
-        typeof value.budget?.needsFinancialAid === "boolean"
-          ? value.budget.needsFinancialAid
-          : fallback.budget.needsFinancialAid,
-      needsMeritAid:
-        typeof value.budget?.needsMeritAid === "boolean"
-          ? value.budget.needsMeritAid
-          : fallback.budget.needsMeritAid,
-      budgetFlexibility: budgetFlexibilityOptions.includes(
-        value.budget?.budgetFlexibility as BudgetFlexibility
-      )
-        ? (value.budget?.budgetFlexibility as BudgetFlexibility)
-        : fallback.budget.budgetFlexibility,
-    },
-    readiness: {
-      wantsEarlyRound:
-        typeof value.readiness?.wantsEarlyRound === "boolean"
-          ? value.readiness.wantsEarlyRound
-          : fallback.readiness.wantsEarlyRound,
-      hasTeacherRecommendationsReady:
-        typeof value.readiness?.hasTeacherRecommendationsReady === "boolean"
-          ? value.readiness.hasTeacherRecommendationsReady
-          : fallback.readiness.hasTeacherRecommendationsReady,
-      hasCounselorDocumentsReady:
-        typeof value.readiness?.hasCounselorDocumentsReady === "boolean"
-          ? value.readiness.hasCounselorDocumentsReady
-          : fallback.readiness.hasCounselorDocumentsReady,
-      hasEssayDraftsStarted:
-        typeof value.readiness?.hasEssayDraftsStarted === "boolean"
-          ? value.readiness.hasEssayDraftsStarted
-          : fallback.readiness.hasEssayDraftsStarted,
-    },
+    academic: mergeAcademicProfile(fallback.academic, value.academic),
+    testing: mergeTestingProfile(fallback.testing, value.testing),
+    preferences: mergePreferenceProfile(
+      fallback.preferences,
+      value.preferences
+    ),
+    budget: mergeBudgetProfile(fallback.budget, value.budget),
+    readiness: mergeReadinessProfile(fallback.readiness, value.readiness),
   };
 };
 
