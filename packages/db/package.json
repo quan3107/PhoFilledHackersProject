@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
@@ -17,7 +18,7 @@
     "build": "tsc --project tsconfig.json",
     "baseline": "tsx ./scripts/baseline.ts",
     "generate": "drizzle-kit generate --config=drizzle.config.ts",
-    "lint": "node --eval \"console.log('packages/db lint is intentionally deferred until repo-wide lint rules land.')\"",
+    "lint": "eslint src tests --ext .ts",
     "migrate": "tsx ./scripts/migrate.ts",
     "test": "tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit",
