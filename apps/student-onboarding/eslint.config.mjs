@@ -34,6 +34,7 @@ export default defineConfig(
       },
     },
     rules: {
+      complexity: ["error", { max: 20 }],
       "@typescript-eslint/naming-convention": [
         "error",
         {

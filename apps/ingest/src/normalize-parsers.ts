@@ -299,45 +299,116 @@ function normalizeTagArray<T extends readonly string[]>(
   );
 }
 
+function isUnknownRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function cloneDefaultRecommendationInputs(): UniversityRecommendationInputs {
+  return {
+    ...defaultUniversityRecommendationInputs,
+    testingRequirements: {
+      ...defaultUniversityRecommendationInputs.testingRequirements,
+      middle50SatTotal: {
+        ...defaultUniversityRecommendationInputs.testingRequirements
+          .middle50SatTotal,
+      },
+      middle50ActComposite: {
+        ...defaultUniversityRecommendationInputs.testingRequirements
+          .middle50ActComposite,
+      },
+    },
+  };
+}
+
+function normalizeOptionalTrimmedString(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
+function normalizeAcceptedExams(value: unknown): ("sat" | "act")[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    if (typeof entry !== "string") {
+      return [];
+    }
+
+    const normalized = entry.trim().toLowerCase();
+    return normalized === "sat" || normalized === "act" ? [normalized] : [];
+  });
+}
+
+function normalizeTestingRequirements(input: Record<string, unknown>) {
+  const testingRequirements = isUnknownRecord(input.testingRequirements)
+    ? input.testingRequirements
+    : {};
+  const middle50SatTotal = isUnknownRecord(testingRequirements.middle50SatTotal)
+    ? testingRequirements.middle50SatTotal
+    : {};
+  const middle50ActComposite = isUnknownRecord(
+    testingRequirements.middle50ActComposite
+  )
+    ? testingRequirements.middle50ActComposite
+    : {};
+
+  return {
+    acceptedExams: normalizeAcceptedExams(testingRequirements.acceptedExams),
+    minimumSatTotal: normalizeNullableNumber(
+      testingRequirements.minimumSatTotal
+    ),
+    minimumActComposite: normalizeNullableNumber(
+      testingRequirements.minimumActComposite
+    ),
+    latestSatTestDateNote: normalizeOptionalTrimmedString(
+      testingRequirements.latestSatTestDateNote
+    ),
+    latestActTestDateNote: normalizeOptionalTrimmedString(
+      testingRequirements.latestActTestDateNote
+    ),
+    superscorePolicy: normalizeEnumValue(
+      testingRequirements.superscorePolicy,
+      ["sat_only", "act_only", "both", "none", "unknown"] as const,
+      defaultUniversityRecommendationInputs.testingRequirements.superscorePolicy
+    ),
+    writingEssayPolicy: normalizeEnumValue(
+      testingRequirements.writingEssayPolicy,
+      ["required", "optional", "not_considered", "unknown"] as const,
+      defaultUniversityRecommendationInputs.testingRequirements
+        .writingEssayPolicy
+    ),
+    scoreReportingPolicy: normalizeEnumValue(
+      testingRequirements.scoreReportingPolicy,
+      [
+        "self_report_allowed",
+        "official_required_upfront",
+        "official_required_after_admit",
+        "unknown",
+      ] as const,
+      defaultUniversityRecommendationInputs.testingRequirements
+        .scoreReportingPolicy
+    ),
+    middle50SatTotal: {
+      low: normalizeNullableNumber(middle50SatTotal.low),
+      high: normalizeNullableNumber(middle50SatTotal.high),
+    },
+    middle50ActComposite: {
+      low: normalizeNullableNumber(middle50ActComposite.low),
+      high: normalizeNullableNumber(middle50ActComposite.high),
+    },
+  };
+}
+
 export function normalizeRecommendationInputs(
   value: unknown
 ): UniversityRecommendationInputs {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return {
-      ...defaultUniversityRecommendationInputs,
-      testingRequirements: {
-        ...defaultUniversityRecommendationInputs.testingRequirements,
-        middle50SatTotal: {
-          ...defaultUniversityRecommendationInputs.testingRequirements
-            .middle50SatTotal,
-        },
-        middle50ActComposite: {
-          ...defaultUniversityRecommendationInputs.testingRequirements
-            .middle50ActComposite,
-        },
-      },
-    };
+  if (!isUnknownRecord(value)) {
+    return cloneDefaultRecommendationInputs();
   }
 
-  const input = value as Record<string, unknown>;
-  const testingRequirements =
-    typeof input.testingRequirements === "object" &&
-    input.testingRequirements !== null &&
-    !Array.isArray(input.testingRequirements)
-      ? (input.testingRequirements as Record<string, unknown>)
-      : {};
-  const middle50SatTotal =
-    typeof testingRequirements.middle50SatTotal === "object" &&
-    testingRequirements.middle50SatTotal !== null &&
-    !Array.isArray(testingRequirements.middle50SatTotal)
-      ? (testingRequirements.middle50SatTotal as Record<string, unknown>)
-      : {};
-  const middle50ActComposite =
-    typeof testingRequirements.middle50ActComposite === "object" &&
-    testingRequirements.middle50ActComposite !== null &&
-    !Array.isArray(testingRequirements.middle50ActComposite)
-      ? (testingRequirements.middle50ActComposite as Record<string, unknown>)
-      : {};
+  const input = value;
 
   return {
     admissionRateOverall: normalizeNullableNumber(input.admissionRateOverall),
@@ -350,11 +421,7 @@ export function normalizeRecommendationInputs(
       schoolControls,
       defaultUniversityRecommendationInputs.schoolControl
     ),
-    campusLocale:
-      typeof input.campusLocale === "string" &&
-      input.campusLocale.trim().length > 0
-        ? input.campusLocale.trim()
-        : null,
+    campusLocale: normalizeOptionalTrimmedString(input.campusLocale),
     internationalAidPolicy: normalizeEnumValue(
       input.internationalAidPolicy,
       internationalAidPolicies,
@@ -374,67 +441,7 @@ export function normalizeRecommendationInputs(
       input.applicationStrategyTags,
       applicationStrategyTags
     ),
-    testingRequirements: {
-      acceptedExams: Array.isArray(testingRequirements.acceptedExams)
-        ? testingRequirements.acceptedExams.flatMap((entry) => {
-            if (typeof entry !== "string") {
-              return [];
-            }
-
-            const normalized = entry.trim().toLowerCase();
-            return normalized === "sat" || normalized === "act"
-              ? [normalized]
-              : [];
-          })
-        : [],
-      minimumSatTotal: normalizeNullableNumber(
-        testingRequirements.minimumSatTotal
-      ),
-      minimumActComposite: normalizeNullableNumber(
-        testingRequirements.minimumActComposite
-      ),
-      latestSatTestDateNote:
-        typeof testingRequirements.latestSatTestDateNote === "string" &&
-        testingRequirements.latestSatTestDateNote.trim().length > 0
-          ? testingRequirements.latestSatTestDateNote.trim()
-          : null,
-      latestActTestDateNote:
-        typeof testingRequirements.latestActTestDateNote === "string" &&
-        testingRequirements.latestActTestDateNote.trim().length > 0
-          ? testingRequirements.latestActTestDateNote.trim()
-          : null,
-      superscorePolicy: normalizeEnumValue(
-        testingRequirements.superscorePolicy,
-        ["sat_only", "act_only", "both", "none", "unknown"] as const,
-        defaultUniversityRecommendationInputs.testingRequirements
-          .superscorePolicy
-      ),
-      writingEssayPolicy: normalizeEnumValue(
-        testingRequirements.writingEssayPolicy,
-        ["required", "optional", "not_considered", "unknown"] as const,
-        defaultUniversityRecommendationInputs.testingRequirements
-          .writingEssayPolicy
-      ),
-      scoreReportingPolicy: normalizeEnumValue(
-        testingRequirements.scoreReportingPolicy,
-        [
-          "self_report_allowed",
-          "official_required_upfront",
-          "official_required_after_admit",
-          "unknown",
-        ] as const,
-        defaultUniversityRecommendationInputs.testingRequirements
-          .scoreReportingPolicy
-      ),
-      middle50SatTotal: {
-        low: normalizeNullableNumber(middle50SatTotal.low),
-        high: normalizeNullableNumber(middle50SatTotal.high),
-      },
-      middle50ActComposite: {
-        low: normalizeNullableNumber(middle50ActComposite.low),
-        high: normalizeNullableNumber(middle50ActComposite.high),
-      },
-    },
+    testingRequirements: normalizeTestingRequirements(input),
   };
 }
 

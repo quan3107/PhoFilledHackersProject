@@ -108,31 +108,17 @@ function normalizeStates(value: unknown) {
     .filter((item) => /^[A-Z]{2}$/.test(item));
 }
 
-function patchProfile(
+function getPatchSection(patch: Record<string, unknown>, section: string) {
+  const value = patch[section];
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function patchRootProfileFields(
   target: StudentProfileDocument["current"]["profile"],
   patch: Record<string, unknown>
 ) {
-  const academic =
-    patch.academic && typeof patch.academic === "object"
-      ? (patch.academic as Record<string, unknown>)
-      : null;
-  const testing =
-    patch.testing && typeof patch.testing === "object"
-      ? (patch.testing as Record<string, unknown>)
-      : null;
-  const preferences =
-    patch.preferences && typeof patch.preferences === "object"
-      ? (patch.preferences as Record<string, unknown>)
-      : null;
-  const budget =
-    patch.budget && typeof patch.budget === "object"
-      ? (patch.budget as Record<string, unknown>)
-      : null;
-  const readiness =
-    patch.readiness && typeof patch.readiness === "object"
-      ? (patch.readiness as Record<string, unknown>)
-      : null;
-
   const citizenshipCountry = normalizeFreeTextField(patch.citizenshipCountry);
   if (citizenshipCountry) {
     target.citizenshipCountry = citizenshipCountry;
@@ -142,163 +128,209 @@ function patchProfile(
   if (targetEntryTerm) {
     target.targetEntryTerm = targetEntryTerm;
   }
+}
 
-  if (academic) {
-    const currentGpa100 = normalizeNumber(academic.currentGpa100);
-    if (currentGpa100 !== null) {
-      target.academic.currentGpa100 = Math.max(0, Math.min(100, currentGpa100));
-    }
-
-    const projectedGpa100 = normalizeNumber(academic.projectedGpa100);
-    if (projectedGpa100 !== null) {
-      target.academic.projectedGpa100 = Math.max(
-        0,
-        Math.min(100, projectedGpa100)
-      );
-    }
-
-    const curriculumStrength = normalizeEnum(
-      academic.curriculumStrength,
-      curriculumStrengthOptions
-    );
-    if (curriculumStrength) {
-      target.academic.curriculumStrength = curriculumStrength;
-    }
-
-    const classRankPercent = normalizeNumber(academic.classRankPercent);
-    if (classRankPercent !== null) {
-      target.academic.classRankPercent = Math.max(
-        0,
-        Math.min(100, classRankPercent)
-      );
-    }
+function patchAcademicProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  academic: Record<string, unknown> | null
+) {
+  if (!academic) {
+    return;
   }
 
-  if (testing) {
-    const satTotal = normalizeNumber(testing.satTotal);
-    if (satTotal !== null) {
-      target.testing.satTotal = Math.max(0, Math.round(satTotal));
-    }
-
-    const actComposite = normalizeNumber(testing.actComposite);
-    if (actComposite !== null) {
-      target.testing.actComposite = Math.max(0, Math.round(actComposite));
-    }
-
-    const englishExamType = normalizeEnum(
-      testing.englishExamType,
-      englishExamTypeOptions
-    );
-    if (englishExamType) {
-      target.testing.englishExamType = englishExamType;
-    }
-
-    const englishExamScore = normalizeNumber(testing.englishExamScore);
-    if (englishExamScore !== null) {
-      target.testing.englishExamScore = englishExamScore;
-    }
-
-    if (typeof testing.willSubmitTests === "boolean") {
-      target.testing.willSubmitTests = testing.willSubmitTests;
-    }
+  const currentGpa100 = normalizeNumber(academic.currentGpa100);
+  if (currentGpa100 !== null) {
+    target.academic.currentGpa100 = Math.max(0, Math.min(100, currentGpa100));
   }
 
-  if (preferences) {
-    const intendedMajors = toTrimmedStringArray(preferences.intendedMajors);
-    if (intendedMajors.length > 0) {
-      target.preferences.intendedMajors = intendedMajors;
-    }
-
-    const preferredStates = normalizeStates(preferences.preferredStates);
-    if (preferredStates.length > 0) {
-      target.preferences.preferredStates = preferredStates;
-    }
-
-    const preferredLocationPreferences = normalizeLocationPreferences(
-      preferences.preferredLocationPreferences
+  const projectedGpa100 = normalizeNumber(academic.projectedGpa100);
+  if (projectedGpa100 !== null) {
+    target.academic.projectedGpa100 = Math.max(
+      0,
+      Math.min(100, projectedGpa100)
     );
-    if (preferredLocationPreferences.length > 0) {
-      target.preferences.preferredLocationPreferences =
-        preferredLocationPreferences;
-    }
-
-    const preferredCampusLocale = normalizeCampusLocale(
-      preferences.preferredCampusLocale
-    );
-    if (preferredCampusLocale.length > 0) {
-      target.preferences.preferredCampusLocale = preferredCampusLocale;
-    }
-
-    const preferredSchoolControl = normalizeSchoolControl(
-      preferences.preferredSchoolControl
-    );
-    if (preferredSchoolControl.length > 0) {
-      target.preferences.preferredSchoolControl = preferredSchoolControl;
-    }
-
-    const preferredUndergraduateSize = normalizeEnum(
-      preferences.preferredUndergraduateSize,
-      preferredUndergraduateSizeOptions
-    );
-    if (preferredUndergraduateSize) {
-      target.preferences.preferredUndergraduateSize =
-        preferredUndergraduateSize;
-    }
   }
 
-  if (budget) {
-    const annualBudgetUsd = normalizeNumber(budget.annualBudgetUsd);
-    if (annualBudgetUsd !== null) {
-      target.budget.annualBudgetUsd = Math.max(0, Math.round(annualBudgetUsd));
-    }
-
-    const needsFinancialAid = normalizeBoolean(budget.needsFinancialAid);
-    if (needsFinancialAid !== null) {
-      target.budget.needsFinancialAid = needsFinancialAid;
-    }
-
-    const needsMeritAid = normalizeBoolean(budget.needsMeritAid);
-    if (needsMeritAid !== null) {
-      target.budget.needsMeritAid = needsMeritAid;
-    }
-
-    const budgetFlexibility = normalizeEnum(
-      budget.budgetFlexibility,
-      budgetFlexibilityOptions
-    );
-    if (budgetFlexibility) {
-      target.budget.budgetFlexibility = budgetFlexibility;
-    }
+  const curriculumStrength = normalizeEnum(
+    academic.curriculumStrength,
+    curriculumStrengthOptions
+  );
+  if (curriculumStrength) {
+    target.academic.curriculumStrength = curriculumStrength;
   }
 
-  if (readiness) {
-    const wantsEarlyRound = normalizeBoolean(readiness.wantsEarlyRound);
-    if (wantsEarlyRound !== null) {
-      target.readiness.wantsEarlyRound = wantsEarlyRound;
-    }
-
-    const hasTeacherRecommendationsReady = normalizeBoolean(
-      readiness.hasTeacherRecommendationsReady
+  const classRankPercent = normalizeNumber(academic.classRankPercent);
+  if (classRankPercent !== null) {
+    target.academic.classRankPercent = Math.max(
+      0,
+      Math.min(100, classRankPercent)
     );
-    if (hasTeacherRecommendationsReady !== null) {
-      target.readiness.hasTeacherRecommendationsReady =
-        hasTeacherRecommendationsReady;
-    }
-
-    const hasCounselorDocumentsReady = normalizeBoolean(
-      readiness.hasCounselorDocumentsReady
-    );
-    if (hasCounselorDocumentsReady !== null) {
-      target.readiness.hasCounselorDocumentsReady = hasCounselorDocumentsReady;
-    }
-
-    const hasEssayDraftsStarted = normalizeBoolean(
-      readiness.hasEssayDraftsStarted
-    );
-    if (hasEssayDraftsStarted !== null) {
-      target.readiness.hasEssayDraftsStarted = hasEssayDraftsStarted;
-    }
   }
+}
+
+function patchTestingProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  testing: Record<string, unknown> | null
+) {
+  if (!testing) {
+    return;
+  }
+
+  const satTotal = normalizeNumber(testing.satTotal);
+  if (satTotal !== null) {
+    target.testing.satTotal = Math.max(0, Math.round(satTotal));
+  }
+
+  const actComposite = normalizeNumber(testing.actComposite);
+  if (actComposite !== null) {
+    target.testing.actComposite = Math.max(0, Math.round(actComposite));
+  }
+
+  const englishExamType = normalizeEnum(
+    testing.englishExamType,
+    englishExamTypeOptions
+  );
+  if (englishExamType) {
+    target.testing.englishExamType = englishExamType;
+  }
+
+  const englishExamScore = normalizeNumber(testing.englishExamScore);
+  if (englishExamScore !== null) {
+    target.testing.englishExamScore = englishExamScore;
+  }
+
+  if (typeof testing.willSubmitTests === "boolean") {
+    target.testing.willSubmitTests = testing.willSubmitTests;
+  }
+}
+
+function patchPreferenceProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  preferences: Record<string, unknown> | null
+) {
+  if (!preferences) {
+    return;
+  }
+
+  const intendedMajors = toTrimmedStringArray(preferences.intendedMajors);
+  if (intendedMajors.length > 0) {
+    target.preferences.intendedMajors = intendedMajors;
+  }
+
+  const preferredStates = normalizeStates(preferences.preferredStates);
+  if (preferredStates.length > 0) {
+    target.preferences.preferredStates = preferredStates;
+  }
+
+  const preferredLocationPreferences = normalizeLocationPreferences(
+    preferences.preferredLocationPreferences
+  );
+  if (preferredLocationPreferences.length > 0) {
+    target.preferences.preferredLocationPreferences =
+      preferredLocationPreferences;
+  }
+
+  const preferredCampusLocale = normalizeCampusLocale(
+    preferences.preferredCampusLocale
+  );
+  if (preferredCampusLocale.length > 0) {
+    target.preferences.preferredCampusLocale = preferredCampusLocale;
+  }
+
+  const preferredSchoolControl = normalizeSchoolControl(
+    preferences.preferredSchoolControl
+  );
+  if (preferredSchoolControl.length > 0) {
+    target.preferences.preferredSchoolControl = preferredSchoolControl;
+  }
+
+  const preferredUndergraduateSize = normalizeEnum(
+    preferences.preferredUndergraduateSize,
+    preferredUndergraduateSizeOptions
+  );
+  if (preferredUndergraduateSize) {
+    target.preferences.preferredUndergraduateSize = preferredUndergraduateSize;
+  }
+}
+
+function patchBudgetProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  budget: Record<string, unknown> | null
+) {
+  if (!budget) {
+    return;
+  }
+
+  const annualBudgetUsd = normalizeNumber(budget.annualBudgetUsd);
+  if (annualBudgetUsd !== null) {
+    target.budget.annualBudgetUsd = Math.max(0, Math.round(annualBudgetUsd));
+  }
+
+  const needsFinancialAid = normalizeBoolean(budget.needsFinancialAid);
+  if (needsFinancialAid !== null) {
+    target.budget.needsFinancialAid = needsFinancialAid;
+  }
+
+  const needsMeritAid = normalizeBoolean(budget.needsMeritAid);
+  if (needsMeritAid !== null) {
+    target.budget.needsMeritAid = needsMeritAid;
+  }
+
+  const budgetFlexibility = normalizeEnum(
+    budget.budgetFlexibility,
+    budgetFlexibilityOptions
+  );
+  if (budgetFlexibility) {
+    target.budget.budgetFlexibility = budgetFlexibility;
+  }
+}
+
+function patchReadinessProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  readiness: Record<string, unknown> | null
+) {
+  if (!readiness) {
+    return;
+  }
+
+  const wantsEarlyRound = normalizeBoolean(readiness.wantsEarlyRound);
+  if (wantsEarlyRound !== null) {
+    target.readiness.wantsEarlyRound = wantsEarlyRound;
+  }
+
+  const hasTeacherRecommendationsReady = normalizeBoolean(
+    readiness.hasTeacherRecommendationsReady
+  );
+  if (hasTeacherRecommendationsReady !== null) {
+    target.readiness.hasTeacherRecommendationsReady =
+      hasTeacherRecommendationsReady;
+  }
+
+  const hasCounselorDocumentsReady = normalizeBoolean(
+    readiness.hasCounselorDocumentsReady
+  );
+  if (hasCounselorDocumentsReady !== null) {
+    target.readiness.hasCounselorDocumentsReady = hasCounselorDocumentsReady;
+  }
+
+  const hasEssayDraftsStarted = normalizeBoolean(
+    readiness.hasEssayDraftsStarted
+  );
+  if (hasEssayDraftsStarted !== null) {
+    target.readiness.hasEssayDraftsStarted = hasEssayDraftsStarted;
+  }
+}
+
+function patchProfile(
+  target: StudentProfileDocument["current"]["profile"],
+  patch: Record<string, unknown>
+) {
+  patchRootProfileFields(target, patch);
+  patchAcademicProfile(target, getPatchSection(patch, "academic"));
+  patchTestingProfile(target, getPatchSection(patch, "testing"));
+  patchPreferenceProfile(target, getPatchSection(patch, "preferences"));
+  patchBudgetProfile(target, getPatchSection(patch, "budget"));
+  patchReadinessProfile(target, getPatchSection(patch, "readiness"));
 }
 
 export function applyIntakeProfilePatches(input: {
