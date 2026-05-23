@@ -50,6 +50,13 @@
       "when": 1774140000000,
       "tag": "0006_llm_intake_session_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779548740432,
+      "tag": "0007_hesitant_carnage",
+      "breakpoints": true
     }
   ]
 }

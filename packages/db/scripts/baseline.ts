@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadEnvFile } from "node:process";
 
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { bigint, pgSchema, serial, text } from "drizzle-orm/pg-core";
@@ -32,6 +32,7 @@ const repoRootEnvPath = path.join(scriptDir, "../../../.env");
 const migrationsFolder = path.join(scriptDir, "../drizzle");
 const baselineInfraFolder = path.join(scriptDir, "../drizzle-baseline");
 const journalPath = path.join(migrationsFolder, "meta/_journal.json");
+const latestVerifiedBaselineMigrationIdx = 6;
 
 const drizzleTrackingSchema = pgSchema("drizzle");
 const drizzleMigrations = drizzleTrackingSchema.table("__drizzle_migrations", {
@@ -40,12 +41,17 @@ const drizzleMigrations = drizzleTrackingSchema.table("__drizzle_migrations", {
   createdAt: bigint("created_at", { mode: "number" }),
 });
 
-type MigrationJournal = {
+export type BaselineMigrationJournal = {
   entries: Array<{
     idx: number;
     when: number;
     tag: string;
   }>;
+};
+
+export type BaselineMigrationRecord = {
+  hash: string;
+  createdAt: number;
 };
 
 function loadRepositoryEnv() {
@@ -54,23 +60,46 @@ function loadRepositoryEnv() {
   }
 }
 
-function readBaselineMigration() {
+function readMigrationHash(tag: string) {
+  const migrationPath = path.join(migrationsFolder, `${tag}.sql`);
+  const migrationSql = readFileSync(migrationPath, "utf8");
+
+  return createHash("sha256").update(migrationSql).digest("hex");
+}
+
+function readMigrationJournal() {
   const journal = JSON.parse(
     readFileSync(journalPath, "utf8")
-  ) as MigrationJournal;
-  const baselineEntry = journal.entries.at(0);
+  ) as BaselineMigrationJournal;
 
-  if (!baselineEntry) {
+  if (!journal.entries.at(0)) {
     throw new Error("Missing baseline migration journal entry.");
   }
 
-  const migrationPath = path.join(migrationsFolder, `${baselineEntry.tag}.sql`);
-  const migrationSql = readFileSync(migrationPath, "utf8");
+  return journal;
+}
 
-  return {
-    hash: createHash("sha256").update(migrationSql).digest("hex"),
-    createdAt: baselineEntry.when,
-  };
+export function collectVerifiedBaselineMigrations(
+  journal: BaselineMigrationJournal,
+  verifiedMigrationTags: ReadonlySet<string>,
+  hashForTag: (tag: string) => string
+): BaselineMigrationRecord[] {
+  return journal.entries
+    .filter((entry) => verifiedMigrationTags.has(entry.tag))
+    .map((entry) => ({
+      hash: hashForTag(entry.tag),
+      createdAt: entry.when,
+    }));
+}
+
+export function collectVerifiedBaselineMigrationTags(
+  journal: BaselineMigrationJournal
+): Set<string> {
+  return new Set(
+    journal.entries
+      .filter((entry) => entry.idx <= latestVerifiedBaselineMigrationIdx)
+      .map((entry) => entry.tag)
+  );
 }
 
 async function assertExistingApplicationSchema(db: ReturnType<typeof drizzle>) {
@@ -106,14 +135,25 @@ export async function baselineExistingDatabase() {
     await assertExistingApplicationSchema(db);
     await migrate(db, { migrationsFolder: baselineInfraFolder });
 
-    const baselineMigration = readBaselineMigration();
-    const [existingMigration] = await db
+    const journal = readMigrationJournal();
+    const verifiedMigrationTags = collectVerifiedBaselineMigrationTags(journal);
+    const baselineMigrations = collectVerifiedBaselineMigrations(
+      journal,
+      verifiedMigrationTags,
+      readMigrationHash
+    );
+    const existingMigrations = await db
       .select()
       .from(drizzleMigrations)
-      .where(eq(drizzleMigrations.hash, baselineMigration.hash))
-      .limit(1);
+      .orderBy(desc(drizzleMigrations.createdAt));
+    const existingMigrationHashes = new Set(
+      existingMigrations.map((migration) => migration.hash)
+    );
+    const missingBaselineMigrations = baselineMigrations.filter(
+      (migration) => !existingMigrationHashes.has(migration.hash)
+    );
 
-    if (!existingMigration) {
+    if (missingBaselineMigrations.length > 0) {
       const [latestRecordedMigration] = await db
         .select()
         .from(drizzleMigrations)
@@ -122,20 +162,24 @@ export async function baselineExistingDatabase() {
 
       if (latestRecordedMigration) {
         throw new Error(
-          "Drizzle migration history already exists but does not match the checked-in baseline. Refusing to rewrite migration state."
+          "Drizzle migration history already exists but does not match the checked-in verified migrations. Refusing to rewrite migration state."
         );
       }
     }
 
-    if (!existingMigration) {
-      await db.insert(drizzleMigrations).values(baselineMigration);
+    if (missingBaselineMigrations.length > 0) {
+      await db
+        .insert(drizzleMigrations)
+        .values(missingBaselineMigrations)
+        .onConflictDoNothing();
     }
 
     console.log(
       JSON.stringify(
         {
           ok: true,
-          baselined: !existingMigration,
+          baselined: missingBaselineMigrations.length > 0,
+          recordedMigrationCount: missingBaselineMigrations.length,
           migrationsFolder,
         },
         null,

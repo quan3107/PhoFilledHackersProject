@@ -4,6 +4,7 @@
 
 import type * as dbSchema from "@etest/db";
 import {
+  recommendationExplanationShortlistItems,
   recommendationExplanations,
   recommendationResults,
   recommendationRuns,
@@ -32,6 +33,8 @@ type RecommendationResultRow = typeof recommendationResults.$inferSelect;
 type RecommendationShortlistRow = typeof recommendationShortlists.$inferSelect;
 type RecommendationExplanationRow =
   typeof recommendationExplanations.$inferSelect;
+type RecommendationExplanationShortlistItemRow =
+  typeof recommendationExplanationShortlistItems.$inferSelect;
 type UniversityRow = typeof universities.$inferSelect;
 type StudentProfileSnapshotRow = typeof studentProfileSnapshots.$inferSelect;
 
@@ -122,6 +125,7 @@ export async function getPersistedRecommendationExplanationBundle(
               university: true,
             },
           },
+          shortlistItems: true,
         },
       },
     },
@@ -143,6 +147,14 @@ export async function getPersistedRecommendationExplanationBundle(
       toRecommendationCandidateSchool(entry.recommendationResult.university),
     ])
   );
+  const shortlistOrderByResultId = new Map(
+    shortlist.explanations.flatMap((entry) =>
+      entry.shortlistItems.map((item) => [
+        item.recommendationResultId,
+        item.rankOrder,
+      ])
+    )
+  );
 
   return {
     recommendationRun: toRecommendationRunRecord(shortlist.recommendationRun),
@@ -150,12 +162,12 @@ export async function getPersistedRecommendationExplanationBundle(
     explanations: shortlist.explanations
       .slice()
       .sort((left, right) => {
-        const leftIndex = shortlist.shortlistedRecommendationResultIds.indexOf(
-          left.recommendationResult.id
-        );
-        const rightIndex = shortlist.shortlistedRecommendationResultIds.indexOf(
-          right.recommendationResult.id
-        );
+        const leftIndex =
+          shortlistOrderByResultId.get(left.recommendationResult.id) ??
+          Number.MAX_SAFE_INTEGER;
+        const rightIndex =
+          shortlistOrderByResultId.get(right.recommendationResult.id) ??
+          Number.MAX_SAFE_INTEGER;
 
         return leftIndex - rightIndex;
       })
@@ -281,7 +293,10 @@ function toRecommendationShortlistRecord(
     model: row.model,
     promptVersion: row.promptVersion,
     systemPrompt: row.systemPrompt,
-    shortlistedRecommendationResultIds: row.shortlistedRecommendationResultIds,
+    shortlistedRecommendationResultIds: row.explanations
+      .flatMap((entry) => entry.shortlistItems)
+      .sort((left, right) => left.rankOrder - right.rankOrder)
+      .map((item) => item.recommendationResultId),
     shortlistRationale: row.shortlistRationale,
     createdAt: row.createdAt.toISOString(),
   };
@@ -346,6 +361,7 @@ interface RecommendationShortlistQueryRow extends RecommendationShortlistRow {
   recommendationRun: RecommendationRunRow;
   explanations: Array<
     RecommendationExplanationRow & {
+      shortlistItems: RecommendationExplanationShortlistItemRow[];
       recommendationResult: RecommendationResultRow & {
         university: UniversityRow;
       };

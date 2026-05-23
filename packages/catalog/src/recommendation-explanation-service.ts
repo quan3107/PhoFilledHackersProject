@@ -4,6 +4,7 @@
 
 import type * as dbSchema from "@etest/db";
 import {
+  recommendationExplanationShortlistItems,
   recommendationExplanations,
   recommendationShortlists,
   type RecommendationResultRecord,
@@ -287,7 +288,6 @@ export async function persistRecommendationExplanationPass(
         model: metadata.model,
         promptVersion: metadata.promptVersion,
         systemPrompt: metadata.systemPrompt,
-        shortlistedRecommendationResultIds: orderedResultIds,
         shortlistRationale: output.shortlistRationale,
       })
       .returning();
@@ -299,25 +299,50 @@ export async function persistRecommendationExplanationPass(
     }
 
     if (orderedResultIds.length > 0) {
-      await tx.insert(recommendationExplanations).values(
-        orderedResultIds.map((recommendationResultId) => {
-          const explanation = explanationByResultId.get(recommendationResultId);
+      const explanations = await tx
+        .insert(recommendationExplanations)
+        .values(
+          orderedResultIds.map((recommendationResultId) => {
+            const explanation = explanationByResultId.get(
+              recommendationResultId
+            );
+
+            if (!explanation) {
+              throw new RecommendationExplanationOutputError(
+                `Missing explanation payload for recommendation result ${recommendationResultId}.`
+              );
+            }
+
+            return {
+              recommendationShortlistId: shortlist.id,
+              recommendationResultId,
+              whyRecommended: explanation.whyRecommended,
+              topBlockers: explanation.topBlockers,
+              nextRecommendedActions: explanation.nextRecommendedActions,
+              budgetSummary: explanation.budgetSummary,
+              assumptionChanges: explanation.assumptionChanges,
+              explanationConfidence: explanation.explanationConfidence,
+            };
+          })
+        )
+        .returning();
+
+      await tx.insert(recommendationExplanationShortlistItems).values(
+        orderedResultIds.map((recommendationResultId, index) => {
+          const explanation = explanations.find(
+            (entry) => entry.recommendationResultId === recommendationResultId
+          );
 
           if (!explanation) {
             throw new RecommendationExplanationOutputError(
-              `Missing explanation payload for recommendation result ${recommendationResultId}.`
+              `Missing persisted explanation for recommendation result ${recommendationResultId}.`
             );
           }
 
           return {
-            recommendationShortlistId: shortlist.id,
+            recommendationExplanationId: explanation.id,
             recommendationResultId,
-            whyRecommended: explanation.whyRecommended,
-            topBlockers: explanation.topBlockers,
-            nextRecommendedActions: explanation.nextRecommendedActions,
-            budgetSummary: explanation.budgetSummary,
-            assumptionChanges: explanation.assumptionChanges,
-            explanationConfidence: explanation.explanationConfidence,
+            rankOrder: index + 1,
           };
         })
       );

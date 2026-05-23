@@ -16,6 +16,7 @@ import {
 } from "./student-profiles.js";
 import {
   recommendationExplanations,
+  recommendationExplanationShortlistItems,
   recommendationResults,
   recommendationShortlists,
   recommendationRuns,
@@ -172,13 +173,30 @@ export const recommendationShortlistsRelations = relations(
 
 export const recommendationExplanationsRelations = relations(
   recommendationExplanations,
-  ({ one }) => ({
+  ({ many, one }) => ({
     recommendationShortlist: one(recommendationShortlists, {
       fields: [recommendationExplanations.recommendationShortlistId],
       references: [recommendationShortlists.id],
     }),
     recommendationResult: one(recommendationResults, {
       fields: [recommendationExplanations.recommendationResultId],
+      references: [recommendationResults.id],
+    }),
+    shortlistItems: many(recommendationExplanationShortlistItems),
+  })
+);
+
+export const recommendationExplanationShortlistItemsRelations = relations(
+  recommendationExplanationShortlistItems,
+  ({ one }) => ({
+    recommendationExplanation: one(recommendationExplanations, {
+      fields: [
+        recommendationExplanationShortlistItems.recommendationExplanationId,
+      ],
+      references: [recommendationExplanations.id],
+    }),
+    recommendationResult: one(recommendationResults, {
+      fields: [recommendationExplanationShortlistItems.recommendationResultId],
       references: [recommendationResults.id],
     }),
   })
