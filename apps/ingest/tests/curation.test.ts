@@ -7,6 +7,7 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   buildCurationPrompt,
@@ -26,10 +27,12 @@ test("findNextCuratedSchool returns the first missing QS artifact", async () => 
 
   const result = await findNextCuratedSchool({
     curatedSchoolsDir: tempDir,
-    seedListPath: new URL(
-      "../../../data/curated-schools/qs-us-top-50-2026.json",
-      import.meta.url
-    ).pathname,
+    seedListPath: fileURLToPath(
+      new URL(
+        "../../../data/curated-schools/qs-us-top-50-2026.json",
+        import.meta.url
+      )
+    ),
   });
 
   assert.equal(result.done, false);
@@ -41,10 +44,12 @@ test("findNextCuratedSchool returns the first missing QS artifact", async () => 
 
 test("buildCurationPrompt includes school-specific guidance and the output example", async () => {
   const prompt = await buildCurationPrompt("stanford", {
-    seedListPath: new URL(
-      "../../../data/curated-schools/qs-us-top-50-2026.json",
-      import.meta.url
-    ).pathname,
+    seedListPath: fileURLToPath(
+      new URL(
+        "../../../data/curated-schools/qs-us-top-50-2026.json",
+        import.meta.url
+      )
+    ),
   });
 
   assert.match(prompt, /Stanford University/);
