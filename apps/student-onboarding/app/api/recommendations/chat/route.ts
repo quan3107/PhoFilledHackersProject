@@ -4,7 +4,8 @@
 
 import { NextResponse } from "next/server";
 
-import { getOptionalServerSession } from "@/lib/auth-session";
+import { jsonApiError } from "@/lib/api-errors";
+import { requireApiSession } from "@/lib/api-session";
 import {
   runRecommendationChatTurn,
   type RecommendationChatTranscriptMessage,
@@ -61,31 +62,23 @@ function parseBody(value: unknown) {
 }
 
 export async function POST(request: Request) {
-  const session = await getOptionalServerSession();
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
   const body = parseBody(await request.json().catch(() => null));
 
   try {
     const result = await runRecommendationChatTurn({
-      userId: session.user.id,
+      userId: sessionResult.userId,
       latestMessage: body.message,
       transcript: body.messages,
     });
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to answer the recommendation question.",
-      },
-      { status: 500 }
-    );
+    return jsonApiError(error);
   }
 }
