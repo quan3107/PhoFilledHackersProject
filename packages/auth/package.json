@@ -17,14 +17,20 @@
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "lint": "eslint src --ext .ts",
+    "test": "npm --workspace @etest/backend-data run build && tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "format:check": "prettier --check ."
   },
   "dependencies": {
     "@etest/api-contracts": "*",
+    "@etest/backend-data": "*",
     "@etest/db": "*",
     "better-auth": "^1.6.11",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0"
   }
 }

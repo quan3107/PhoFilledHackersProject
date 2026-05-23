@@ -8,7 +8,7 @@ import {
   getStudentIntakeStateForUser,
   getStudentProfileStateForUser,
   saveStudentIntakeStateForUser,
-  saveStudentProfileStateForUser,
+  saveStudentIntakeTurnStateForUser,
   type StudentIntakeFieldStatusMap,
   type StudentIntakeStateRecord,
   type StudentProfileState,
@@ -1165,6 +1165,30 @@ function buildAssistantText(input: {
   return input.output.assistantMessage.trim();
 }
 
+async function persistTurnState(input: {
+  userId: string;
+  shouldApplyModelUpdates: boolean;
+  profileState: StudentProfileState;
+  nextDocument: ReturnType<typeof buildStudentProfileDocumentFromState>;
+  intakeState: Parameters<typeof saveStudentIntakeStateForUser>[0];
+}) {
+  if (!input.shouldApplyModelUpdates) {
+    return {
+      profileState: input.profileState,
+      intakeState: await saveStudentIntakeStateForUser(input.intakeState),
+    };
+  }
+
+  return saveStudentIntakeTurnStateForUser({
+    userId: input.userId,
+    currentProfile: input.nextDocument.current.profile,
+    projectedProfile: input.nextDocument.projected.profile,
+    currentAssumptions: input.nextDocument.current.assumptions,
+    projectedAssumptions: input.nextDocument.projected.assumptions,
+    intakeState: input.intakeState,
+  });
+}
+
 export async function runIntakeTurn(input: {
   userId: string;
   message: string | null;
@@ -1238,16 +1262,6 @@ export async function runIntakeTurn(input: {
       })
     : currentStatuses;
 
-  const savedProfileState = shouldApplyModelUpdates
-    ? await saveStudentProfileStateForUser({
-        userId: input.userId,
-        currentProfile: nextDocument.current.profile,
-        projectedProfile: nextDocument.projected.profile,
-        currentAssumptions: nextDocument.current.assumptions,
-        projectedAssumptions: nextDocument.projected.assumptions,
-      })
-    : profileState;
-
   const readiness = evaluateRecommendationRunReadinessFromDocument(
     nextDocument,
     {
@@ -1280,7 +1294,7 @@ export async function runIntakeTurn(input: {
   }
 
   const assistantMessage = createMessage("assistant", assistantText);
-  const savedIntakeState = await saveStudentIntakeStateForUser({
+  const intakeStateInput = {
     userId: input.userId,
     currentStepIndex: resolvedFieldCount,
     conversationDone: nextOutstandingFields.length === 0,
@@ -1290,15 +1304,22 @@ export async function runIntakeTurn(input: {
     progressCompletedCount: resolvedFieldCount,
     progressTotalCount: totalIntakeFieldCount,
     messages: [...transcript, assistantMessage],
+  };
+  const savedTurnState = await persistTurnState({
+    userId: input.userId,
+    shouldApplyModelUpdates,
+    profileState,
+    nextDocument,
+    intakeState: intakeStateInput,
   });
 
   const nextProfileState: StudentProfileState = {
-    ...savedProfileState,
+    ...savedTurnState.profileState,
     missingFields: readiness.missingFields,
   };
 
   return {
-    intakeState: savedIntakeState,
+    intakeState: savedTurnState.intakeState,
     profileState: nextProfileState,
     resolvedWithCaveatFields: readiness.resolvedWithCaveatFields,
   };

@@ -28,9 +28,8 @@ import {
   type StudentReadinessProfile,
   type StudentTestingProfile,
 } from "@etest/db";
+import { getBackendDb, type BackendDb } from "@etest/backend-data";
 import { eq } from "drizzle-orm";
-
-import { getAuthDb } from "./auth.js";
 
 export type StudentIntakeFieldResolutionKind =
   DbStudentIntakeFieldResolutionKind;
@@ -109,6 +108,8 @@ export interface StudentProfileReadinessEvaluation {
   resolvedWithCaveatFields: StudentProfileResolvedField[];
   canRun: boolean;
 }
+
+type StudentProfilePersistenceDb = Pick<BackendDb, "insert" | "query">;
 
 function toStudentIntakeStateRecord(
   row: typeof studentIntakeSessions.$inferSelect
@@ -689,8 +690,15 @@ export function evaluateRecommendationRunReadinessFromState(
 export async function getStudentProfileStateForUser(
   userId: string
 ): Promise<StudentProfileState> {
-  const authDb = await getAuthDb();
-  const profile = await authDb.query.studentProfiles.findFirst({
+  const db = await getBackendDb();
+  return getStudentProfileStateForUserWithDb(db, userId);
+}
+
+async function getStudentProfileStateForUserWithDb(
+  db: StudentProfilePersistenceDb,
+  userId: string
+): Promise<StudentProfileState> {
+  const profile = await db.query.studentProfiles.findFirst({
     where: eq(studentProfiles.userId, userId),
     with: {
       snapshots: true,
@@ -774,7 +782,21 @@ export async function saveStudentProfileStateForUser(input: {
   currentAssumptions: string[];
   projectedAssumptions: string[];
 }) {
-  const authDb = await getAuthDb();
+  const db = await getBackendDb();
+
+  return saveStudentProfileStateForUserWithDb(db, input);
+}
+
+export async function saveStudentProfileStateForUserWithDb(
+  db: StudentProfilePersistenceDb,
+  input: {
+    userId: string;
+    currentProfile: StudentProfileInput;
+    projectedProfile: StudentProfileInput;
+    currentAssumptions: string[];
+    projectedAssumptions: string[];
+  }
+) {
   const values = {
     userId: input.userId,
     citizenshipCountry: input.currentProfile.citizenshipCountry.trim(),
@@ -792,7 +814,7 @@ export async function saveStudentProfileStateForUser(input: {
     updatedAt: new Date(),
   };
 
-  const [savedProfile] = await authDb
+  const [savedProfile] = await db
     .insert(studentProfiles)
     .values(values)
     .onConflictDoUpdate({
@@ -830,31 +852,33 @@ export async function saveStudentProfileStateForUser(input: {
     readiness: input.projectedProfile.readiness,
   };
 
-  await upsertStudentProfileSnapshot({
+  await upsertStudentProfileSnapshot(db, {
     studentProfileId: savedProfile.id,
     snapshotKind: "current",
     assumptions: input.currentAssumptions,
     profile: currentSnapshotProfile,
   });
 
-  await upsertStudentProfileSnapshot({
+  await upsertStudentProfileSnapshot(db, {
     studentProfileId: savedProfile.id,
     snapshotKind: "projected",
     assumptions: input.projectedAssumptions,
     profile: projectedSnapshotProfile,
   });
 
-  return getStudentProfileStateForUser(input.userId);
+  return getStudentProfileStateForUserWithDb(db, input.userId);
 }
 
-async function upsertStudentProfileSnapshot(input: {
-  studentProfileId: string;
-  snapshotKind: StudentProfileSnapshotKind;
-  assumptions: string[];
-  profile: StudentProfileRecord;
-}) {
-  const authDb = await getAuthDb();
-  await authDb
+async function upsertStudentProfileSnapshot(
+  db: StudentProfilePersistenceDb,
+  input: {
+    studentProfileId: string;
+    snapshotKind: StudentProfileSnapshotKind;
+    assumptions: string[];
+    profile: StudentProfileRecord;
+  }
+) {
+  await db
     .insert(studentProfileSnapshots)
     .values({
       studentProfileId: input.studentProfileId,
@@ -877,8 +901,8 @@ async function upsertStudentProfileSnapshot(input: {
 export async function getStudentIntakeStateForUser(
   userId: string
 ): Promise<StudentIntakeStateRecord | null> {
-  const authDb = await getAuthDb();
-  const intakeState = await authDb.query.studentIntakeSessions.findFirst({
+  const db = await getBackendDb();
+  const intakeState = await db.query.studentIntakeSessions.findFirst({
     where: eq(studentIntakeSessions.userId, userId),
   });
 
@@ -896,8 +920,26 @@ export async function saveStudentIntakeStateForUser(input: {
   progressCompletedCount?: number;
   progressTotalCount?: number;
 }): Promise<StudentIntakeStateRecord> {
-  const authDb = await getAuthDb();
-  const existingState = await authDb.query.studentIntakeSessions.findFirst({
+  const db = await getBackendDb();
+
+  return saveStudentIntakeStateForUserWithDb(db, input);
+}
+
+export async function saveStudentIntakeStateForUserWithDb(
+  db: StudentProfilePersistenceDb,
+  input: {
+    userId: string;
+    currentStepIndex: number;
+    conversationDone: boolean;
+    messages: StudentIntakeMessageInput[];
+    previousResponseId?: string | null;
+    fieldStatuses?: StudentIntakeFieldStatusMap;
+    outstandingFields?: string[];
+    progressCompletedCount?: number;
+    progressTotalCount?: number;
+  }
+): Promise<StudentIntakeStateRecord> {
+  const existingState = await db.query.studentIntakeSessions.findFirst({
     where: eq(studentIntakeSessions.userId, input.userId),
   });
   const values = {
@@ -928,7 +970,7 @@ export async function saveStudentIntakeStateForUser(input: {
     updatedAt: new Date(),
   };
 
-  const [savedState] = await authDb
+  const [savedState] = await db
     .insert(studentIntakeSessions)
     .values(values)
     .onConflictDoUpdate({
@@ -938,4 +980,31 @@ export async function saveStudentIntakeStateForUser(input: {
     .returning();
 
   return toStudentIntakeStateRecord(savedState);
+}
+
+export async function saveStudentIntakeTurnStateForUser(input: {
+  userId: string;
+  currentProfile: StudentProfileInput;
+  projectedProfile: StudentProfileInput;
+  currentAssumptions: string[];
+  projectedAssumptions: string[];
+  intakeState: StudentIntakeStateInput;
+}) {
+  const db = await getBackendDb();
+
+  return db.transaction(async (tx) => {
+    const savedProfileState = await saveStudentProfileStateForUserWithDb(tx, {
+      userId: input.userId,
+      currentProfile: input.currentProfile,
+      projectedProfile: input.projectedProfile,
+      currentAssumptions: input.currentAssumptions,
+      projectedAssumptions: input.projectedAssumptions,
+    });
+    const savedIntakeState = await saveStudentIntakeStateForUserWithDb(tx, {
+      userId: input.userId,
+      ...input.intakeState,
+    });
+
+    return { profileState: savedProfileState, intakeState: savedIntakeState };
+  });
 }

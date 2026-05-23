@@ -4,11 +4,11 @@
 
 import {
   buildStudentProfileDocumentFromState,
-  getAuthDb,
   getStudentProfileStateForUser,
   type StudentProfileDocument,
   type StudentProfileState,
 } from "@etest/auth";
+import { getBackendDb } from "@etest/backend-data";
 import {
   recommendationRuns,
   studentProfileSnapshots,
@@ -81,7 +81,7 @@ export async function loadRecommendationChatContextForUser(input: {
   transcript: RecommendationChatTranscriptMessage[];
 }): Promise<RecommendationChatContext> {
   const [authDb, profileState] = await Promise.all([
-    getAuthDb(),
+    getBackendDb(),
     getStudentProfileStateForUser(input.userId),
   ]);
 

@@ -1,9 +1,9 @@
 import {
   evaluateRecommendationRunReadinessFromState,
-  getAuthDb,
   getStudentIntakeStateForUser,
   getStudentProfileStateForUser,
 } from "@etest/auth";
+import { getBackendDb } from "@etest/backend-data";
 import {
   RecommendationEngineInputError,
   listRecommendationCandidateSchools,
@@ -11,7 +11,7 @@ import {
 } from "@etest/catalog";
 
 export async function runRecommendationWorkflowForUser(userId: string) {
-  const db = await getAuthDb();
+  const db = await getBackendDb();
   const [profileState, intakeState] = await Promise.all([
     getStudentProfileStateForUser(userId),
     getStudentIntakeStateForUser(userId),
