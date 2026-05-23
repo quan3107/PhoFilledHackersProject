@@ -2,50 +2,36 @@
 // Canonical student-profile and auth-adjacent types for recommendation inputs.
 // Keeps profile shapes isolated from the larger catalog type bucket.
 
+import {
+  budgetFlexibilities,
+  curriculumStrengths as studentCurriculumStrengths,
+  englishExamTypes,
+  preferredUndergraduateSizes,
+  studentLocationPreferenceKinds,
+} from "@etest/api-contracts";
+import type {
+  BudgetFlexibility,
+  CurriculumStrength as StudentCurriculumStrength,
+  EnglishExamType,
+  PreferredUndergraduateSize,
+  StudentLocationPreferenceKind,
+} from "@etest/api-contracts";
 import type { SchoolControl } from "./types.js";
 
-export const studentCurriculumStrengths = [
-  "baseline",
-  "rigorous",
-  "most_rigorous",
-  "unknown",
-] as const;
-
-export type StudentCurriculumStrength =
-  (typeof studentCurriculumStrengths)[number];
-
-export const englishExamTypes = [
-  "ielts",
-  "toefl",
-  "duolingo",
-  "none",
-  "unknown",
-] as const;
-
-export type EnglishExamType = (typeof englishExamTypes)[number];
-
-export const preferredUndergraduateSizes = [
-  "small",
-  "medium",
-  "large",
-  "unknown",
-] as const;
-
-export type PreferredUndergraduateSize =
-  (typeof preferredUndergraduateSizes)[number];
-
-export const studentLocationPreferenceKinds = [
-  "us_east_coast",
-  "us_west_coast",
-  "us_midwest",
-  "us_south",
-  "canada",
-  "uk",
-  "no_preference",
-] as const;
-
-export type StudentLocationPreferenceKind =
-  (typeof studentLocationPreferenceKinds)[number];
+export {
+  budgetFlexibilities,
+  englishExamTypes,
+  preferredUndergraduateSizes,
+  studentCurriculumStrengths,
+  studentLocationPreferenceKinds,
+};
+export type {
+  BudgetFlexibility,
+  EnglishExamType,
+  PreferredUndergraduateSize,
+  StudentCurriculumStrength,
+  StudentLocationPreferenceKind,
+};
 
 export const studentLocationPreferenceLabels: Record<
   StudentLocationPreferenceKind,
@@ -114,15 +100,6 @@ export const studentLocationPreferenceStateGroups: Partial<
   ],
   us_south: ["AL", "AR", "KY", "LA", "MS", "OK", "TN", "TX"],
 };
-
-export const budgetFlexibilities = [
-  "low",
-  "medium",
-  "high",
-  "unknown",
-] as const;
-
-export type BudgetFlexibility = (typeof budgetFlexibilities)[number];
 
 export const studentProfileSnapshotKinds = ["current", "projected"] as const;
 

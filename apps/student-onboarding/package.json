@@ -12,6 +12,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@etest/api-contracts": "*",
     "@etest/auth": "*",
     "@etest/catalog": "*",
     "better-auth": "^1.6.11",

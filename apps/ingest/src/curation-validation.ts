@@ -3,6 +3,12 @@
 // Keeps prompt/example shape checks close to the ingest CLI without touching persistence.
 
 import {
+  applicationRounds,
+  testPolicies,
+  type ApplicationRound,
+  type TestPolicy,
+} from "@etest/api-contracts";
+import {
   academicSelectivityBands,
   aidModels,
   applicationActionTags,
@@ -23,18 +29,11 @@ import {
   superscorePolicies,
   testingExpectations,
   writingEssayPolicies,
-  type ApplicationRound,
   type UniversityExplanationInputs,
   type UniversityRecommendationInputs,
 } from "@etest/db";
 
-export const applicationRoundKeys = [
-  "early_action",
-  "early_decision",
-  "regular_decision",
-  "rolling_admission",
-  "priority",
-] as const satisfies readonly ApplicationRound[];
+export const applicationRoundKeys = applicationRounds;
 
 export const curationSourceKinds = [
   "official_admissions",
@@ -75,12 +74,7 @@ export interface CuratedSchoolArtifact {
     minimumToeflInternetBased: number | null;
     waiverNotes: string | null;
   };
-  testPolicy:
-    | "required"
-    | "test_optional"
-    | "test_flexible"
-    | "test_blind"
-    | "unknown";
+  testPolicy: TestPolicy;
   requiredMaterials: string[];
   tuitionAnnualUsd: number;
   estimatedCostOfAttendanceUsd: number;
@@ -850,13 +844,7 @@ export function validateCurationArtifact(
   const testPolicy = expectEnum(
     raw.testPolicy,
     "testPolicy",
-    [
-      "required",
-      "test_optional",
-      "test_flexible",
-      "test_blind",
-      "unknown",
-    ] as const,
+    testPolicies,
     issues
   );
   const requiredMaterials = expectStringArray(

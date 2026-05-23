@@ -25,6 +25,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@etest/api-contracts": "*",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.8"
   },

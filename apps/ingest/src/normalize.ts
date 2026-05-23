@@ -2,7 +2,8 @@
 // Normalization and provenance helpers for the branch-3 ingest runner.
 // Converts the model draft into the canonical catalog shape and keeps field provenance explicit.
 
-import { type CatalogImportStatus, type UniversitySourceKind } from "@etest/db";
+import type { UniversitySourceKind } from "@etest/api-contracts";
+import { type CatalogImportStatus } from "@etest/db";
 
 import {
   normalizeUniversityCatalogRecord,

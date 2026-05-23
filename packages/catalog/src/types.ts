@@ -5,11 +5,13 @@
 import type {
   ApplicationRound,
   CatalogRequiredField,
+  UniversitySourceKind,
+} from "@etest/api-contracts";
+import type {
   DeadlinesByRound,
   EnglishRequirements,
   UniversityExplanationInputs,
   UniversityRecommendationInputs,
-  UniversitySourceKind,
   UniversitySourceMetadata,
   UniversityValidationReason,
   UniversityValidationStatus,

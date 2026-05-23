@@ -5,8 +5,8 @@
 import {
   catalogRequiredFields,
   type CatalogRequiredField,
-  type UniversityValidationReason,
-} from "@etest/db";
+} from "@etest/api-contracts";
+import type { UniversityValidationReason } from "@etest/db";
 
 import type {
   NormalizedUniversityCatalogRecord,

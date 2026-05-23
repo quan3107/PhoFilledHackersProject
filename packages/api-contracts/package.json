@@ -16,8 +16,12 @@
   ],
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src tests --ext .ts",
+    "test": "tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
   }
 }
