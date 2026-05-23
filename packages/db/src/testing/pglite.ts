@@ -7,6 +7,8 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { fileURLToPath } from "node:url";
 
+import { fileURLToPath } from "node:url";
+
 import * as schema from "../index.js";
 
 export async function createCatalogTestDatabase() {

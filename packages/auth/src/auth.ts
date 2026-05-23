@@ -42,6 +42,9 @@ function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      return "postgres://dummy:dummy@localhost:5432/dummy";
+    }
     throw new Error("Missing DATABASE_URL.");
   }
 
@@ -112,6 +115,10 @@ function getSecret() {
 
   if (configuredSecret) {
     return configuredSecret;
+  }
+
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return "phofilledhackers-build-secret-dummy-001";
   }
 
   if (!isLocalDevelopment()) {
