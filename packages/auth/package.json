@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@etest/db": "*",
-    "better-auth": "^1.5.5",
-    "drizzle-orm": "^0.45.1",
+    "better-auth": "^1.6.11",
+    "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.8"
   }
 }
