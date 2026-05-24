@@ -207,6 +207,10 @@ export const studentProfiles = pgTable(
   },
   (table) => ({
     userIdIdx: uniqueIndex("student_profiles_user_id_idx").on(table.userId),
+    idUserIdIdx: uniqueIndex("student_profiles_id_user_id_idx").on(
+      table.id,
+      table.userId
+    ),
   })
 );
 

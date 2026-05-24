@@ -5,6 +5,7 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  foreignKey,
   integer,
   jsonb,
   pgEnum,
@@ -104,6 +105,11 @@ export const recommendationRuns = pgTable(
     createdAtIdx: index("recommendation_runs_created_at_idx").on(
       table.createdAt
     ),
+    profileOwnerFk: foreignKey({
+      columns: [table.studentProfileId, table.userId],
+      foreignColumns: [studentProfiles.id, studentProfiles.userId],
+      name: "recommendation_runs_profile_owner_fk",
+    }).onDelete("cascade"),
   })
 );
 
@@ -164,12 +170,6 @@ export const recommendationShortlists = pgTable(
     model: text("model").notNull(),
     promptVersion: text("prompt_version").notNull(),
     systemPrompt: text("system_prompt").notNull(),
-    shortlistedRecommendationResultIds: jsonb(
-      "shortlisted_recommendation_result_ids"
-    )
-      .$type<string[]>()
-      .notNull()
-      .default(sql`'[]'::jsonb`),
     shortlistRationale: jsonb("shortlist_rationale")
       .$type<string[]>()
       .notNull()
@@ -229,5 +229,27 @@ export const recommendationExplanations = pgTable(
     resultIdIdx: uniqueIndex("recommendation_explanations_result_id_idx").on(
       table.recommendationResultId
     ),
+  })
+);
+
+export const recommendationExplanationShortlistItems = pgTable(
+  "recommendation_explanation_shortlist_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recommendationExplanationId: uuid("recommendation_explanation_id")
+      .notNull()
+      .references(() => recommendationExplanations.id, { onDelete: "cascade" }),
+    recommendationResultId: uuid("recommendation_result_id")
+      .notNull()
+      .references(() => recommendationResults.id, { onDelete: "cascade" }),
+    rankOrder: integer("rank_order").notNull(),
+  },
+  (table) => ({
+    explanationRankIdx: uniqueIndex(
+      "recommendation_explanation_shortlist_items_rank_idx"
+    ).on(table.recommendationExplanationId, table.rankOrder),
+    explanationResultIdx: uniqueIndex(
+      "recommendation_explanation_shortlist_items_result_idx"
+    ).on(table.recommendationExplanationId, table.recommendationResultId),
   })
 );

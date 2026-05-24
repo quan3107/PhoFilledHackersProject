@@ -38,9 +38,69 @@ const drizzleMigrations = drizzleTrackingSchema.table("__drizzle_migrations", {
   createdAt: bigint("created_at", { mode: "number" }),
 });
 
+export type AppliedMigrationRecord = {
+  hash: string;
+  createdAt: number | null;
+};
+
+export type RepositoryMigrationRecord = {
+  hash: string;
+  createdAt: number;
+};
+
 function loadRepositoryEnv() {
   if (existsSync(repoRootEnvPath)) {
     loadEnvFile(repoRootEnvPath);
+  }
+}
+
+export function assertMigrationHistoryMatchesRepository(
+  appliedMigrations: AppliedMigrationRecord[],
+  repositoryMigrations: RepositoryMigrationRecord[]
+) {
+  if (appliedMigrations.length === 0) {
+    return;
+  }
+
+  const repositoryByCreatedAt = new Map(
+    repositoryMigrations.map((migration) => [migration.createdAt, migration])
+  );
+  const appliedByCreatedAt = new Map(
+    appliedMigrations.map((migration) => [
+      Number(migration.createdAt),
+      migration,
+    ])
+  );
+  const latestAppliedCreatedAt = Math.max(
+    ...appliedMigrations.map((migration) => Number(migration.createdAt))
+  );
+
+  for (const appliedMigration of appliedMigrations) {
+    const createdAt = Number(appliedMigration.createdAt);
+    const repositoryMigration = repositoryByCreatedAt.get(createdAt);
+
+    if (!repositoryMigration) {
+      throw new Error(
+        `Drizzle migration drift detected: applied migration ${createdAt} is not present in repository.`
+      );
+    }
+
+    if (repositoryMigration.hash !== appliedMigration.hash) {
+      throw new Error(
+        `Drizzle migration drift detected: hash mismatch for migration ${createdAt}.`
+      );
+    }
+  }
+
+  for (const repositoryMigration of repositoryMigrations) {
+    if (
+      repositoryMigration.createdAt < latestAppliedCreatedAt &&
+      !appliedByCreatedAt.has(repositoryMigration.createdAt)
+    ) {
+      throw new Error(
+        `Drizzle migration drift detected: repository migration ${repositoryMigration.createdAt} is older than the latest applied migration but is not applied.`
+      );
+    }
   }
 }
 
@@ -169,22 +229,18 @@ async function runDrizzleMigrations() {
     }
 
     if (hasMigrationState) {
-      const [lastAppliedMigration] = await db
+      const appliedMigrations = await db
         .select()
         .from(drizzleMigrations)
-        .orderBy(desc(drizzleMigrations.createdAt))
-        .limit(1);
+        .orderBy(desc(drizzleMigrations.createdAt));
 
-      if (
-        lastAppliedMigration &&
-        Number(lastAppliedMigration.createdAt) ===
-          latestMigration.folderMillis &&
-        lastAppliedMigration.hash !== latestMigration.hash
-      ) {
-        throw new Error(
-          "Drizzle migration drift detected: the live migration history does not match the checked-in baseline."
-        );
-      }
+      assertMigrationHistoryMatchesRepository(
+        appliedMigrations,
+        migrations.map((migration) => ({
+          hash: migration.hash,
+          createdAt: migration.folderMillis,
+        }))
+      );
     }
 
     if (hasApplicationSchema && !hasMigrationState) {
