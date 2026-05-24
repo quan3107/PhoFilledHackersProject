@@ -16,14 +16,16 @@ import {
   StudentOnboardingSettingsPanel,
 } from "./student-onboarding-review-panels";
 import type {
-  StudentOnboardingDocument,
-  StudentOnboardingMissingField,
   StudentOnboardingRecommendationView,
   StudentOnboardingRoute,
   StudentOnboardingSummary,
-  Locale,
-  ThemeMode,
-} from "./student-onboarding-model";
+} from "@/lib/student-onboarding";
+import type {
+  StudentProfile,
+  StudentProfileDocument,
+  StudentProfileMissingField,
+} from "@/lib/student-profile";
+import type { Locale, ThemeMode } from "./student-onboarding-model";
 
 type Props = Readonly<{
   locale: Locale;
@@ -40,8 +42,8 @@ type Props = Readonly<{
   runningRecommendations: boolean;
   recommendationView: StudentOnboardingRecommendationView | null;
   summary: StudentOnboardingSummary;
-  missingFields: StudentOnboardingMissingField[];
-  profileDocument: StudentOnboardingDocument;
+  missingFields: StudentProfileMissingField[];
+  profileDocument: StudentProfileDocument;
   chatMessages: Array<
     Readonly<{ id: string; role: "assistant" | "student"; text: string }>
   >;
@@ -51,14 +53,10 @@ type Props = Readonly<{
   onQuickAction: (value: string) => void;
   onViewerNameChange: (value: string) => void;
   onChangeCurrent: (
-    updater: (
-      profile: StudentOnboardingDocument["current"]["profile"]
-    ) => StudentOnboardingDocument["current"]["profile"]
+    updater: (profile: StudentProfile) => StudentProfile
   ) => void;
   onChangeProjected: (
-    updater: (
-      profile: StudentOnboardingDocument["projected"]["profile"]
-    ) => StudentOnboardingDocument["projected"]["profile"]
+    updater: (profile: StudentProfile) => StudentProfile
   ) => void;
   onChangeCurrentAssumptions: (value: string[]) => void;
   onChangeProjectedAssumptions: (value: string[]) => void;

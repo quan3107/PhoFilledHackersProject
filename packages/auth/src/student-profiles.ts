@@ -28,7 +28,7 @@ import {
   type StudentReadinessProfile,
   type StudentTestingProfile,
 } from "@etest/db";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { getAuthDb } from "./auth.js";
 

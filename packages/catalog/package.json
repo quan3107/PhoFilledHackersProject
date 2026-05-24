@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
@@ -15,7 +16,7 @@
   ],
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "lint": "node --eval \"console.log('packages/catalog lint is intentionally deferred until repo-wide lint rules land.')\"",
+    "lint": "eslint src tests --ext .ts",
     "test": "tsx --test tests/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "format:check": "prettier --check ."

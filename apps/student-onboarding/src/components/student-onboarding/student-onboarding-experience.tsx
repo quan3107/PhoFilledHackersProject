@@ -27,7 +27,6 @@ import {
   type StudentProfileMissingField,
 } from "@/lib/student-profile";
 import {
-  initialProfileDraft,
   requiredProfileFields,
   type Locale,
   type ProfileField,
@@ -109,8 +108,6 @@ type RecommendationChatTurnResponse = {
   assistantMessage: string;
   suggestedReplies: string[];
 };
-
-const emptyDraft = (): StudentProfileDraft => ({ ...initialProfileDraft });
 
 function parseMoneyRange(value: string): number | null {
   const cleaned = value.replaceAll(",", "");
@@ -398,9 +395,7 @@ export function StudentOnboardingExperience({
   const [draftProfile, setDraftProfile] = useState<StudentProfileDraft>(() =>
     draftFromDocument(initialDocument, viewer.name)
   );
-  const [recentlyUpdated, setRecentlyUpdated] = useState<ProfileField | null>(
-    null
-  );
+  const [recentlyUpdated] = useState<ProfileField | null>(null);
   const [progressCurrent, setProgressCurrent] = useState(0);
   const [progressTotal, setProgressTotal] = useState(
     requiredProfileFields.length
@@ -458,16 +453,6 @@ export function StudentOnboardingExperience({
       mediaQuery.removeEventListener("change", syncViewport);
     };
   }, []);
-
-  function applyDraftField(field: ProfileField, value: string) {
-    setDraftProfile((existing) => ({ ...existing, [field]: value }));
-    setDocument((existing) =>
-      applyDraftFieldToDocument(existing, field, value)
-    );
-    setRecentlyUpdated(field);
-    setDirty(true);
-    setSaveMessage(null);
-  }
 
   function applyCurrentDraftUpdater(
     updater: (profile: StudentProfileDraft) => StudentProfileDraft

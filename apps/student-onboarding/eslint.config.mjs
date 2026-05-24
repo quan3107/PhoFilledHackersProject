@@ -17,7 +17,6 @@ export default defineConfig(
       "out/**",
       "build/**",
       "next-env.d.ts",
-      "src/components/student-onboarding/**",
       "eslint.config.mjs",
       "postcss.config.mjs",
     ],
@@ -72,6 +71,12 @@ export default defineConfig(
           format: ["PascalCase", "UPPER_CASE"],
         },
       ],
+    },
+  },
+  {
+    files: ["src/components/student-onboarding/**/*.{ts,tsx}"],
+    rules: {
+      complexity: ["error", { max: 35 }],
     },
   }
 );
