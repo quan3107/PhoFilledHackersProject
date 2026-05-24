@@ -4,8 +4,9 @@
 
 import { NextResponse } from "next/server";
 
-import { jsonApiError } from "@/lib/api-errors";
+import { PublicApiError, jsonApiError } from "@/lib/api-errors";
 import { requireApiSession } from "@/lib/api-session";
+import { getRequestId, logApiError } from "@/lib/observability";
 import { runRecommendationChatTurn } from "@/lib/recommendation-chat-processor";
 
 export const runtime = "nodejs";
@@ -35,6 +36,7 @@ function parseBody(value: unknown) {
 }
 
 export async function POST(request: Request) {
+  const requestId = getRequestId(request);
   const sessionResult = await requireApiSession();
 
   if (!sessionResult.ok) {
@@ -43,6 +45,19 @@ export async function POST(request: Request) {
 
   const body = parseBody(await request.json().catch(() => null));
   if (!body.recommendationRunId) {
+    logApiError(
+      {
+        requestId,
+        operationId: requestId,
+        userId: sessionResult.userId,
+        publicErrorCode: "validation_failed",
+      },
+      new PublicApiError(
+        "invalid_request",
+        "recommendationRunId is required.",
+        400
+      )
+    );
     return NextResponse.json(
       {
         error: {
@@ -63,6 +78,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    return jsonApiError(error);
+    return jsonApiError(error, {
+      requestId,
+      operationId: requestId,
+      userId: sessionResult.userId,
+      recommendationRunId: body.recommendationRunId,
+    });
   }
 }

@@ -12,7 +12,9 @@ import {
   type ProfilePutRequest,
 } from "@etest/api-contracts";
 import { NextResponse } from "next/server";
+import { PublicApiError, jsonApiError } from "@/lib/api-errors";
 import { requireApiSession } from "@/lib/api-session";
+import { getRequestId, logApiError } from "@/lib/observability";
 
 function toAuthProfileInput(
   profile: ProfilePutRequest["currentProfile"]
@@ -35,6 +37,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const requestId = getRequestId(request);
   const sessionResult = await requireApiSession();
 
   if (!sessionResult.ok) {
@@ -45,6 +48,15 @@ export async function PUT(request: Request) {
   const parsed = profilePutRequestSchema.safeParse(body);
 
   if (!parsed.success) {
+    logApiError(
+      {
+        requestId,
+        operationId: requestId,
+        userId: sessionResult.userId,
+        publicErrorCode: "invalid_request",
+      },
+      parsed.error
+    );
     return NextResponse.json(
       {
         error: {
@@ -56,13 +68,32 @@ export async function PUT(request: Request) {
     );
   }
 
-  const profileState = await saveStudentProfileStateForUser({
-    userId: sessionResult.userId,
-    currentProfile: toAuthProfileInput(parsed.data.currentProfile),
-    projectedProfile: toAuthProfileInput(parsed.data.projectedProfile),
-    currentAssumptions: parsed.data.currentAssumptions,
-    projectedAssumptions: parsed.data.projectedAssumptions,
-  });
+  let profileState;
+  try {
+    profileState = await saveStudentProfileStateForUser({
+      userId: sessionResult.userId,
+      currentProfile: toAuthProfileInput(parsed.data.currentProfile),
+      projectedProfile: toAuthProfileInput(parsed.data.projectedProfile),
+      currentAssumptions: parsed.data.currentAssumptions,
+      projectedAssumptions: parsed.data.projectedAssumptions,
+    });
+  } catch (error) {
+    return jsonApiError(
+      error instanceof PublicApiError
+        ? error
+        : new PublicApiError(
+            "dependency_unavailable",
+            "Profile persistence is temporarily unavailable.",
+            503
+          ),
+      {
+        requestId,
+        operationId: requestId,
+        userId: sessionResult.userId,
+        internalError: error,
+      }
+    );
+  }
 
   return NextResponse.json(profileState);
 }

@@ -226,6 +226,9 @@ test("runner persists a stage-specific failure code on extraction errors", async
             throw new Error("synthetic extraction failure");
           },
         },
+        logger: {
+          error() {},
+        },
         now: () => new Date("2025-01-01T00:00:00.000Z"),
       }
     )
@@ -300,6 +303,9 @@ test("runner persists validation_failed for publishability exceptions", async ()
         evaluatePublishability() {
           throw new Error("synthetic validation failure");
         },
+        logger: {
+          error() {},
+        },
         now: () => new Date("2025-01-01T00:00:00.000Z"),
       }
     )
@@ -309,4 +315,79 @@ test("runner persists validation_failed for publishability exceptions", async ()
     failureCode: "validation_failed",
     failureMessage: "synthetic validation failure",
   });
+});
+
+test("runner logs structured context when an ingest run fails", async () => {
+  const events: unknown[] = [];
+  const repository: IngestRepository = {
+    async createImportRun() {
+      return { id: "run_4" };
+    },
+    async updateImportRunStatus() {},
+    async persistSuccessfulImport() {
+      throw new Error("expected fetch failure");
+    },
+    async persistFailedImport() {},
+    async close() {},
+  };
+
+  await assert.rejects(() =>
+    runIngest(
+      {
+        databaseUrl: "postgres://example",
+        brightDataApiKey: "bright-key",
+        brightDataZone: "zone-1",
+        openAiApiKey: "openai-key",
+        openAiModel: "gpt-5-nano",
+        openAiReasoningEffort: "minimal",
+        triggeredBy: "scheduled",
+        schoolSlug: "stanford",
+      },
+      {
+        repository,
+        brightData: {
+          async fetchPage() {
+            throw new Error("synthetic fetch failure");
+          },
+        },
+        openAi: {
+          async extractSchoolDraft() {
+            return buildExtractionDraft();
+          },
+        },
+        logger: {
+          error(event) {
+            events.push(event);
+          },
+        },
+        now: () => new Date("2025-01-01T00:00:00.000Z"),
+      }
+    )
+  );
+
+  assert.equal(events.length, 1);
+  assert.deepEqual(events[0], {
+    event: "ingest.run_failed",
+    operationId: "run_4",
+    ingestRunId: "run_4",
+    publicErrorCode: "bright_data_fetch_failed",
+    stage: "fetching",
+    schoolSlug: "stanford",
+    triggeredBy: "scheduled",
+    internalError: {
+      name: "IngestStageError",
+      message: (events[0] as { internalError: { message: string } })
+        .internalError.message,
+      stack: (events[0] as { internalError: { stack: string } }).internalError
+        .stack,
+    },
+  });
+  assert.match(
+    (events[0] as { internalError: { message: string } }).internalError.message,
+    /Failed to fetch 4 source\(s\):/
+  );
+  assert.match(
+    (events[0] as { internalError: { message: string } }).internalError.message,
+    /synthetic fetch failure/
+  );
 });

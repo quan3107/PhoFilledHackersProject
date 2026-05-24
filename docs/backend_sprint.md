@@ -18,7 +18,7 @@ This is a hackathon XP sprint: one vertical slice per branch, merged in order, w
 
 - Status: done
 - Goal: scaffold the Turborepo workspace layout and shared tooling.
-- Deliverables: `apps/web`, `apps/ingest`, `packages/db`, `packages/catalog`, `packages/api-contracts`, `packages/auth`, root workspace config.
+- Deliverables: `apps/student-onboarding`, `apps/ingest`, `packages/db`, `packages/catalog`, `packages/api-contracts`, `packages/auth`, root workspace config.
 - Acceptance criteria: the repo installs, workspace scripts resolve, and the canonical monorepo layout is in place.
 - Tests: none required for this branch.
 - Ownership: repo root, workspace config, and base tooling only.
@@ -46,7 +46,7 @@ This is a hackathon XP sprint: one vertical slice per branch, merged in order, w
 - Deliverables: school review page, source list, validation status, `last_verified_at`, missing-field display, publish/unpublish action.
 - Acceptance criteria: a reviewer can inspect one imported school and decide whether it is publishable.
 - Tests: UI smoke test for the review page; API/integration test for publish/unpublish gating.
-- Ownership: `apps/web`, `packages/db`.
+- Ownership: `apps/student-onboarding`, `packages/db`.
 
 ### `feat/recommendation-catalog-read-path`
 
@@ -54,7 +54,7 @@ This is a hackathon XP sprint: one vertical slice per branch, merged in order, w
 - Deliverables: catalog read path wired into recommendations, unpublished rows excluded, raw import tables kept out of the recommendation path.
 - Acceptance criteria: recommendation selection ignores unpublished or incomplete records.
 - Tests: unit test that selection reads only published rows; integration test that unpublished/incomplete schools are excluded from recommendation runs.
-- Ownership: `apps/web`, `packages/db`, `packages/catalog`.
+- Ownership: `apps/student-onboarding`, `packages/db`, `packages/catalog`.
 
 ### `feat/import-api-contracts`
 
@@ -62,7 +62,7 @@ This is a hackathon XP sprint: one vertical slice per branch, merged in order, w
 - Deliverables: OpenAPI endpoints and generated types for import status, detail, list, and publish actions.
 - Acceptance criteria: import and catalog endpoints have one documented request/response shape source.
 - Tests: API/contract tests for import status, detail, list, and publish endpoints; schema-shape test for request/response drift.
-- Ownership: `packages/api-contracts`, `apps/web` route handlers.
+- Ownership: `packages/api-contracts`, `apps/student-onboarding` route handlers.
 
 ### `fix/ingest-hardening`
 
@@ -74,7 +74,7 @@ This is a hackathon XP sprint: one vertical slice per branch, merged in order, w
 
 ## Workspace Ownership
 
-- `apps/web`: app routes, admin review UI, recommendation read path.
+- `apps/student-onboarding`: app routes, admin review UI, recommendation read path.
 - `apps/ingest`: Bright Data + Responses API ingestion runner and import orchestration.
 - `packages/db`: Drizzle schema, migrations, and repository queries.
 - `packages/catalog`: normalized catalog schema, validation, and publishability rules.

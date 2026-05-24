@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { type ApiLogContext, logApiError } from "./observability";
+
 export type PublicApiErrorCode =
   | "invalid_request"
   | "dependency_unavailable"
@@ -17,15 +19,19 @@ export class PublicApiError extends Error {
   }
 }
 
-export function jsonApiError(error: unknown) {
+export function jsonApiError(error: unknown, context: ApiLogContext = {}) {
   if (error instanceof PublicApiError) {
+    logApiError(
+      { ...context, publicErrorCode: error.code },
+      context.internalError ?? error
+    );
     return NextResponse.json(
       { error: { code: error.code, message: error.message } },
       { status: error.status }
     );
   }
 
-  console.error("[api] unhandled error", error);
+  logApiError({ ...context, publicErrorCode: "internal_error" }, error);
   return NextResponse.json(
     {
       error: {
