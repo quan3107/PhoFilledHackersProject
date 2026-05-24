@@ -4,6 +4,7 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
+import { eq } from "drizzle-orm";
 
 import {
   recommendationExplanations,
@@ -30,6 +31,14 @@ test("recommendation explanation pass persists shortlist and explanation rows", 
   try {
     const seeded = await seedRunState(database.db);
     const requests: Array<{ url: string; init: RequestInit }> = [];
+
+    await database.db
+      .update(universities)
+      .set({
+        schoolName: "Renamed Draft University",
+        validationStatus: "draft",
+      })
+      .where(eq(universities.id, seeded.results[1].universityId));
 
     const client = createRecommendationExplanationClient(
       {
@@ -312,6 +321,7 @@ async function seedRunState(
           improvementUpside: 20,
         },
         projectedAssumptionDelta: ["Projected GPA increased to 96"],
+        candidateSchoolSnapshot: toCandidateSchoolSnapshot(firstUniversity),
         rankOrder: 1,
       },
       {
@@ -340,6 +350,7 @@ async function seedRunState(
           improvementUpside: 18,
         },
         projectedAssumptionDelta: ["Projected GPA increased to 96"],
+        candidateSchoolSnapshot: toCandidateSchoolSnapshot(secondUniversity),
         rankOrder: 2,
       },
     ])
@@ -350,6 +361,23 @@ async function seedRunState(
     run,
     results: [firstResult, secondResult],
   } as const;
+}
+
+function toCandidateSchoolSnapshot(row: typeof universities.$inferSelect) {
+  return {
+    universityId: row.id,
+    schoolName: row.schoolName,
+    city: row.city,
+    state: row.state,
+    lastVerifiedAt: row.lastVerifiedAt.toISOString(),
+    tuitionAnnualUsd: row.tuitionAnnualUsd,
+    estimatedCostOfAttendanceUsd: row.estimatedCostOfAttendanceUsd,
+    livingCostEstimateUsd: row.livingCostEstimateUsd,
+    scholarshipAvailabilityFlag: row.scholarshipAvailabilityFlag,
+    scholarshipNotes: row.scholarshipNotes,
+    recommendationInputs: row.recommendationInputs,
+    explanationInputs: row.explanationInputs,
+  };
 }
 
 function toSnapshotProfile(

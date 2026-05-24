@@ -379,8 +379,24 @@ export interface RecommendationResultRecord {
   currentScoreBreakdown: ScoreComponentBreakdown;
   projectedScoreBreakdown: ScoreComponentBreakdown | null;
   projectedAssumptionDelta: string[];
+  candidateSchoolSnapshot: RecommendationCandidateSchoolSnapshot;
   rankOrder: number;
   createdAt: string;
+}
+
+export interface RecommendationCandidateSchoolSnapshot {
+  universityId: string;
+  schoolName: string;
+  city: string;
+  state: string;
+  lastVerifiedAt: string;
+  tuitionAnnualUsd: number;
+  estimatedCostOfAttendanceUsd: number;
+  livingCostEstimateUsd: number;
+  scholarshipAvailabilityFlag: boolean;
+  scholarshipNotes: string;
+  recommendationInputs: UniversityRecommendationInputs;
+  explanationInputs: UniversityExplanationInputs;
 }
 
 export interface RecommendationShortlistRecord {

@@ -237,6 +237,7 @@ test("recommendation runs and results round-trip through the schema", async () =
           improvementUpside: 20,
         },
         projectedAssumptionDelta: ["Projected GPA increased to 96"],
+        candidateSchoolSnapshot: toCandidateSchoolSnapshot(firstUniversity),
         rankOrder: 1,
       },
       {
@@ -265,6 +266,7 @@ test("recommendation runs and results round-trip through the schema", async () =
           improvementUpside: 18,
         },
         projectedAssumptionDelta: ["Projected GPA increased to 96"],
+        candidateSchoolSnapshot: toCandidateSchoolSnapshot(secondUniversity),
         rankOrder: 2,
       },
     ]);
@@ -366,6 +368,23 @@ function toSnapshotProfile(
     readiness: profile.readiness,
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
+  };
+}
+
+function toCandidateSchoolSnapshot(row: typeof universities.$inferSelect) {
+  return {
+    universityId: row.id,
+    schoolName: row.schoolName,
+    city: row.city,
+    state: row.state,
+    lastVerifiedAt: row.lastVerifiedAt.toISOString(),
+    tuitionAnnualUsd: row.tuitionAnnualUsd,
+    estimatedCostOfAttendanceUsd: row.estimatedCostOfAttendanceUsd,
+    livingCostEstimateUsd: row.livingCostEstimateUsd,
+    scholarshipAvailabilityFlag: row.scholarshipAvailabilityFlag,
+    scholarshipNotes: row.scholarshipNotes,
+    recommendationInputs: row.recommendationInputs,
+    explanationInputs: row.explanationInputs,
   };
 }
 

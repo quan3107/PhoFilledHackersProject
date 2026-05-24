@@ -8,6 +8,7 @@ import test from "node:test";
 import { catalogImportItems, catalogImportRuns, universities } from "@etest/db";
 
 import { listRecommendationCandidateSchools } from "../src/recommendation-catalog-read-path.js";
+import { RecommendationCatalogRowValidationError } from "../src/catalog-row-mappers.js";
 import { createCatalogTestDatabase } from "../../db/src/testing/pglite.js";
 
 test("recommendation candidates include only publishable universities", async () => {
@@ -124,6 +125,60 @@ test("recommendation candidates are ordered deterministically by school name", a
       candidates.map((candidate) => candidate.schoolName),
       ["Alpha University", "Beta University", "Zeta University"]
     );
+  } finally {
+    await database.close();
+  }
+});
+
+test("recommendation candidates reject malformed persisted recommendation JSON at the read boundary", async () => {
+  const database = await createCatalogTestDatabase();
+
+  try {
+    const [school] = await database.db
+      .insert(universities)
+      .values({
+        ...buildUniversityInsert({
+          schoolName: "Broken JSON University",
+          officialAdmissionsUrl: "https://broken.example.edu/admissions",
+          validationStatus: "publishable",
+        }),
+        recommendationInputs: { admissionRateOverall: "not-a-number" },
+      } as never)
+      .returning();
+
+    await assert.rejects(
+      listRecommendationCandidateSchools(database.db),
+      (error) =>
+        error instanceof RecommendationCatalogRowValidationError &&
+        error.universityId === school.id &&
+        error.field === "recommendationInputs"
+    );
+  } finally {
+    await database.close();
+  }
+});
+
+test("display-publishable rows are excluded from recommendations until scoring facts are ready", async () => {
+  const database = await createCatalogTestDatabase();
+
+  try {
+    await database.db.insert(universities).values({
+      ...buildUniversityInsert({
+        schoolName: "Display Only University",
+        officialAdmissionsUrl: "https://display-only.example.edu/admissions",
+        validationStatus: "publishable",
+      }),
+      recommendationInputs: {
+        ...buildRecommendationInputs(),
+        admissionRateOverall: null,
+        satAverageOverall: null,
+        actMidpointCumulative: null,
+      },
+    });
+
+    const candidates = await listRecommendationCandidateSchools(database.db);
+
+    assert.deepEqual(candidates, []);
   } finally {
     await database.close();
   }

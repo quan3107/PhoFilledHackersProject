@@ -9,6 +9,7 @@ import type { PgQueryResultHKT } from "drizzle-orm/pg-core";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 
 import type { RecommendationCandidateSchool } from "./types.js";
+import { toRecommendationCandidateSchool } from "./catalog-row-mappers.js";
 
 export type RecommendationCatalogReadDb = PgDatabase<
   PgQueryResultHKT,
@@ -37,18 +38,38 @@ export async function listRecommendationCandidateSchools(
     },
   });
 
-  return schools.map((school) => ({
-    universityId: school.id,
-    schoolName: school.schoolName,
-    city: school.city,
-    state: school.state,
-    lastVerifiedAt: school.lastVerifiedAt.toISOString(),
-    tuitionAnnualUsd: school.tuitionAnnualUsd,
-    estimatedCostOfAttendanceUsd: school.estimatedCostOfAttendanceUsd,
-    livingCostEstimateUsd: school.livingCostEstimateUsd,
-    scholarshipAvailabilityFlag: school.scholarshipAvailabilityFlag,
-    scholarshipNotes: school.scholarshipNotes,
-    recommendationInputs: school.recommendationInputs,
-    explanationInputs: school.explanationInputs,
-  }));
+  return schools
+    .map(toRecommendationCandidateSchool)
+    .filter(
+      (school) => isRecommendationReady(school) && isExplanationReady(school)
+    );
+}
+
+export function isRecommendationReady(school: RecommendationCandidateSchool) {
+  const inputs = school.recommendationInputs;
+
+  return (
+    inputs.admissionRateOverall !== null &&
+    (inputs.satAverageOverall !== null ||
+      inputs.actMidpointCumulative !== null ||
+      inputs.testingRequirements.acceptedExams.length > 0) &&
+    inputs.averageNetPriceUsd !== null &&
+    inputs.schoolControl !== "unknown" &&
+    inputs.campusLocale !== null &&
+    inputs.programFitTags.length > 0 &&
+    inputs.undergraduateSize !== null
+  );
+}
+
+export function isExplanationReady(school: RecommendationCandidateSchool) {
+  const inputs = school.explanationInputs;
+
+  return (
+    inputs.academicSelectivityBand !== "unknown" &&
+    inputs.testingExpectation !== "unknown" &&
+    inputs.aidModel !== "unknown" &&
+    inputs.applicationComplexity !== "unknown" &&
+    inputs.potentialFitTags.length > 0 &&
+    inputs.actionableApplicationSteps.length > 0
+  );
 }

@@ -75,6 +75,7 @@ test("recommendation explanation shortlist items are ordered and FK-backed", asy
           preferenceFit: 15,
           improvementUpside: 16,
         },
+        candidateSchoolSnapshot: toCandidateSchoolSnapshot(university),
         rankOrder: 1,
       })
       .returning();
@@ -200,6 +201,23 @@ async function seedTwoProfiles(
     .returning();
 
   return { firstProfile, secondProfile, firstSnapshot };
+}
+
+function toCandidateSchoolSnapshot(row: typeof universities.$inferSelect) {
+  return {
+    universityId: row.id,
+    schoolName: row.schoolName,
+    city: row.city,
+    state: row.state,
+    lastVerifiedAt: row.lastVerifiedAt.toISOString(),
+    tuitionAnnualUsd: row.tuitionAnnualUsd,
+    estimatedCostOfAttendanceUsd: row.estimatedCostOfAttendanceUsd,
+    livingCostEstimateUsd: row.livingCostEstimateUsd,
+    scholarshipAvailabilityFlag: row.scholarshipAvailabilityFlag,
+    scholarshipNotes: row.scholarshipNotes,
+    recommendationInputs: row.recommendationInputs,
+    explanationInputs: row.explanationInputs,
+  };
 }
 
 function buildUniversityInsert(schoolName: string) {

@@ -307,6 +307,45 @@ test("engine scoring config overrides can change tiers and outlooks", async () =
   }
 });
 
+test("engine rejects invalid scoring config overrides before scoring", async () => {
+  const database = await createCatalogTestDatabase();
+
+  try {
+    const seeded = await seedProfileState(database.db, {
+      userId: "user_invalid_config",
+      currentProfile: buildCurrentSnapshotProfile(),
+      projectedProfile: buildProjectedSnapshotProfile(),
+      projectedAssumptions: ["Raise GPA to 95"],
+    });
+
+    await assert.rejects(
+      runRecommendationEngineForUser({
+        db: database.db,
+        userId: seeded.userId,
+        profileState: {
+          profile: {
+            id: seeded.profile.id,
+            userId: seeded.userId,
+          },
+          snapshots: seeded.snapshots,
+          missingFields: [],
+        },
+        scoringConfig: {
+          improvementUpside: {
+            gpaDeltaDivisor: 0,
+          },
+        },
+      }),
+      /gpaDeltaDivisor must be nonzero/
+    );
+
+    const storedRuns = await database.db.select().from(recommendationRuns);
+    assert.equal(storedRuns.length, 0);
+  } finally {
+    await database.close();
+  }
+});
+
 test("engine scores region-based location preferences through the extension", async () => {
   const database = await createCatalogTestDatabase();
 
