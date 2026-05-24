@@ -62,6 +62,11 @@ export const confidenceLevelEnum = pgEnum(
   confidenceLevels
 );
 
+export const recommendationChatMessageRoleEnum = pgEnum(
+  "recommendation_chat_message_role",
+  ["student", "assistant"]
+);
+
 export const recommendationRuns = pgTable(
   "recommendation_runs",
   {
@@ -104,6 +109,10 @@ export const recommendationRuns = pgTable(
     ),
     createdAtIdx: index("recommendation_runs_created_at_idx").on(
       table.createdAt
+    ),
+    idUserIdIdx: uniqueIndex("recommendation_runs_id_user_id_idx").on(
+      table.id,
+      table.userId
     ),
     profileOwnerFk: foreignKey({
       columns: [table.studentProfileId, table.userId],
@@ -251,5 +260,63 @@ export const recommendationExplanationShortlistItems = pgTable(
     explanationResultIdx: uniqueIndex(
       "recommendation_explanation_shortlist_items_result_idx"
     ).on(table.recommendationExplanationId, table.recommendationResultId),
+  })
+);
+
+export const recommendationChatSessions = pgTable(
+  "recommendation_chat_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => studentProfiles.userId, { onDelete: "cascade" }),
+    recommendationRunId: uuid("recommendation_run_id")
+      .notNull()
+      .references(() => recommendationRuns.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    runIdIdx: uniqueIndex("recommendation_chat_sessions_run_id_idx").on(
+      table.recommendationRunId
+    ),
+    userIdIdx: index("recommendation_chat_sessions_user_id_idx").on(
+      table.userId
+    ),
+    runOwnerFk: foreignKey({
+      columns: [table.recommendationRunId, table.userId],
+      foreignColumns: [recommendationRuns.id, recommendationRuns.userId],
+      name: "recommendation_chat_sessions_run_owner_fk",
+    }).onDelete("cascade"),
+  })
+);
+
+export const recommendationChatMessages = pgTable(
+  "recommendation_chat_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recommendationChatSessionId: uuid("recommendation_chat_session_id")
+      .notNull()
+      .references(() => recommendationChatSessions.id, {
+        onDelete: "cascade",
+      }),
+    role: recommendationChatMessageRoleEnum("role").notNull(),
+    text: text("text").notNull(),
+    rankOrder: integer("rank_order").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    sessionIdIdx: index("recommendation_chat_messages_session_id_idx").on(
+      table.recommendationChatSessionId
+    ),
+    sessionRankIdx: uniqueIndex(
+      "recommendation_chat_messages_session_rank_idx"
+    ).on(table.recommendationChatSessionId, table.rankOrder),
   })
 );

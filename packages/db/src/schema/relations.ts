@@ -17,6 +17,8 @@ import {
 import {
   recommendationExplanations,
   recommendationExplanationShortlistItems,
+  recommendationChatMessages,
+  recommendationChatSessions,
   recommendationResults,
   recommendationShortlists,
   recommendationRuns,
@@ -143,6 +145,28 @@ export const recommendationRunsRelations = relations(
     }),
     results: many(recommendationResults),
     shortlists: many(recommendationShortlists),
+    chatSession: one(recommendationChatSessions),
+  })
+);
+
+export const recommendationChatSessionsRelations = relations(
+  recommendationChatSessions,
+  ({ many, one }) => ({
+    recommendationRun: one(recommendationRuns, {
+      fields: [recommendationChatSessions.recommendationRunId],
+      references: [recommendationRuns.id],
+    }),
+    messages: many(recommendationChatMessages),
+  })
+);
+
+export const recommendationChatMessagesRelations = relations(
+  recommendationChatMessages,
+  ({ one }) => ({
+    session: one(recommendationChatSessions, {
+      fields: [recommendationChatMessages.recommendationChatSessionId],
+      references: [recommendationChatSessions.id],
+    }),
   })
 );
 

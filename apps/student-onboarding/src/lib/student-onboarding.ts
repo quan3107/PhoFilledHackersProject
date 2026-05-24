@@ -33,6 +33,7 @@ export interface StudentOnboardingSummary {
 }
 
 export interface StudentOnboardingRecommendationView {
+  runId: string | null;
   title: string;
   summary: string;
   items: StudentOnboardingSummaryItem[];
@@ -303,5 +304,25 @@ export const normalizeRecommendationData = (
       ? `${items.length} item${items.length === 1 ? "" : "s"} ready to review.`
       : "Run recommendations to surface schools, gaps, and next steps.";
 
-  return { title, summary, items, rawPreview };
+  return {
+    runId: extractRecommendationRunId(data),
+    title,
+    summary,
+    items,
+    rawPreview,
+  };
 };
+
+function extractRecommendationRunId(data: unknown) {
+  if (!data || typeof data !== "object" || !("run" in data)) {
+    return null;
+  }
+
+  const run = (data as Record<string, unknown>).run;
+  if (!run || typeof run !== "object") {
+    return null;
+  }
+
+  const id = (run as Record<string, unknown>).id;
+  return typeof id === "string" ? id : null;
+}

@@ -83,13 +83,6 @@ type ChatTurnResponse = {
   profileState: Parameters<typeof buildStudentProfileDocumentFromState>[0];
 };
 
-type RecommendationChatMessage = {
-  id: string;
-  role: "assistant" | "student";
-  text: string;
-  createdAt: string;
-};
-
 type RecommendationChatTurnResponse = {
   assistantMessage: string;
   suggestedReplies: string[];
@@ -323,9 +316,9 @@ export function StudentOnboardingExperience({
 
   async function handleRecommendationChatTurn(
     message: string | null,
-    messages: RecommendationChatMessage[]
+    recommendationRunId: string | null
   ) {
-    return defaultSubmitRecommendationChatTurn(message, messages);
+    return defaultSubmitRecommendationChatTurn(message, recommendationRunId);
   }
 
   return (
@@ -446,6 +439,7 @@ export function StudentOnboardingExperience({
                       summary: recommendationView.summary,
                       items: recommendationView.items,
                       rawPreview: recommendationView.rawPreview,
+                      runId: recommendationView.runId,
                     }
                   : null
               }
@@ -464,6 +458,7 @@ export function StudentOnboardingExperience({
               onRunRecommendations={handleRunRecommendations}
               onGoToReview={() => router.push("/review")}
               recommendationChatSessionKey={
+                recommendationView?.runId ??
                 recommendationView?.rawPreview ??
                 recommendationView?.summary ??
                 "recommendation-chat"
@@ -549,12 +544,16 @@ async function defaultSubmitIntakeTurn(
 
 async function defaultSubmitRecommendationChatTurn(
   message: string | null,
-  messages: RecommendationChatMessage[]
+  recommendationRunId: string | null
 ): Promise<RecommendationChatTurnResponse> {
+  if (!recommendationRunId) {
+    throw new Error("Run recommendations before opening the assistant.");
+  }
+
   const response = await fetch("/api/recommendations/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ message, messages }),
+    body: JSON.stringify({ recommendationRunId, message }),
   });
   const body = (await response.json().catch(() => null)) as {
     error?: string;
