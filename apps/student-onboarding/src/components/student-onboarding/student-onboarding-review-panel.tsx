@@ -12,18 +12,17 @@ import {
 } from "lucide-react";
 
 import { MetricCard, Pill, SectionCard } from "../dashboard/primitives";
-import {
-  type StudentOnboardingMissingField,
-  type StudentOnboardingSummary,
-} from "./student-onboarding-model";
+import type { StudentOnboardingSummary } from "@/lib/student-onboarding";
+import type { StudentProfileMissingField } from "@/lib/student-profile";
 
 type ReviewPanelProps = Readonly<{
   summary: StudentOnboardingSummary;
-  missingFields: StudentOnboardingMissingField[];
+  missingFields: StudentProfileMissingField[];
   dirty: boolean;
   saving: boolean;
   saveMessage: string | null;
   saveError: string | null;
+  recommendationError: string | null;
   onSave: () => void;
   onRunRecommendations: () => void;
 }>;
@@ -35,6 +34,7 @@ export function StudentOnboardingReviewPanel({
   saving,
   saveMessage,
   saveError,
+  recommendationError,
   onSave,
   onRunRecommendations,
 }: ReviewPanelProps) {
@@ -66,6 +66,11 @@ export function StudentOnboardingReviewPanel({
             {saveError ? (
               <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 {saveError}
+              </div>
+            ) : null}
+            {recommendationError ? (
+              <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {recommendationError}
               </div>
             ) : null}
           </div>
@@ -275,7 +280,7 @@ function Field({
 function MissingFieldRow({
   field,
 }: Readonly<{
-  field: StudentOnboardingMissingField;
+  field: StudentProfileMissingField;
 }>) {
   return (
     <div className="flex items-start gap-2 rounded-xl border border-border bg-white px-3 py-2.5">

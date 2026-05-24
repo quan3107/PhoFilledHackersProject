@@ -48,7 +48,7 @@ test("live student-onboarding workspace copy stays free of placeholder and couns
     ),
     readFile(
       new URL(
-        "../../../apps/student-onboarding/src/components/student-onboarding/student-onboarding-model.ts",
+        "../../../apps/student-onboarding/src/components/student-onboarding/student-onboarding-experience.tsx",
         import.meta.url
       ),
       "utf8"
