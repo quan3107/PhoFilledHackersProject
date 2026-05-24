@@ -2,7 +2,7 @@
 // Public export surface for the shared Better Auth package.
 // Keeps the web app importing one canonical auth instance and helpers.
 
-export { getAuth, getAuthDb, getAuthSecret } from "./auth.js";
+export { getAuth, getAuthSecret } from "./auth.js";
 export type { StudentLocationPreferenceKind } from "@etest/api-contracts";
 export {
   buildStudentProfileDocumentFromState,
@@ -14,6 +14,7 @@ export {
   getStudentIntakeStateForUser,
   getStudentProfileStateForUser,
   saveStudentIntakeStateForUser,
+  saveStudentIntakeTurnStateForUser,
   saveStudentProfileStateForUser,
   toRecommendationMissingFieldPaths,
   type StudentIntakeMessageInput,

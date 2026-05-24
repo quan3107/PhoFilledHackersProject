@@ -3,38 +3,13 @@
 // Initializes auth and the Drizzle client lazily so app builds stay side-effect free.
 
 import { randomUUID } from "node:crypto";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { loadEnvFile } from "node:process";
-
+import { getBackendDb, type BackendDb } from "@etest/backend-data";
 import * as dbSchema from "@etest/db";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 
-declare global {
-  var __etestAuthSqlClient: postgres.Sql | undefined;
-}
-
-const envCandidates = [
-  path.join(process.cwd(), ".env"),
-  path.join(process.cwd(), "..", ".env"),
-  path.join(process.cwd(), "..", "..", ".env"),
-];
-
-const repoRootEnvPath = envCandidates.find((candidate) =>
-  existsSync(candidate)
-);
-
-if (repoRootEnvPath) {
-  loadEnvFile(repoRootEnvPath);
-}
-
-type AuthDb = ReturnType<typeof drizzle<typeof dbSchema>>;
 type AuthInstance = ReturnType<typeof betterAuth>;
 
-let authDbPromise: Promise<AuthDb> | null = null;
 let authPromise: Promise<AuthInstance> | null = null;
 
 const allowInsecureAuthDev = process.env.ALLOW_INSECURE_AUTH_DEV === "true";
@@ -43,19 +18,6 @@ function isLocalAuthUrl(url: string | undefined) {
   return Boolean(
     url && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(url)
   );
-}
-
-function getDatabaseUrl() {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    if (process.env.NEXT_PHASE === "phase-production-build") {
-      return "postgres://dummy:dummy@localhost:5432/dummy";
-    }
-    throw new Error("Missing DATABASE_URL.");
-  }
-
-  return databaseUrl;
 }
 
 function getBaseUrl() {
@@ -143,18 +105,7 @@ function isExplicitLocalAuthDev() {
   return allowInsecureAuthDev && isLocalAuthUrl(getBaseUrl());
 }
 
-function getSqlClient() {
-  if (!globalThis.__etestAuthSqlClient) {
-    globalThis.__etestAuthSqlClient = postgres(getDatabaseUrl(), {
-      prepare: false,
-      max: 5,
-    });
-  }
-
-  return globalThis.__etestAuthSqlClient;
-}
-
-function buildAuthOptions(db: AuthDb): BetterAuthOptions {
+function buildAuthOptions(db: BackendDb): BetterAuthOptions {
   return {
     baseURL: getBaseUrl(),
     trustedOrigins: getTrustedOrigins(),
@@ -182,21 +133,9 @@ function buildAuthOptions(db: AuthDb): BetterAuthOptions {
   };
 }
 
-export async function getAuthDb() {
-  if (!authDbPromise) {
-    authDbPromise = Promise.resolve(
-      drizzle(getSqlClient(), {
-        schema: dbSchema,
-      })
-    );
-  }
-
-  return authDbPromise;
-}
-
 export async function getAuth() {
   if (!authPromise) {
-    authPromise = getAuthDb().then((db) => betterAuth(buildAuthOptions(db)));
+    authPromise = getBackendDb().then((db) => betterAuth(buildAuthOptions(db)));
   }
 
   return authPromise;

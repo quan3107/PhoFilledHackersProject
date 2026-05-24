@@ -98,37 +98,41 @@ export async function runRecommendationEngineForUser(input: {
   const missingProfileFields = profileState.missingFields.map(
     (field) => `${field.snapshotKind}.${field.path}`
   );
+  const profile = profileState.profile;
+  const currentSnapshotId = currentSnapshot.id;
   const currentProfile = currentSnapshot.profile;
 
-  const [pendingRun] = await db
-    .insert(recommendationRuns)
-    .values({
-      userId,
-      studentProfileId: profileState.profile.id,
-      currentSnapshotId: currentSnapshot.id,
-      projectedSnapshotId: projectedSnapshot.id,
-      runStatus: "pending",
-      scoringConfigSnapshot: scoringConfig,
-      missingProfileFields,
-      candidateSchoolCount: 0,
-    })
-    .returning();
-
   if (profileState.missingFields.length > 0) {
-    const [failedRun] = await db
-      .update(recommendationRuns)
-      .set({
-        runStatus: "failed",
-        candidateSchoolCount: 0,
-        finishedAt: new Date(),
-      })
-      .where(eq(recommendationRuns.id, pendingRun.id))
-      .returning();
+    return db.transaction(async (tx) => {
+      const [pendingRun] = await tx
+        .insert(recommendationRuns)
+        .values({
+          userId,
+          studentProfileId: profile.id,
+          currentSnapshotId,
+          projectedSnapshotId: projectedSnapshot.id ?? undefined,
+          runStatus: "pending",
+          scoringConfigSnapshot: scoringConfig,
+          missingProfileFields,
+          candidateSchoolCount: 0,
+        })
+        .returning();
 
-    return {
-      run: toRecommendationRunRecord(failedRun),
-      results: [],
-    };
+      const [failedRun] = await tx
+        .update(recommendationRuns)
+        .set({
+          runStatus: "failed",
+          candidateSchoolCount: 0,
+          finishedAt: new Date(),
+        })
+        .where(eq(recommendationRuns.id, pendingRun.id))
+        .returning();
+
+      return {
+        run: toRecommendationRunRecord(failedRun),
+        results: [],
+      };
+    });
   }
 
   const candidateSchools = await listRecommendationCandidateSchools(db);
@@ -161,46 +165,62 @@ export async function runRecommendationEngineForUser(input: {
       return left.school.schoolName.localeCompare(right.school.schoolName);
     });
 
-  const insertedResults = scoredSchools.length
-    ? await db
-        .insert(recommendationResults)
-        .values(
-          scoredSchools.map((result, index) => ({
-            recommendationRunId: pendingRun.id,
-            universityId: result.school.universityId,
-            tier: result.tier,
-            currentOutlook: result.currentOutlook,
-            projectedOutlook: result.projectedOutlook,
-            confidenceLevel: result.confidenceLevel,
-            budgetFit: result.budgetFit,
-            deadlinePressure: result.deadlinePressure,
-            currentScore: result.currentScore,
-            projectedScore: result.projectedScore,
-            currentScoreBreakdown: result.currentScoreBreakdown,
-            projectedScoreBreakdown: result.projectedScoreBreakdown,
-            projectedAssumptionDelta: result.projectedAssumptionDelta,
-            rankOrder: index + 1,
-          }))
-        )
-        .returning()
-    : [];
+  return db.transaction(async (tx) => {
+    const [pendingRun] = await tx
+      .insert(recommendationRuns)
+      .values({
+        userId,
+        studentProfileId: profile.id,
+        currentSnapshotId,
+        projectedSnapshotId: projectedSnapshot.id ?? undefined,
+        runStatus: "pending",
+        scoringConfigSnapshot: scoringConfig,
+        missingProfileFields,
+        candidateSchoolCount: 0,
+      })
+      .returning();
 
-  const [succeededRun] = await db
-    .update(recommendationRuns)
-    .set({
-      runStatus: "succeeded",
-      candidateSchoolCount: candidateSchools.length,
-      finishedAt: new Date(),
-    })
-    .where(eq(recommendationRuns.id, pendingRun.id))
-    .returning();
+    const insertedResults = scoredSchools.length
+      ? await tx
+          .insert(recommendationResults)
+          .values(
+            scoredSchools.map((result, index) => ({
+              recommendationRunId: pendingRun.id,
+              universityId: result.school.universityId,
+              tier: result.tier,
+              currentOutlook: result.currentOutlook,
+              projectedOutlook: result.projectedOutlook,
+              confidenceLevel: result.confidenceLevel,
+              budgetFit: result.budgetFit,
+              deadlinePressure: result.deadlinePressure,
+              currentScore: result.currentScore,
+              projectedScore: result.projectedScore,
+              currentScoreBreakdown: result.currentScoreBreakdown,
+              projectedScoreBreakdown: result.projectedScoreBreakdown,
+              projectedAssumptionDelta: result.projectedAssumptionDelta,
+              rankOrder: index + 1,
+            }))
+          )
+          .returning()
+      : [];
 
-  return {
-    run: toRecommendationRunRecord(succeededRun),
-    results: insertedResults
-      .sort((left, right) => left.rankOrder - right.rankOrder)
-      .map(toRecommendationResultRecord),
-  };
+    const [succeededRun] = await tx
+      .update(recommendationRuns)
+      .set({
+        runStatus: "succeeded",
+        candidateSchoolCount: scoredSchools.length,
+        finishedAt: new Date(),
+      })
+      .where(eq(recommendationRuns.id, pendingRun.id))
+      .returning();
+
+    return {
+      run: toRecommendationRunRecord(succeededRun),
+      results: insertedResults
+        .sort((left, right) => left.rankOrder - right.rankOrder)
+        .map(toRecommendationResultRecord),
+    };
+  });
 }
 
 function scoreCandidateSchool(input: {

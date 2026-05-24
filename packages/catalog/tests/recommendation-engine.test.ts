@@ -17,6 +17,7 @@ import {
 
 import { createCatalogTestDatabase } from "../../db/src/testing/pglite.js";
 import { runRecommendationEngineForUser } from "../src/recommendation-engine.js";
+import type { RecommendationEngineDb } from "../src/recommendation-engine.js";
 
 test.todo(
   "intentional unknown or declined readiness fields are treated as caveated rather than missing"
@@ -166,6 +167,61 @@ test("engine scores only publishable schools and persists deterministic rank ord
 
     assert.equal(storedRuns.length, 1);
     assert.equal(storedResults.length, 2);
+  } finally {
+    await database.close();
+  }
+});
+
+test("engine rolls back pending run when result persistence fails", async () => {
+  const database = await createCatalogTestDatabase();
+
+  try {
+    const seeded = await seedProfileState(database.db, {
+      userId: "user_rollback",
+      currentProfile: buildCurrentSnapshotProfile(),
+      projectedProfile: buildProjectedSnapshotProfile(),
+      projectedAssumptions: ["Raise GPA to 95"],
+    });
+
+    await database.db.insert(universities).values([
+      buildUniversityInsert({
+        schoolName: "Rollback University",
+        validationStatus: "publishable",
+        admissionRateOverall: 0.42,
+        satAverageOverall: 1290,
+        annualCost: 52000,
+        averageNetPriceUsd: 32000,
+        programFitTags: ["computer_science"],
+      }),
+    ]);
+
+    const dbWithFailingResultInsert = createDbWithFailingResultInsert(
+      database.db
+    );
+
+    await assert.rejects(
+      runRecommendationEngineForUser({
+        db: dbWithFailingResultInsert,
+        userId: seeded.userId,
+        profileState: {
+          profile: {
+            id: seeded.profile.id,
+            userId: seeded.userId,
+          },
+          snapshots: seeded.snapshots,
+          missingFields: [],
+        },
+      }),
+      /simulated result insert failure/
+    );
+
+    const storedRuns = await database.db.select().from(recommendationRuns);
+    const storedResults = await database.db
+      .select()
+      .from(recommendationResults);
+
+    assert.equal(storedRuns.length, 0);
+    assert.equal(storedResults.length, 0);
   } finally {
     await database.close();
   }
@@ -539,4 +595,39 @@ function buildUniversityInsert(input: {
     validationStatus: input.validationStatus,
     validationReasons: [],
   } as const;
+}
+
+function createDbWithFailingResultInsert(
+  db: RecommendationEngineDb
+): RecommendationEngineDb {
+  return new Proxy(db, {
+    get(target, property, receiver) {
+      if (property !== "transaction") {
+        return Reflect.get(target, property, receiver);
+      }
+
+      return (callback: (tx: RecommendationEngineDb) => Promise<unknown>) =>
+        target.transaction((tx) => callback(createFailingResultInsertTx(tx)));
+    },
+  }) as RecommendationEngineDb;
+}
+
+function createFailingResultInsertTx(
+  tx: RecommendationEngineDb
+): RecommendationEngineDb {
+  return new Proxy(tx, {
+    get(target, property, receiver) {
+      if (property !== "insert") {
+        return Reflect.get(target, property, receiver);
+      }
+
+      return (table: unknown) => {
+        if (table === recommendationResults) {
+          throw new Error("simulated result insert failure");
+        }
+
+        return target.insert(table as never);
+      };
+    },
+  }) as RecommendationEngineDb;
 }
