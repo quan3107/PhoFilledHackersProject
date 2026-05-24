@@ -37,6 +37,14 @@ type AuthInstance = ReturnType<typeof betterAuth>;
 let authDbPromise: Promise<AuthDb> | null = null;
 let authPromise: Promise<AuthInstance> | null = null;
 
+const allowInsecureAuthDev = process.env.ALLOW_INSECURE_AUTH_DEV === "true";
+
+function isLocalAuthUrl(url: string | undefined) {
+  return Boolean(
+    url && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(url)
+  );
+}
+
 function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -109,26 +117,30 @@ function getTrustedOrigins() {
   return [...origins];
 }
 
-function getSecret() {
+export function getAuthSecret() {
   const configuredSecret = process.env.BETTER_AUTH_SECRET?.trim();
 
   if (configuredSecret) {
     return configuredSecret;
   }
 
+  const appUrl =
+    process.env.BETTER_AUTH_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (allowInsecureAuthDev && isLocalAuthUrl(appUrl)) {
+    return "dev-only-change-me";
+  }
+
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return "phofilledhackers-build-secret-dummy-001";
   }
 
-  if (!isLocalDevelopment()) {
-    throw new Error("Missing BETTER_AUTH_SECRET.");
-  }
-
-  return "phofilledhackers-development-secret-001";
+  throw new Error("BETTER_AUTH_SECRET is required outside explicit local dev.");
 }
 
-function isLocalDevelopment() {
-  return process.env.NODE_ENV !== "production";
+function isExplicitLocalAuthDev() {
+  return allowInsecureAuthDev && isLocalAuthUrl(getBaseUrl());
 }
 
 function getSqlClient() {
@@ -146,7 +158,7 @@ function buildAuthOptions(db: AuthDb): BetterAuthOptions {
   return {
     baseURL: getBaseUrl(),
     trustedOrigins: getTrustedOrigins(),
-    secret: getSecret(),
+    secret: getAuthSecret(),
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: {
@@ -161,8 +173,8 @@ function buildAuthOptions(db: AuthDb): BetterAuthOptions {
       enabled: true,
     },
     advanced: {
-      useSecureCookies: !isLocalDevelopment(),
-      disableOriginCheck: isLocalDevelopment(),
+      useSecureCookies: !isExplicitLocalAuthDev(),
+      disableOriginCheck: isExplicitLocalAuthDev(),
       database: {
         generateId: () => randomUUID(),
       },

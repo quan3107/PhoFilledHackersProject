@@ -7,43 +7,61 @@ import {
   saveStudentProfileStateForUser,
   type StudentProfileInput,
 } from "@etest/auth";
+import {
+  profilePutRequestSchema,
+  type ProfilePutRequest,
+} from "@etest/api-contracts";
 import { NextResponse } from "next/server";
-import { getOptionalServerSession } from "@/lib/auth-session";
+import { requireApiSession } from "@/lib/api-session";
 
-type ProfileRoutePayload = {
-  currentProfile: StudentProfileInput;
-  projectedProfile: StudentProfileInput;
-  currentAssumptions: string[];
-  projectedAssumptions: string[];
-};
+function toAuthProfileInput(
+  profile: ProfilePutRequest["currentProfile"]
+): StudentProfileInput {
+  return profile as unknown as StudentProfileInput;
+}
 
 export async function GET() {
-  const session = await getOptionalServerSession();
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
-  const profileState = await getStudentProfileStateForUser(session.user.id);
+  const profileState = await getStudentProfileStateForUser(
+    sessionResult.userId
+  );
 
   return NextResponse.json(profileState);
 }
 
 export async function PUT(request: Request) {
-  const session = await getOptionalServerSession();
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
-  const body = (await request.json()) as ProfileRoutePayload;
+  const body = await request.json().catch(() => null);
+  const parsed = profilePutRequestSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "invalid_request",
+          message: "Profile payload is invalid.",
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   const profileState = await saveStudentProfileStateForUser({
-    userId: session.user.id,
-    currentProfile: body.currentProfile,
-    projectedProfile: body.projectedProfile,
-    currentAssumptions: body.currentAssumptions,
-    projectedAssumptions: body.projectedAssumptions,
+    userId: sessionResult.userId,
+    currentProfile: toAuthProfileInput(parsed.data.currentProfile),
+    projectedProfile: toAuthProfileInput(parsed.data.projectedProfile),
+    currentAssumptions: parsed.data.currentAssumptions,
+    projectedAssumptions: parsed.data.projectedAssumptions,
   });
 
   return NextResponse.json(profileState);

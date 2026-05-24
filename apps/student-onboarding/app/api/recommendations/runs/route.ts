@@ -2,73 +2,55 @@
 // Authenticated recommendation-run endpoint for the current student profile.
 // Orchestrates session lookup, readiness checks, and deterministic scoring.
 
-import {
-  evaluateRecommendationRunReadinessFromState,
-  getAuthDb,
-  getStudentIntakeStateForUser,
-  getStudentProfileStateForUser,
-} from "@etest/auth";
-import {
-  RecommendationEngineInputError,
-  listRecommendationCandidateSchools,
-  runRecommendationEngineForUser,
-} from "@etest/catalog";
 import { NextResponse } from "next/server";
 
-import { getOptionalServerSession } from "@/lib/auth-session";
+import { PublicApiError, jsonApiError } from "@/lib/api-errors";
+import { requireApiSession } from "@/lib/api-session";
+import { runRecommendationWorkflowForUser } from "@/lib/recommendation-run-workflow";
 
 export const runtime = "nodejs";
 
 export async function POST() {
-  const session = await getOptionalServerSession();
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
-  const [authDb, profileState, intakeState] = await Promise.all([
-    getAuthDb(),
-    getStudentProfileStateForUser(session.user.id),
-    getStudentIntakeStateForUser(session.user.id),
-  ]);
-  const readiness = evaluateRecommendationRunReadinessFromState(profileState, {
-    fieldStatuses: intakeState?.fieldStatuses,
-  });
-  const resolvedProfileState = {
-    ...profileState,
-    missingFields: readiness.missingFields,
-  };
-
   try {
-    const runResult = await runRecommendationEngineForUser({
-      db: authDb,
-      userId: session.user.id,
-      profileState: resolvedProfileState,
-    });
-    const candidateSchools = await listRecommendationCandidateSchools(authDb);
-    const schoolByUniversityId = new Map(
-      candidateSchools.map((school) => [school.universityId, school])
+    const workflowResult = await runRecommendationWorkflowForUser(
+      sessionResult.userId
     );
 
-    return NextResponse.json({
-      run: runResult.run,
-      results: runResult.results.map((result) => ({
-        ...result,
-        school: schoolByUniversityId.get(result.universityId) ?? null,
-      })),
-    });
-  } catch (error) {
-    if (error instanceof RecommendationEngineInputError) {
+    if (!workflowResult.ok) {
       return NextResponse.json(
         {
-          error: error.message,
-          missingFields: error.missingFields,
-          resolvedWithCaveatFields: readiness.resolvedWithCaveatFields,
+          error: {
+            code: workflowResult.code,
+            message: workflowResult.message,
+          },
+          missingFields: workflowResult.missingFields,
+          resolvedWithCaveatFields: workflowResult.resolvedWithCaveatFields,
         },
         { status: 400 }
       );
     }
 
+    const schoolByUniversityId = new Map(
+      workflowResult.candidateSchools.map((school) => [
+        school.universityId,
+        school,
+      ])
+    );
+
+    return NextResponse.json({
+      run: workflowResult.runResult.run,
+      results: workflowResult.runResult.results.map((result) => ({
+        ...result,
+        school: schoolByUniversityId.get(result.universityId) ?? null,
+      })),
+    });
+  } catch (error) {
     const databaseError =
       typeof error === "object" && error !== null
         ? {
@@ -90,15 +72,15 @@ export async function POST() {
       databaseError.code === "42703" ||
       databaseError.message.includes("scoring_config_snapshot")
     ) {
-      return NextResponse.json(
-        {
-          error:
-            "Recommendations backend is not fully provisioned yet. The UI remains available, but recommendation runs are temporarily disabled.",
-        },
-        { status: 503 }
+      return jsonApiError(
+        new PublicApiError(
+          "dependency_unavailable",
+          "Recommendations backend is not fully provisioned yet. The UI remains available, but recommendation runs are temporarily disabled.",
+          503
+        )
       );
     }
 
-    throw error;
+    return jsonApiError(error);
   }
 }
