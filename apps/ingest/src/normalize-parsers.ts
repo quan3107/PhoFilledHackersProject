@@ -2,6 +2,7 @@
 // Low-level parsing helpers used by ingest normalization.
 // Splitting these helpers keeps the main normalization module under the repo file-size limit.
 
+import { type ApplicationRound } from "@etest/api-contracts";
 import {
   academicSelectivityBands,
   aidModels,
@@ -19,7 +20,6 @@ import {
   schoolFitTags,
   schoolRiskTags,
   testingExpectations,
-  type ApplicationRound,
   type DeadlinesByRound,
   type EnglishRequirements,
   type UniversityExplanationInputs,

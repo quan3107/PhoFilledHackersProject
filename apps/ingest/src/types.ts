@@ -2,10 +2,10 @@
 // Shared ingest-only types for the one-school runner.
 // Keeps the runner, clients, and repository boundary aligned without pulling in extra abstractions.
 
+import type { UniversitySourceKind } from "@etest/api-contracts";
 import type {
   CatalogImportItemPayload,
   CatalogImportStatus,
-  UniversitySourceKind,
   UniversityValidationReason,
 } from "@etest/db";
 

@@ -12,11 +12,13 @@ import postgres from "postgres";
 
 import {
   catalogRequiredFields,
+  type CatalogRequiredField,
+  type UniversitySourceKind,
+} from "@etest/api-contracts";
+import {
   universities,
   universitySources,
   type DeadlinesByRound,
-  type CatalogRequiredField,
-  type UniversitySourceKind,
   type UniversityValidationReason,
 } from "@etest/db";
 

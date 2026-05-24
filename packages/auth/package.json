@@ -21,6 +21,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@etest/api-contracts": "*",
     "@etest/db": "*",
     "better-auth": "^1.6.11",
     "drizzle-orm": "^0.45.2",

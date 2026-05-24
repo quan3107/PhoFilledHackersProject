@@ -2,36 +2,9 @@
 // Canonical intake field registry for the LLM-driven onboarding flow.
 // Keeps question priority, user-facing explanations, and field ordering in one shared place.
 
-export const intakeFieldPaths = [
-  "citizenshipCountry",
-  "targetEntryTerm",
-  "academic.currentGpa100",
-  "academic.projectedGpa100",
-  "academic.curriculumStrength",
-  "academic.classRankPercent",
-  "testing.willSubmitTests",
-  "testing.satTotal",
-  "testing.actComposite",
-  "testing.englishExamType",
-  "testing.englishExamScore",
-  "preferences.intendedMajors",
-  "preferences.preferredStates",
-  "preferences.preferredLocationPreferences",
-  "preferences.preferredCampusLocale",
-  "preferences.preferredSchoolControl",
-  "preferences.preferredUndergraduateSize",
-  "budget.annualBudgetUsd",
-  "budget.needsFinancialAid",
-  "budget.needsMeritAid",
-  "budget.budgetFlexibility",
-  "readiness.wantsEarlyRound",
-  "readiness.hasTeacherRecommendationsReady",
-  "readiness.hasCounselorDocumentsReady",
-  "readiness.hasEssayDraftsStarted",
-  "projected.assumptions",
-] as const;
+import type { IntakeFieldPath } from "@etest/api-contracts";
 
-export type IntakeFieldPath = (typeof intakeFieldPaths)[number];
+export { intakeFieldPaths, type IntakeFieldPath } from "@etest/api-contracts";
 
 export interface IntakeFieldDefinition {
   path: IntakeFieldPath;

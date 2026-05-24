@@ -2,7 +2,10 @@
 // Deterministic source-selection helpers for ingest normalization.
 // Keeps field-to-source rules in one package-owned place for branch-3 ingest.
 
-import type { CatalogRequiredField, UniversitySourceKind } from "@etest/db";
+import type {
+  CatalogRequiredField,
+  UniversitySourceKind,
+} from "@etest/api-contracts";
 
 import type {
   CatalogSourceSelectionResult,

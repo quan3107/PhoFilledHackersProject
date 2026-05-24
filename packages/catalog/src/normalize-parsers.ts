@@ -2,25 +2,19 @@
 // Shared parsing helpers for ingest normalization.
 // Keeps the main normalization entrypoint under the repo's file-size limit.
 
+import { applicationRounds } from "@etest/api-contracts";
 import type {
   ApplicationRound,
   CatalogRequiredField,
-  DeadlinesByRound,
-  EnglishRequirements,
-} from "@etest/db";
+} from "@etest/api-contracts";
+import type { DeadlinesByRound, EnglishRequirements } from "@etest/db";
 
 import type {
   CatalogNormalizationResult,
   SelectedCatalogFieldSource,
 } from "./types.js";
 
-const validRounds: ApplicationRound[] = [
-  "early_action",
-  "early_decision",
-  "regular_decision",
-  "rolling_admission",
-  "priority",
-];
+const validRounds: readonly ApplicationRound[] = applicationRounds;
 
 export type SelectedSourceMap = Partial<
   Record<
