@@ -8,23 +8,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
-import {
-  buildStudentOnboardingSummary,
-  cloneStudentProfileDocument,
-  normalizeRecommendationData,
-  syncProjectedBase,
-  type StudentOnboardingRecommendationView,
-  type StudentOnboardingRoute,
-} from "@/lib/student-onboarding";
-import {
-  formatLocationPreferences,
-  parseLocationPreferences,
-} from "@/lib/location-preferences";
+import { type StudentOnboardingRoute } from "@/lib/student-onboarding";
+import { formatLocationPreferences } from "@/lib/location-preferences";
 import {
   buildStudentProfileDocumentFromState,
-  type StudentProfile,
   type StudentProfileDocument,
-  type StudentProfileMissingField,
 } from "@/lib/student-profile";
 import {
   requiredProfileFields,
@@ -33,6 +21,15 @@ import {
   type StudentProfileDraft,
   type ThemeMode,
 } from "@/lib/onboarding-data";
+import {
+  useProfilePersistence,
+  type SaveProfileHandler,
+} from "@/lib/use-profile-persistence";
+import {
+  useRecommendationRun,
+  type RunRecommendationsHandler,
+} from "@/lib/use-recommendation-run";
+import { useStudentOnboardingState } from "@/lib/use-student-onboarding-state";
 import { ChatAssistant, type ChatAssistantState } from "./chat-assistant";
 import { GlobalHeader } from "./global-header";
 import { LiveProfile } from "./live-profile";
@@ -70,25 +67,14 @@ const StudentOnboardingSettingsPanel = dynamic(
 );
 
 type Viewer = Readonly<{ name: string; email: string }>;
-type SaveResult = { ok: true } | { ok: false; error: string };
-type RunResult =
-  | { ok: true; data: unknown }
-  | {
-      ok: false;
-      error: string;
-      missingFields?: StudentProfileMissingField[];
-    };
 
 type Props = Readonly<{
   viewer: Viewer;
   initialDocument: StudentProfileDocument;
   initialIntakeState?: ChatAssistantState | null;
   initialRoute?: StudentOnboardingRoute;
-  onSave?: (payload: {
-    name: string;
-    document: StudentProfileDocument;
-  }) => Promise<SaveResult>;
-  onRunRecommendations?: () => Promise<RunResult>;
+  onSave?: SaveProfileHandler;
+  onRunRecommendations?: RunRecommendationsHandler;
   onLogout?: () => Promise<void> | void;
 }>;
 
@@ -108,68 +94,6 @@ type RecommendationChatTurnResponse = {
   assistantMessage: string;
   suggestedReplies: string[];
 };
-
-function parseMoneyRange(value: string): number | null {
-  const cleaned = value.replaceAll(",", "");
-  const matches = Array.from(cleaned.matchAll(/\d+(?:\.\d+)?/g)).map((match) =>
-    Number(match[0])
-  );
-
-  if (
-    !matches.length ||
-    matches.some((valuePart) => !Number.isFinite(valuePart))
-  ) {
-    return null;
-  }
-
-  const normalized = matches.map((valuePart) =>
-    /\b(k|thousand)\b/i.test(cleaned) ? valuePart * 1000 : valuePart
-  );
-  const total = normalized.reduce((sum, valuePart) => sum + valuePart, 0);
-  return Math.round(total / normalized.length);
-}
-
-function parseGpaToHundred(value: string): number | null {
-  const match = value.match(/(\d+(?:\.\d+)?)/);
-  if (!match) return null;
-  const raw = Number(match[1]);
-  if (!Number.isFinite(raw)) return null;
-  return raw <= 5
-    ? Math.round(raw * 25)
-    : Math.round(raw <= 10 ? raw * 10 : raw);
-}
-
-function parseSat(value: string): number | null {
-  const match = value.match(/\b(\d{3,4})\b/);
-  return match ? Number(match[1]) : null;
-}
-
-function parseAct(value: string): number | null {
-  const match = value.match(/\b(\d{1,2})\b/);
-  return match ? Number(match[1]) : null;
-}
-
-function parseEnglishExam(
-  value: string
-): Pick<StudentProfile["testing"], "englishExamType" | "englishExamScore"> {
-  const lower = value.toLowerCase();
-  const scoreMatch = value.match(/(\d+(?:\.\d+)?)/);
-  const englishExamScore = scoreMatch ? Number(scoreMatch[1]) : null;
-
-  if (lower.includes("ielts")) {
-    return { englishExamType: "ielts", englishExamScore };
-  }
-  if (lower.includes("toefl")) {
-    return { englishExamType: "toefl", englishExamScore };
-  }
-  if (lower.includes("duolingo")) {
-    return { englishExamType: "duolingo", englishExamScore };
-  }
-  if (lower.includes("not") || lower.includes("none")) {
-    return { englishExamType: "none", englishExamScore: null };
-  }
-  return { englishExamType: "unknown", englishExamScore };
-}
 
 function draftFromDocument(
   document: StudentProfileDocument,
@@ -264,119 +188,6 @@ function draftFromDocument(
   };
 }
 
-function applyDraftFieldToDocument(
-  document: StudentProfileDocument,
-  field: ProfileField,
-  value: string
-): StudentProfileDocument {
-  const next = cloneStudentProfileDocument(document);
-  const current = next.current.profile;
-  const projected = next.projected.profile;
-  const trimmed = value.trim();
-
-  if (field === "curriculum") {
-    const lower = trimmed.toLowerCase();
-    const curriculumStrength = lower.includes("most")
-      ? "most_rigorous"
-      : lower.includes("rigorous") ||
-          lower.includes("ib") ||
-          lower.includes("ap") ||
-          lower.includes("a-level")
-        ? "rigorous"
-        : lower
-          ? "baseline"
-          : "unknown";
-    current.academic.curriculumStrength = curriculumStrength;
-  }
-
-  if (field === "gpa") {
-    current.academic.currentGpa100 = parseGpaToHundred(trimmed);
-  }
-
-  if (field === "ielts") {
-    const parsed = parseEnglishExam(trimmed);
-    current.testing.englishExamType = parsed.englishExamType;
-    current.testing.englishExamScore = parsed.englishExamScore;
-  }
-
-  if (field === "sat") {
-    const lower = trimmed.toLowerCase();
-    current.testing.satTotal = lower.includes("sat")
-      ? parseSat(trimmed)
-      : current.testing.satTotal;
-    current.testing.actComposite = lower.includes("act")
-      ? parseAct(trimmed)
-      : current.testing.actComposite;
-    current.testing.willSubmitTests = trimmed ? true : null;
-  }
-
-  if (field === "intendedMajors") {
-    current.preferences.intendedMajors = trimmed
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  if (field === "annualBudget") {
-    current.budget.annualBudgetUsd = parseMoneyRange(trimmed);
-  }
-
-  if (field === "scholarshipNeed") {
-    current.budget.needsFinancialAid = trimmed
-      ? !trimmed.toLowerCase().includes("not needed")
-      : null;
-    current.budget.needsMeritAid = trimmed
-      ? !trimmed.toLowerCase().includes("not needed")
-      : null;
-  }
-
-  if (field === "geographyPreferences") {
-    const locationPreferences = parseLocationPreferences(trimmed);
-    current.preferences.preferredStates = locationPreferences.preferredStates;
-    current.preferences.preferredLocationPreferences =
-      locationPreferences.preferredLocationPreferences;
-  }
-
-  if (field === "campusSize") {
-    const lower = trimmed.toLowerCase();
-    current.preferences.preferredUndergraduateSize = lower.includes("small")
-      ? "small"
-      : lower.includes("medium")
-        ? "medium"
-        : lower.includes("large")
-          ? "large"
-          : "unknown";
-  }
-
-  if (field === "wantsEarlyRound") {
-    current.readiness.wantsEarlyRound = trimmed
-      ? trimmed.toLowerCase().includes("yes")
-      : null;
-  }
-
-  if (field === "teacherRecommendationsReady") {
-    current.readiness.hasTeacherRecommendationsReady = trimmed
-      ? trimmed.toLowerCase() === "yes"
-      : null;
-  }
-
-  if (field === "counselorDocumentsReady") {
-    current.readiness.hasCounselorDocumentsReady = trimmed
-      ? trimmed.toLowerCase() === "yes"
-      : null;
-  }
-
-  if (field === "essayDraftsStarted") {
-    current.readiness.hasEssayDraftsStarted = trimmed
-      ? trimmed.toLowerCase() === "yes"
-      : null;
-  }
-
-  projected.academic.projectedGpa100 = current.academic.projectedGpa100;
-  syncProjectedBase(next);
-  return next;
-}
-
 export function StudentOnboardingExperience({
   viewer,
   initialDocument,
@@ -389,40 +200,57 @@ export function StudentOnboardingExperience({
   const router = useRouter();
   const [locale, setLocale] = useState<Locale>("en");
   const [theme, setTheme] = useState<ThemeMode>("light");
-  const [activeRoute, setActiveRoute] =
-    useState<StudentOnboardingRoute>(initialRoute);
+  const activeRoute = initialRoute;
   const [viewerName, setViewerName] = useState(viewer.name);
-  const [draftProfile, setDraftProfile] = useState<StudentProfileDraft>(() =>
-    draftFromDocument(initialDocument, viewer.name)
-  );
   const [recentlyUpdated] = useState<ProfileField | null>(null);
   const [progressCurrent, setProgressCurrent] = useState(0);
   const [progressTotal, setProgressTotal] = useState(
     requiredProfileFields.length
   );
-  const [document, setDocument] = useState(() =>
-    cloneStudentProfileDocument(initialDocument)
-  );
+  const {
+    document,
+    dirty,
+    missingFields,
+    replaceDocument,
+    setDirty,
+    summary,
+    updateSnapshotAssumptions,
+    updateSnapshotProfile,
+  } = useStudentOnboardingState(initialDocument);
   const [intakeState, setIntakeState] = useState<ChatAssistantState | null>(
     initialIntakeState
   );
-  const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [runningRecommendations, setRunningRecommendations] = useState(false);
-  const [recommendationView, setRecommendationView] =
-    useState<StudentOnboardingRecommendationView | null>(null);
+  const [intakeError, setIntakeError] = useState<string | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
-  const missingFields = useMemo(() => {
-    return requiredProfileFields.filter((field) => !draftProfile[field].trim());
-  }, [draftProfile]);
-
-  const backendSummary = useMemo(
-    () => buildStudentOnboardingSummary(document),
-    [document]
+  const draftProfile = useMemo(
+    () => draftFromDocument(document, viewerName),
+    [document, viewerName]
   );
+
+  const {
+    handleSave,
+    saveError,
+    saveMessage,
+    saving,
+    setSaveError,
+    setSaveMessage,
+  } = useProfilePersistence({
+    document,
+    viewerName,
+    onSave,
+    onSaved: () => setDirty(false),
+  });
+
+  const {
+    handleRunRecommendations,
+    recommendationError,
+    recommendationView,
+    runningRecommendations,
+  } = useRecommendationRun({
+    onRunRecommendations,
+    onRouteResults: () => router.push("/results"),
+  });
 
   const filledCount = useMemo(
     () =>
@@ -454,79 +282,9 @@ export function StudentOnboardingExperience({
     };
   }, []);
 
-  function applyCurrentDraftUpdater(
-    updater: (profile: StudentProfileDraft) => StudentProfileDraft
-  ) {
-    setDraftProfile((existing) => {
-      const next = updater(existing);
-      let mapped = cloneStudentProfileDocument(document);
-      (Object.keys(next) as ProfileField[]).forEach((field) => {
-        mapped = applyDraftFieldToDocument(mapped, field, next[field]);
-      });
-      setDocument(mapped);
-      return next;
-    });
-    setDirty(true);
+  function clearPersistenceStatus() {
     setSaveMessage(null);
-  }
-
-  async function handleSave() {
-    setSaving(true);
     setSaveError(null);
-    setSaveMessage(null);
-
-    const payload = {
-      name: viewerName,
-      document,
-    };
-
-    const saveResult = onSave
-      ? await onSave(payload)
-      : await defaultSave(payload);
-
-    setSaving(false);
-    if (!saveResult.ok) {
-      setSaveError(saveResult.error);
-      return;
-    }
-
-    setDirty(false);
-    setSaveMessage("Saved to the canonical profile and snapshot tables.");
-  }
-
-  async function handleRunRecommendations() {
-    setRunningRecommendations(true);
-    setSaveError(null);
-
-    const runResult = onRunRecommendations
-      ? await onRunRecommendations()
-      : await defaultRunRecommendations();
-
-    setRunningRecommendations(false);
-    setActiveRoute("results");
-
-    if (!runResult.ok) {
-      setRecommendationView({
-        title: "Recommendations unavailable",
-        summary: runResult.error,
-        items: (runResult.missingFields ?? []).slice(0, 8).map((field) => ({
-          label: `${field.snapshotKind} / ${field.path}`,
-          value: field.message,
-          tone: "warning",
-        })),
-        rawPreview: JSON.stringify(
-          {
-            error: runResult.error,
-            missingFields: runResult.missingFields ?? [],
-          },
-          null,
-          2
-        ),
-      });
-      return;
-    }
-
-    setRecommendationView(normalizeRecommendationData(runResult.data));
   }
 
   async function handleLogout() {
@@ -539,18 +297,28 @@ export function StudentOnboardingExperience({
   }
 
   async function handleChatTurn(message: string | null) {
-    const result = await defaultSubmitIntakeTurn(message, locale);
-    const nextDocument = buildStudentProfileDocumentFromState(
-      result.profileState
-    );
+    setIntakeError(null);
 
-    setIntakeState(result.intakeState);
-    setDocument(nextDocument);
-    setDraftProfile(draftFromDocument(nextDocument, viewerName));
-    setDirty(false);
-    setSaveError(null);
+    try {
+      const result = await defaultSubmitIntakeTurn(message, locale);
+      const nextDocument = buildStudentProfileDocumentFromState(
+        result.profileState
+      );
 
-    return result.intakeState;
+      setIntakeState(result.intakeState);
+      replaceDocument(nextDocument);
+      setDirty(false);
+      setSaveError(null);
+
+      return result.intakeState;
+    } catch (error) {
+      const messageText =
+        error instanceof Error
+          ? error.message
+          : "Unable to continue the onboarding conversation.";
+      setIntakeError(messageText);
+      throw new Error(messageText);
+    }
   }
 
   async function handleRecommendationChatTurn(
@@ -569,14 +337,8 @@ export function StudentOnboardingExperience({
         onThemeChange={setTheme}
         viewer={{ name: viewerName, email: viewer.email }}
         onLogout={handleLogout}
-        onNavigateProfile={() => {
-          setActiveRoute("profile");
-          router.push("/profile");
-        }}
-        onNavigateSettings={() => {
-          setActiveRoute("settings");
-          router.push("/settings");
-        }}
+        onNavigateProfile={() => router.push("/profile")}
+        onNavigateSettings={() => router.push("/settings")}
       />
 
       {activeRoute === "chat" ? (
@@ -609,6 +371,11 @@ export function StudentOnboardingExperience({
                 isComplete={isComplete}
                 onGenerate={handleRunRecommendations}
               />
+              {recommendationError ? (
+                <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
+                  {recommendationError}
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -632,6 +399,11 @@ export function StudentOnboardingExperience({
             <div className="fixed bottom-5 right-5 z-40 rounded-full bg-primary px-4 py-3 text-xs text-primary-foreground shadow-lg">
               {progressCurrent}/{progressTotal}
             </div>
+            {intakeError ? (
+              <div className="fixed bottom-20 left-5 right-5 z-40 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
+                {intakeError}
+              </div>
+            ) : null}
           </div>
         </>
       ) : null}
@@ -640,35 +412,24 @@ export function StudentOnboardingExperience({
         <div className="flex-1 p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
             <StudentOnboardingProfilePanel
-              document={{
-                current: {
-                  profile: draftProfile,
-                  assumptions: document.current.assumptions,
-                },
-                projected: {
-                  profile: draftProfile,
-                  assumptions: document.projected.assumptions,
-                },
+              document={document}
+              missingFields={missingFields}
+              onChangeCurrent={(updater) => {
+                updateSnapshotProfile("current", updater);
+                clearPersistenceStatus();
               }}
-              missingFields={missingFields.map((field) => ({
-                snapshotKind: "current" as const,
-                path: field,
-                message: `${field} is required.`,
-              }))}
-              onChangeCurrent={applyCurrentDraftUpdater}
-              onChangeProjected={applyCurrentDraftUpdater}
-              onChangeCurrentAssumptions={(values) =>
-                setDocument((existing) => ({
-                  ...cloneStudentProfileDocument(existing),
-                  current: { ...existing.current, assumptions: values },
-                }))
-              }
-              onChangeProjectedAssumptions={(values) =>
-                setDocument((existing) => ({
-                  ...cloneStudentProfileDocument(existing),
-                  projected: { ...existing.projected, assumptions: values },
-                }))
-              }
+              onChangeProjected={(updater) => {
+                updateSnapshotProfile("projected", updater);
+                clearPersistenceStatus();
+              }}
+              onChangeCurrentAssumptions={(values) => {
+                updateSnapshotAssumptions("current", values);
+                clearPersistenceStatus();
+              }}
+              onChangeProjectedAssumptions={(values) => {
+                updateSnapshotAssumptions("projected", values);
+                clearPersistenceStatus();
+              }}
             />
           </div>
         </div>
@@ -689,18 +450,19 @@ export function StudentOnboardingExperience({
                   : null
               }
               summary={{
-                completion: backendSummary.completion,
-                missingCount: backendSummary.missingCount,
-                currentMissingCount: backendSummary.currentMissingCount,
-                projectedMissingCount: backendSummary.projectedMissingCount,
-                currentHighlights: [],
-                projectedHighlights: [],
-                nextSteps: backendSummary.nextSteps,
+                completion: summary.completion,
+                missingCount: summary.missingCount,
+                currentMissingCount: summary.currentMissingCount,
+                projectedMissingCount: summary.projectedMissingCount,
+                currentHighlights: summary.currentHighlights,
+                projectedHighlights: summary.projectedHighlights,
+                nextSteps: summary.nextSteps,
               }}
-              missingFields={[]}
+              missingFields={missingFields}
+              recommendationError={recommendationError}
               runningRecommendations={runningRecommendations}
               onRunRecommendations={handleRunRecommendations}
-              onGoToReview={() => setActiveRoute("review")}
+              onGoToReview={() => router.push("/review")}
               recommendationChatSessionKey={
                 recommendationView?.rawPreview ??
                 recommendationView?.summary ??
@@ -717,19 +479,20 @@ export function StudentOnboardingExperience({
           <div className="mx-auto max-w-7xl">
             <StudentOnboardingReviewPanel
               summary={{
-                completion: backendSummary.completion,
-                missingCount: backendSummary.missingCount,
-                currentMissingCount: backendSummary.currentMissingCount,
-                projectedMissingCount: backendSummary.projectedMissingCount,
-                currentHighlights: [],
-                projectedHighlights: [],
-                nextSteps: backendSummary.nextSteps,
+                completion: summary.completion,
+                missingCount: summary.missingCount,
+                currentMissingCount: summary.currentMissingCount,
+                projectedMissingCount: summary.projectedMissingCount,
+                currentHighlights: summary.currentHighlights,
+                projectedHighlights: summary.projectedHighlights,
+                nextSteps: summary.nextSteps,
               }}
-              missingFields={[]}
+              missingFields={missingFields}
               dirty={dirty}
               saving={saving}
               saveMessage={saveMessage}
               saveError={saveError}
+              recommendationError={recommendationError}
               onSave={handleSave}
               onRunRecommendations={handleRunRecommendations}
             />
@@ -743,68 +506,18 @@ export function StudentOnboardingExperience({
             <StudentOnboardingSettingsPanel
               viewerName={viewerName}
               viewerEmail={viewer.email}
-              onViewerNameChange={setViewerName}
-              onLogout={handleLogout}
-              onGoToProfile={() => {
-                setActiveRoute("profile");
-                router.push("/profile");
+              onViewerNameChange={(name) => {
+                setViewerName(name);
+                clearPersistenceStatus();
               }}
+              onLogout={handleLogout}
+              onGoToProfile={() => router.push("/profile")}
             />
           </div>
         </div>
       ) : null}
     </div>
   );
-}
-
-async function defaultSave(payload: {
-  name: string;
-  document: StudentProfileDocument;
-}): Promise<SaveResult> {
-  const response = await fetch("/api/profile", {
-    method: "PUT",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      currentProfile: payload.document.current.profile,
-      projectedProfile: payload.document.projected.profile,
-      currentAssumptions: payload.document.current.assumptions,
-      projectedAssumptions: payload.document.projected.assumptions,
-    }),
-  });
-  const body = (await response.json().catch(() => null)) as {
-    error?: string;
-  } | null;
-
-  if (!response.ok) {
-    return {
-      ok: false,
-      error: body?.error ?? "Unable to save the profile draft.",
-    };
-  }
-
-  if (payload.name.trim()) {
-    await authClient.updateUser({ name: payload.name.trim() } as never);
-  }
-
-  return { ok: true };
-}
-
-async function defaultRunRecommendations(): Promise<RunResult> {
-  const response = await fetch("/api/recommendations/runs", { method: "POST" });
-  const body = (await response.json().catch(() => null)) as {
-    error?: string;
-    missingFields?: StudentProfileMissingField[];
-  } | null;
-
-  if (!response.ok) {
-    return {
-      ok: false,
-      error: body?.error ?? "Unable to run recommendations.",
-      missingFields: body?.missingFields,
-    };
-  }
-
-  return { ok: true, data: body };
 }
 
 async function defaultSubmitIntakeTurn(

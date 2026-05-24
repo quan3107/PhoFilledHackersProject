@@ -11,15 +11,16 @@ import {
   type RecommendationChatTurnResult,
 } from "./recommendation-chat-panel";
 import {
-  type StudentOnboardingMissingField,
   type StudentOnboardingRecommendationView,
   type StudentOnboardingSummary,
-} from "./student-onboarding-model";
+} from "@/lib/student-onboarding";
+import type { StudentProfileMissingField } from "@/lib/student-profile";
 
 type ResultsPanelProps = Readonly<{
   recommendationView: StudentOnboardingRecommendationView | null;
   summary: StudentOnboardingSummary;
-  missingFields: StudentOnboardingMissingField[];
+  missingFields: StudentProfileMissingField[];
+  recommendationError: string | null;
   runningRecommendations: boolean;
   onRunRecommendations: () => void;
   onGoToReview: () => void;
@@ -34,6 +35,7 @@ export function StudentOnboardingResultsPanel({
   recommendationView,
   summary,
   missingFields,
+  recommendationError,
   runningRecommendations,
   onRunRecommendations,
   onGoToReview,
@@ -117,6 +119,11 @@ export function StudentOnboardingResultsPanel({
               {recommendationView.rawPreview}
             </pre>
           ) : null}
+          {recommendationError ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {recommendationError}
+            </div>
+          ) : null}
         </div>
       </SectionCard>
 
@@ -170,7 +177,7 @@ function toneClass(tone: "neutral" | "warning" | "success") {
 function FieldRow({
   field,
 }: Readonly<{
-  field: StudentOnboardingMissingField;
+  field: StudentProfileMissingField;
 }>) {
   return (
     <div className="flex items-start gap-2 rounded-xl border border-border bg-white px-3 py-2.5">
