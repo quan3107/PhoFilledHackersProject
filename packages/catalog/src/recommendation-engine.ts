@@ -14,7 +14,6 @@ import {
   type RecommendationResultRecord,
   type RecommendationRunRecord,
   type RecommendationTier,
-  type RecommendationRunStatus,
   type ScoreComponentBreakdown,
   type StudentProfileMissingField,
   type StudentProfileRecord,
@@ -30,6 +29,10 @@ import {
   type RecommendationEngineScoringConfigOverrides,
 } from "./recommendation-engine-config.js";
 import { listRecommendationCandidateSchools } from "./recommendation-catalog-read-path.js";
+import {
+  toRecommendationResultRecord,
+  toRecommendationRunRecord,
+} from "./recommendation-row-mappers.js";
 
 export type RecommendationEngineDb = PgDatabase<
   PgQueryResultHKT,
@@ -198,6 +201,7 @@ export async function runRecommendationEngineForUser(input: {
               currentScoreBreakdown: result.currentScoreBreakdown,
               projectedScoreBreakdown: result.projectedScoreBreakdown,
               projectedAssumptionDelta: result.projectedAssumptionDelta,
+              candidateSchoolSnapshot: result.school,
               rankOrder: index + 1,
             }))
           )
@@ -763,45 +767,4 @@ function clampScore(score: number) {
 
 function clampToRange(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
-}
-
-function toRecommendationRunRecord(
-  row: typeof recommendationRuns.$inferSelect
-): RecommendationRunRecord {
-  return {
-    id: row.id,
-    userId: row.userId,
-    studentProfileId: row.studentProfileId,
-    currentSnapshotId: row.currentSnapshotId,
-    projectedSnapshotId: row.projectedSnapshotId,
-    runStatus: row.runStatus as RecommendationRunStatus,
-    scoringConfigSnapshot: row.scoringConfigSnapshot,
-    missingProfileFields: row.missingProfileFields,
-    candidateSchoolCount: row.candidateSchoolCount,
-    createdAt: row.createdAt.toISOString(),
-    finishedAt: row.finishedAt?.toISOString() ?? null,
-  };
-}
-
-function toRecommendationResultRecord(
-  row: typeof recommendationResults.$inferSelect
-): RecommendationResultRecord {
-  return {
-    id: row.id,
-    recommendationRunId: row.recommendationRunId,
-    universityId: row.universityId,
-    tier: row.tier as RecommendationTier,
-    currentOutlook: row.currentOutlook as OutlookLabel,
-    projectedOutlook: row.projectedOutlook as OutlookLabel | null,
-    confidenceLevel: row.confidenceLevel as ConfidenceLevel,
-    budgetFit: row.budgetFit as BudgetFitLabel,
-    deadlinePressure: row.deadlinePressure as DeadlinePressureLabel,
-    currentScore: row.currentScore,
-    projectedScore: row.projectedScore,
-    currentScoreBreakdown: row.currentScoreBreakdown,
-    projectedScoreBreakdown: row.projectedScoreBreakdown,
-    projectedAssumptionDelta: row.projectedAssumptionDelta,
-    rankOrder: row.rankOrder,
-    createdAt: row.createdAt.toISOString(),
-  };
 }

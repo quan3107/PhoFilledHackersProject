@@ -15,6 +15,7 @@ import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 import {
   RECOMMENDATION_EXPLANATION_PROMPT_VERSION,
+  recommendationExplanationPolicy,
   recommendationExplanationSystemPrompt,
 } from "./recommendation-explanation-prompt.js";
 import {
@@ -24,8 +25,6 @@ import {
   type RecommendationExplanationReadDb,
   type RecommendationExplanationRunContext,
 } from "./recommendation-explanation-read-path.js";
-
-const RECOMMENDATION_SHORTLIST_MAX_COUNT = 3;
 
 export type OpenAiReasoningEffort =
   | "minimal"
@@ -432,9 +431,9 @@ function validateRecommendationExplanationModelOutput(
     );
   }
 
-  if (shortlistIds.length > RECOMMENDATION_SHORTLIST_MAX_COUNT) {
+  if (shortlistIds.length > recommendationExplanationPolicy.shortlistLimit) {
     throw new RecommendationExplanationOutputError(
-      `The explanation pass may shortlist at most ${RECOMMENDATION_SHORTLIST_MAX_COUNT} schools.`
+      `The explanation pass may shortlist at most ${recommendationExplanationPolicy.shortlistLimit} schools.`
     );
   }
 
@@ -536,6 +535,17 @@ function assertStringArray(values: unknown, fieldName: string) {
   ) {
     throw new RecommendationExplanationOutputError(
       `Field ${fieldName} must be an array of strings.`
+    );
+  }
+
+  const tooLong = values.find(
+    (value) =>
+      typeof value === "string" &&
+      value.length > recommendationExplanationPolicy.maxRationaleCharacters
+  );
+  if (tooLong) {
+    throw new RecommendationExplanationOutputError(
+      `Field ${fieldName} entries must be at most ${recommendationExplanationPolicy.maxRationaleCharacters} characters.`
     );
   }
 }

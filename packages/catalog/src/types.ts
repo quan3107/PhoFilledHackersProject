@@ -80,6 +80,7 @@ export interface SelectedCatalogFieldSource {
   value: unknown;
   excerpt: string | null;
   metadata: UniversitySourceMetadata;
+  diagnostics?: CatalogSourceSelectionDiagnostic[];
 }
 
 export interface CatalogSourceSelectionIssue {
@@ -88,9 +89,18 @@ export interface CatalogSourceSelectionIssue {
   message: string;
 }
 
+export interface CatalogSourceSelectionDiagnostic {
+  code: "rejected_source_candidate" | "source_conflict";
+  fieldKey: Exclude<CatalogRequiredField, "lastVerifiedAt">;
+  sourceKind: UniversitySourceKind;
+  sourceUrl: string;
+  message: string;
+}
+
 export interface CatalogSourceSelectionResult {
   selectedSources: SelectedCatalogFieldSource[];
   issues: CatalogSourceSelectionIssue[];
+  diagnostics: CatalogSourceSelectionDiagnostic[];
 }
 
 export interface CatalogNormalizationIssue {

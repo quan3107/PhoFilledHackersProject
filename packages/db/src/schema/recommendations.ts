@@ -24,6 +24,7 @@ import {
   recommendationRunStatuses,
   recommendationTiers,
   type RecommendationScoringConfigSnapshot,
+  type RecommendationCandidateSchoolSnapshot,
   type ScoreComponentBreakdown,
 } from "./types.js";
 import {
@@ -150,6 +151,9 @@ export const recommendationResults = pgTable(
       .$type<string[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
+    candidateSchoolSnapshot: jsonb("candidate_school_snapshot")
+      .$type<RecommendationCandidateSchoolSnapshot>()
+      .notNull(),
     rankOrder: integer("rank_order").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
