@@ -6,7 +6,6 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -16,11 +15,10 @@ import {
   type UniversitySourceKind,
 } from "@etest/api-contracts";
 import {
-  universities,
-  universitySources,
   type DeadlinesByRound,
   type UniversityValidationReason,
 } from "@etest/db";
+import { persistUniversityCatalogRecord } from "@etest/catalog";
 
 import { validateCurationArtifact } from "./curation-validation.js";
 import { initializeIngestEnv } from "./env.js";
@@ -35,7 +33,6 @@ interface ImportOptions {
 }
 
 interface ProvenanceSourceRow {
-  universityId: string;
   sourceKind: UniversitySourceKind;
   fieldKey: string;
   sourceUrl: string;
@@ -208,7 +205,7 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
     prepare: false,
     max: 1,
   });
-  const db = drizzle(client, { schema: { universities, universitySources } });
+  const db = drizzle(client);
 
   let importedCount = 0;
   try {
@@ -223,68 +220,7 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
       const deadlinesByRound = toDbDeadlines(artifact.deadlinesByRound);
       const validationReasons = buildValidationReasons(artifact);
 
-      await db.transaction(async (tx) => {
-        const [upsertedUniversity] = await tx
-          .insert(universities)
-          .values({
-            schoolName: artifact.identity.schoolName,
-            city: artifact.identity.city,
-            state: artifact.identity.state,
-            officialAdmissionsUrl: artifact.identity.officialAdmissionsUrl,
-            applicationRounds: artifact.applicationRounds,
-            deadlinesByRound,
-            englishRequirements: artifact.englishRequirements,
-            testPolicy: artifact.testPolicy,
-            requiredMaterials: artifact.requiredMaterials,
-            tuitionAnnualUsd: artifact.tuitionAnnualUsd,
-            estimatedCostOfAttendanceUsd: artifact.estimatedCostOfAttendanceUsd,
-            livingCostEstimateUsd: artifact.livingCostEstimateUsd,
-            scholarshipAvailabilityFlag: artifact.scholarshipAvailabilityFlag,
-            scholarshipNotes: artifact.scholarshipNotes,
-            recommendationInputs: artifact.recommendationInputs,
-            explanationInputs: artifact.explanationInputs,
-            lastVerifiedAt,
-            validationStatus,
-            validationReasons,
-          })
-          .onConflictDoUpdate({
-            target: universities.officialAdmissionsUrl,
-            set: {
-              schoolName: artifact.identity.schoolName,
-              city: artifact.identity.city,
-              state: artifact.identity.state,
-              applicationRounds: artifact.applicationRounds,
-              deadlinesByRound,
-              englishRequirements: artifact.englishRequirements,
-              testPolicy: artifact.testPolicy,
-              requiredMaterials: artifact.requiredMaterials,
-              tuitionAnnualUsd: artifact.tuitionAnnualUsd,
-              estimatedCostOfAttendanceUsd:
-                artifact.estimatedCostOfAttendanceUsd,
-              livingCostEstimateUsd: artifact.livingCostEstimateUsd,
-              scholarshipAvailabilityFlag: artifact.scholarshipAvailabilityFlag,
-              scholarshipNotes: artifact.scholarshipNotes,
-              recommendationInputs: artifact.recommendationInputs,
-              explanationInputs: artifact.explanationInputs,
-              lastVerifiedAt,
-              validationStatus,
-              validationReasons,
-            },
-          })
-          .returning({
-            id: universities.id,
-          });
-
-        if (!upsertedUniversity) {
-          throw new Error(
-            `Failed to upsert university for "${artifact.identity.schoolName}".`
-          );
-        }
-
-        await tx
-          .delete(universitySources)
-          .where(eq(universitySources.universityId, upsertedUniversity.id));
-
+      {
         const provenanceRowsByKey = new Map<string, ProvenanceSourceRow>();
         for (const [fieldKey, entries] of Object.entries(
           artifact.fieldProvenance
@@ -309,7 +245,6 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
             }
 
             provenanceRowsByKey.set(key, {
-              universityId: upsertedUniversity.id,
               sourceKind: mapped.sourceKind,
               fieldKey,
               sourceUrl: entry.sourceUrl,
@@ -323,12 +258,33 @@ export async function importCuratedSchools(argv = process.argv.slice(2)) {
           });
         }
 
-        const provenanceRows = Array.from(provenanceRowsByKey.values());
-
-        if (provenanceRows.length > 0) {
-          await tx.insert(universitySources).values(provenanceRows);
-        }
-      });
+        await persistUniversityCatalogRecord(db, {
+          university: {
+            schoolName: artifact.identity.schoolName,
+            city: artifact.identity.city,
+            state: artifact.identity.state,
+            officialAdmissionsUrl: artifact.identity.officialAdmissionsUrl,
+            applicationRounds: artifact.applicationRounds,
+            deadlinesByRound,
+            englishRequirements: artifact.englishRequirements,
+            testPolicy: artifact.testPolicy,
+            requiredMaterials: artifact.requiredMaterials,
+            tuitionAnnualUsd: artifact.tuitionAnnualUsd,
+            estimatedCostOfAttendanceUsd: artifact.estimatedCostOfAttendanceUsd,
+            livingCostEstimateUsd: artifact.livingCostEstimateUsd,
+            scholarshipAvailabilityFlag: artifact.scholarshipAvailabilityFlag,
+            scholarshipNotes: artifact.scholarshipNotes,
+            recommendationInputs: artifact.recommendationInputs,
+            explanationInputs: artifact.explanationInputs,
+            lastVerifiedAt,
+            validationStatus,
+            validationReasons,
+          },
+          sources: Array.from(provenanceRowsByKey.values()),
+          sourceReplacementPolicy: "replace_all",
+          importedAt: lastVerifiedAt,
+        });
+      }
 
       importedCount += 1;
       console.log(`[import-curated] imported ${artifact.schoolSlug}`);

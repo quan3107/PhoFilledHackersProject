@@ -5,9 +5,11 @@
 import {
   applicationRounds,
   testPolicies,
+  curatedArtifactSchema,
   type ApplicationRound,
   type TestPolicy,
 } from "@etest/api-contracts";
+import type { SchoolSeed } from "./types.js";
 import {
   academicSelectivityBands,
   aidModels,
@@ -46,10 +48,8 @@ export const curationSourceKinds = [
 
 export type CurationSourceKind = (typeof curationSourceKinds)[number];
 
-export interface CuratedSchoolSeed {
+export interface CuratedSchoolSeed extends SchoolSeed {
   usRank: number;
-  slug: string;
-  schoolName: string;
 }
 
 export interface CuratedProvenanceEntry {
@@ -100,6 +100,10 @@ export interface CurationValidationResult {
   ok: boolean;
   issues: CurationIssue[];
   artifact: CuratedSchoolArtifact | null;
+}
+
+export function parseCuratedArtifactStrict(value: unknown) {
+  return curatedArtifactSchema.parse(value);
 }
 
 type CurationArtifactCandidate = Record<keyof CuratedSchoolArtifact, unknown>;

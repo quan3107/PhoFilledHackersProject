@@ -2,12 +2,26 @@
 // Checked-in one-school allowlist for the branch-3 runner.
 // Keeps the runtime deterministic while leaving room to add more QS-backed candidates later.
 
-import type { SeedSchool } from "./types.js";
+import type { SchoolSeed, SeedSchool } from "./types.js";
 
-export const seedSchools = [
+export const schoolSeeds = [
   {
     slug: "stanford",
     schoolName: "Stanford University",
+    rankingSource: "QS",
+    rankingYear: 2026,
+    officialUrls: {
+      admissions: "https://admission.stanford.edu/",
+      tuition: "https://studentservices.stanford.edu/my-finances/tuition-fees",
+      scholarships:
+        "https://financialaid.stanford.edu/undergrad/types/index.html",
+    },
+  },
+] as const satisfies readonly SchoolSeed[];
+
+export const seedSchools = [
+  {
+    ...schoolSeeds[0],
     city: "Stanford",
     state: "CA",
     officialAdmissionsUrl: "https://admission.stanford.edu/",
