@@ -1,49 +1,18 @@
 // apps/student-onboarding/app/api/recommendations/chat/route.ts
 // Authenticated post-recommendation assistant endpoint.
-// Accepts the latest user message plus transcript and answers from local backend data only.
+// Accepts the latest user message and answers from server-owned chat history.
 
 import { NextResponse } from "next/server";
 
 import { jsonApiError } from "@/lib/api-errors";
 import { requireApiSession } from "@/lib/api-session";
-import {
-  runRecommendationChatTurn,
-  type RecommendationChatTranscriptMessage,
-} from "@/lib/recommendation-chat-processor";
+import { runRecommendationChatTurn } from "@/lib/recommendation-chat-processor";
 
 export const runtime = "nodejs";
 
 interface RecommendationChatRequestBody {
+  recommendationRunId?: unknown;
   message?: unknown;
-  messages?: unknown;
-}
-
-function parseTranscript(
-  value: unknown
-): RecommendationChatTranscriptMessage[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== "object") {
-        return null;
-      }
-
-      const record = entry as Record<string, unknown>;
-      if (record.role !== "assistant" && record.role !== "student") {
-        return null;
-      }
-
-      return {
-        role: record.role as "assistant" | "student",
-        text: typeof record.text === "string" ? record.text : "",
-      };
-    })
-    .filter((entry): entry is RecommendationChatTranscriptMessage =>
-      Boolean(entry)
-    );
 }
 
 function parseBody(value: unknown) {
@@ -53,11 +22,15 @@ function parseBody(value: unknown) {
       : {};
 
   return {
+    recommendationRunId:
+      typeof record.recommendationRunId === "string" &&
+      record.recommendationRunId.trim()
+        ? record.recommendationRunId.trim()
+        : null,
     message:
       typeof record.message === "string" && record.message.trim()
         ? record.message.trim()
         : null,
-    messages: parseTranscript(record.messages),
   };
 }
 
@@ -69,12 +42,23 @@ export async function POST(request: Request) {
   }
 
   const body = parseBody(await request.json().catch(() => null));
+  if (!body.recommendationRunId) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "validation_failed",
+          message: "recommendationRunId is required.",
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   try {
     const result = await runRecommendationChatTurn({
       userId: sessionResult.userId,
+      recommendationRunId: body.recommendationRunId,
       latestMessage: body.message,
-      transcript: body.messages,
     });
 
     return NextResponse.json(result);

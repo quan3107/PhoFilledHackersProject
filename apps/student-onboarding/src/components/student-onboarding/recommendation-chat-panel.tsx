@@ -22,9 +22,10 @@ export interface RecommendationChatTurnResult {
 
 interface RecommendationChatPanelProps {
   sessionKey: string;
+  recommendationRunId: string | null;
   onSubmitTurn: (
     message: string | null,
-    messages: RecommendationChatMessage[]
+    recommendationRunId: string | null
   ) => Promise<RecommendationChatTurnResult>;
 }
 
@@ -42,6 +43,7 @@ function createMessage(
 
 export function RecommendationChatPanel({
   sessionKey,
+  recommendationRunId,
   onSubmitTurn,
 }: RecommendationChatPanelProps) {
   const [messages, setMessages] = useState<RecommendationChatMessage[]>([]);
@@ -53,6 +55,7 @@ export function RecommendationChatPanel({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages([]);
     setSuggestedReplies([]);
     setInputValue("");
@@ -67,7 +70,7 @@ export function RecommendationChatPanel({
 
     startedRef.current = true;
     setLoading(true);
-    void onSubmitTurn(null, [])
+    void onSubmitTurn(null, recommendationRunId)
       .then((result) => {
         setMessages([createMessage("assistant", result.assistantMessage)]);
         setSuggestedReplies(result.suggestedReplies);
@@ -82,7 +85,7 @@ export function RecommendationChatPanel({
       .finally(() => {
         setLoading(false);
       });
-  }, [onSubmitTurn, sessionKey]);
+  }, [onSubmitTurn, recommendationRunId, sessionKey]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,7 +112,7 @@ export function RecommendationChatPanel({
     setLoading(true);
 
     try {
-      const result = await onSubmitTurn(trimmed, historyWithStudent);
+      const result = await onSubmitTurn(trimmed, recommendationRunId);
       setMessages((existing) => [
         ...existing,
         createMessage("assistant", result.assistantMessage),

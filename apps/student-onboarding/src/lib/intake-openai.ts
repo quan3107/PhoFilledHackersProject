@@ -2,6 +2,10 @@
 // OpenAI Responses API wrapper for the LLM-driven onboarding intake flow.
 // Keeps the model call bounded to strict JSON output and a small server-side surface.
 
+import {
+  intakeModelOutputSchema,
+  type IntakeModelOutput as ContractIntakeModelOutput,
+} from "@etest/api-contracts";
 import type { IntakeFieldPath } from "@/lib/intake-fields";
 
 export interface IntakeTurnResolution {
@@ -10,13 +14,7 @@ export interface IntakeTurnResolution {
   note: string | null;
 }
 
-export interface IntakeTurnModelOutput {
-  assistantMessage: string;
-  currentProfilePatch: Record<string, unknown>;
-  projectedProfilePatch: Record<string, unknown>;
-  projectedAssumptions: string[] | null;
-  resolutions: IntakeTurnResolution[];
-}
+export type IntakeTurnModelOutput = ContractIntakeModelOutput;
 
 interface OpenAiResponseBody {
   status?: string;
@@ -31,6 +29,9 @@ interface OpenAiResponseBody {
     message?: string;
   } | null;
 }
+
+const providerTimeoutMs = 30_000;
+const retryableStatuses = new Set([429, 500, 502, 503, 504]);
 
 const profilePatchSchema = {
   type: "object",
@@ -255,6 +256,65 @@ function readOutputText(body: OpenAiResponseBody) {
   return null;
 }
 
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function isRetryableNetworkError(error: unknown) {
+  return error instanceof TypeError || isAbortError(error);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), providerTimeoutMs);
+
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchWithRetry(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit
+) {
+  const backoffs = [150, 400];
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= backoffs.length; attempt += 1) {
+    try {
+      const response = await fetchWithTimeout(fetchImpl, url, init);
+      if (
+        !retryableStatuses.has(response.status) ||
+        attempt === backoffs.length
+      ) {
+        return response;
+      }
+    } catch (error) {
+      if (!isRetryableNetworkError(error) || attempt === backoffs.length) {
+        throw error;
+      }
+      lastError = error;
+    }
+
+    await sleep(backoffs[attempt]);
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("OpenAI request failed.");
+}
+
 export function createIntakeOpenAiClient(fetchImpl: typeof fetch = fetch) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
@@ -266,32 +326,37 @@ export function createIntakeOpenAiClient(fetchImpl: typeof fetch = fetch) {
       instructions: string;
       prompt: string;
     }): Promise<{ output: IntakeTurnModelOutput; responseId: string | null }> {
-      const response = await fetchImpl("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: process.env.ONBOARDING_OPENAI_MODEL?.trim() || "gpt-5.4-nano",
-          reasoning: {
-            effort:
-              process.env.ONBOARDING_OPENAI_REASONING_EFFORT?.trim() ||
-              "medium",
+      const response = await fetchWithRetry(
+        fetchImpl,
+        "https://api.openai.com/v1/responses",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
           },
-          store: false,
-          instructions: input.instructions,
-          input: input.prompt,
-          text: {
-            format: {
-              type: "json_schema",
-              name: "student_onboarding_intake_turn",
-              schema: intakeTurnResponseSchema,
-              strict: true,
+          body: JSON.stringify({
+            model:
+              process.env.ONBOARDING_OPENAI_MODEL?.trim() || "gpt-5.4-nano",
+            reasoning: {
+              effort:
+                process.env.ONBOARDING_OPENAI_REASONING_EFFORT?.trim() ||
+                "medium",
             },
-          },
-        }),
-      });
+            store: false,
+            instructions: input.instructions,
+            input: input.prompt,
+            text: {
+              format: {
+                type: "json_schema",
+                name: "student_onboarding_intake_turn",
+                schema: intakeTurnResponseSchema,
+                strict: true,
+              },
+            },
+          }),
+        }
+      );
 
       const body = (await response
         .json()
@@ -310,9 +375,24 @@ export function createIntakeOpenAiClient(fetchImpl: typeof fetch = fetch) {
         );
       }
 
-      const parsed = JSON.parse(text) as IntakeTurnModelOutput;
+      let parsedJson: unknown;
+      try {
+        parsedJson = JSON.parse(text);
+      } catch {
+        throw new Error(
+          "model_output_invalid: OpenAI intake output was not valid JSON."
+        );
+      }
+
+      const parsed = intakeModelOutputSchema.safeParse(parsedJson);
+      if (!parsed.success) {
+        throw new Error(
+          "model_output_invalid: OpenAI intake output failed validation."
+        );
+      }
+
       return {
-        output: parsed,
+        output: parsed.data,
         responseId:
           body && typeof (body as { id?: unknown }).id === "string"
             ? (body as { id: string }).id

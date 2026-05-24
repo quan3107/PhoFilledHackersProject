@@ -77,6 +77,7 @@ interface StudentProfileSnapshotRowSummary {
 
 export async function loadRecommendationChatContextForUser(input: {
   userId: string;
+  recommendationRunId: string;
   latestMessage: string | null;
   transcript: RecommendationChatTranscriptMessage[];
 }): Promise<RecommendationChatContext> {
@@ -88,9 +89,9 @@ export async function loadRecommendationChatContextForUser(input: {
   const latestSuccessfulRun = (await authDb.query.recommendationRuns.findFirst({
     where: and(
       eq(recommendationRuns.userId, input.userId),
+      eq(recommendationRuns.id, input.recommendationRunId),
       eq(recommendationRuns.runStatus, "succeeded")
     ),
-    orderBy: (table, { desc: sortDesc }) => [sortDesc(table.createdAt)],
     with: {
       currentSnapshot: true,
       projectedSnapshot: true,

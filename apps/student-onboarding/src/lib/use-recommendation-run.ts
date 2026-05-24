@@ -28,6 +28,7 @@ export function buildRecommendationFailureView(
   missingFields: StudentProfileMissingField[] = []
 ): StudentOnboardingRecommendationView {
   return {
+    runId: null,
     title: "Recommendations unavailable",
     summary: error,
     items: missingFields.slice(0, 8).map((field) => ({
