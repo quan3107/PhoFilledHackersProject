@@ -8,6 +8,7 @@ import type {
   SchoolExtractionDraft,
   SeedSchool,
 } from "./types.js";
+import { normalizeExtractionDraft } from "./normalize-parsers.js";
 
 interface OpenAiResponseBody {
   status?: string;
@@ -369,9 +370,70 @@ async function parseOpenAiResponse(response: Response) {
   }
 
   try {
-    return JSON.parse(outputText) as SchoolExtractionDraft;
+    return normalizeExtractionDraft(JSON.parse(outputText));
   } catch {
     throw new Error("OpenAI Responses API output was not valid JSON.");
+  }
+}
+
+function isTransientError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("timeout") ||
+    message.includes("network") ||
+    message.includes("429") ||
+    message.includes("500") ||
+    message.includes("502") ||
+    message.includes("503") ||
+    message.includes("504")
+  );
+}
+
+async function withRetry<T>(
+  action: () => Promise<T>,
+  maxAttempts: number
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await action();
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts || !isTransientError(error)) {
+        break;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+async function fetchWithTimeout(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetchImpl(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`OpenAI request timed out after ${timeoutMs}ms.`);
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -381,47 +443,60 @@ export function createOpenAiExtractionClient(
     model: string;
     reasoningEffort: "minimal" | "low" | "medium" | "high" | "xhigh";
     endpoint?: string;
+    timeoutMs?: number;
+    maxAttempts?: number;
   },
   fetchImpl: typeof fetch = fetch
 ): OpenAiExtractionClient {
   const endpoint = input.endpoint ?? "https://api.openai.com/v1/responses";
+  const timeoutMs = input.timeoutMs ?? 60_000;
+  const maxAttempts = input.maxAttempts ?? 2;
 
   return {
     async extractSchoolDraft({ school, pages }) {
-      const response = await fetchImpl(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${input.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: input.model,
-          reasoning: {
-            effort: input.reasoningEffort,
-          },
-          store: false,
-          instructions: [
-            `Extract the school profile for ${school.schoolName} from the provided official pages.`,
-            "Return only valid JSON that matches the supplied schema.",
-            "Do not invent facts or sources.",
-            "Populate recommendationInputs and explanationInputs with structured enums or tags only.",
-            "Include recommendationInputs.averageNetPriceUsd when College Scorecard or an official aid source provides it.",
-            "Use recommendationInputs.programFitTags only for broad school-level academic domains clearly supported by official pages, not ranking-based claims.",
-            "Use recommendationInputs.programAdmissionModel and applicationStrategyTags to capture direct-admit, separate-school, portfolio, binding, restrictive, or rolling nuances when the school states them.",
-            "Include recommendationInputs.testingRequirements with exam-specific rules, minimums if any, reporting policy, and middle-50 ranges when sourced.",
-            "Do not write recommendation prose or freeform summaries.",
-          ].join(" "),
-          input: buildInputPrompt(school, pages),
-          text: {
-            format: {
-              type: "json_schema",
-              name: "school_profile_extraction",
-              schema: extractionSchema,
-              strict: true,
+      const response = await withRetry(
+        () =>
+          fetchWithTimeout(
+            fetchImpl,
+            endpoint,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${input.apiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: input.model,
+                reasoning: {
+                  effort: input.reasoningEffort,
+                },
+                store: false,
+                instructions: [
+                  `Extract the school profile for ${school.schoolName} from the provided official pages.`,
+                  "Return only valid JSON that matches the supplied schema.",
+                  "Do not invent facts or sources.",
+                  "Populate recommendationInputs and explanationInputs with structured enums or tags only.",
+                  "Include recommendationInputs.averageNetPriceUsd when College Scorecard or an official aid source provides it.",
+                  "Use recommendationInputs.programFitTags only for broad school-level academic domains clearly supported by official pages, not ranking-based claims.",
+                  "Use recommendationInputs.programAdmissionModel and applicationStrategyTags to capture direct-admit, separate-school, portfolio, binding, restrictive, or rolling nuances when the school states them.",
+                  "Include recommendationInputs.testingRequirements with exam-specific rules, minimums if any, reporting policy, and middle-50 ranges when sourced.",
+                  "Do not write recommendation prose or freeform summaries.",
+                ].join(" "),
+                input: buildInputPrompt(school, pages),
+                text: {
+                  format: {
+                    type: "json_schema",
+                    name: "school_profile_extraction",
+                    schema: extractionSchema,
+                    strict: true,
+                  },
+                },
+              }),
             },
-          },
-        }),
-      });
+            timeoutMs
+          ),
+        maxAttempts
+      );
 
       return parseOpenAiResponse(response);
     },

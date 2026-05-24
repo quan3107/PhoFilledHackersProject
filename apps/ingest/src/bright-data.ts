@@ -114,12 +114,75 @@ async function fetchWithUnlocker(
   };
 }
 
+function isTransientError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("timeout") ||
+    message.includes("network") ||
+    message.includes("429") ||
+    message.includes("500") ||
+    message.includes("502") ||
+    message.includes("503") ||
+    message.includes("504")
+  );
+}
+
+async function withRetry<T>(
+  action: () => Promise<T>,
+  maxAttempts: number
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await action();
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts || !isTransientError(error)) {
+        break;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+async function fetchWithTimeout(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetchImpl(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(`Bright Data request timed out after ${timeoutMs}ms.`);
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export function createBrightDataClient(
   input: {
     apiKey: string;
     zone: string;
     browserApi?: BrowserApiConfig;
     endpoint?: string;
+    timeoutMs?: number;
+    maxAttempts?: number;
   },
   deps: {
     fetchImpl?: typeof fetch;
@@ -128,21 +191,28 @@ export function createBrightDataClient(
 ): BrightDataClient {
   const endpoint = input.endpoint ?? "https://api.brightdata.com/request";
   const fetchImpl = deps.fetchImpl ?? fetch;
+  const timeoutMs = input.timeoutMs ?? 30_000;
+  const maxAttempts = input.maxAttempts ?? 2;
   const fetchWithBrowserApiImpl =
     deps.fetchWithBrowserApiImpl ?? fetchWithBrowserApi;
 
   return {
     async fetchPage({ sourceKind, sourceUrl }): Promise<BrightDataPage> {
       try {
-        return await fetchWithUnlocker(
-          {
-            apiKey: input.apiKey,
-            zone: input.zone,
-            endpoint,
-            sourceKind,
-            sourceUrl,
-          },
-          fetchImpl
+        return await withRetry(
+          () =>
+            fetchWithUnlocker(
+              {
+                apiKey: input.apiKey,
+                zone: input.zone,
+                endpoint,
+                sourceKind,
+                sourceUrl,
+              },
+              (url, init) =>
+                fetchWithTimeout(fetchImpl, String(url), init ?? {}, timeoutMs)
+            ),
+          maxAttempts
         );
       } catch (error) {
         if (!input.browserApi || !shouldUseBrowserFallback(error)) {
