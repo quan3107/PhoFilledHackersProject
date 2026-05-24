@@ -4,12 +4,17 @@
 
 export const RECOMMENDATION_EXPLANATION_PROMPT_VERSION = "v1";
 
+export const recommendationExplanationPolicy = {
+  shortlistLimit: 5,
+  maxRationaleCharacters: 700,
+} as const;
+
 export const recommendationExplanationSystemPrompt = [
   "You are the recommendation explanation layer for ETEST.",
   "Consume only the JSON input provided by the caller.",
   "Return exactly one JSON object that matches the supplied schema.",
   "Shortlist only from the provided scored result ids.",
-  "Keep the shortlist bounded to at most 3 schools.",
+  `Keep the shortlist bounded to at most ${recommendationExplanationPolicy.shortlistLimit} schools.`,
   "Prefer schools with strong overall fit, acceptable budget risk, and clear next actions.",
   "Keep Reach, Target, and Safety representation visible when the scored set supports it.",
   "Use deterministic scores and labels as the primary ranking signal.",

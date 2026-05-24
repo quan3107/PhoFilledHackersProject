@@ -4,6 +4,7 @@
 
 import type * as dbSchema from "@etest/db";
 import {
+  recommendationExplanationShortlistItems,
   recommendationExplanations,
   recommendationShortlists,
   type RecommendationResultRecord,
@@ -14,6 +15,7 @@ import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 import {
   RECOMMENDATION_EXPLANATION_PROMPT_VERSION,
+  recommendationExplanationPolicy,
   recommendationExplanationSystemPrompt,
 } from "./recommendation-explanation-prompt.js";
 import {
@@ -23,8 +25,6 @@ import {
   type RecommendationExplanationReadDb,
   type RecommendationExplanationRunContext,
 } from "./recommendation-explanation-read-path.js";
-
-const RECOMMENDATION_SHORTLIST_MAX_COUNT = 3;
 
 export type OpenAiReasoningEffort =
   | "minimal"
@@ -287,7 +287,6 @@ export async function persistRecommendationExplanationPass(
         model: metadata.model,
         promptVersion: metadata.promptVersion,
         systemPrompt: metadata.systemPrompt,
-        shortlistedRecommendationResultIds: orderedResultIds,
         shortlistRationale: output.shortlistRationale,
       })
       .returning();
@@ -299,25 +298,50 @@ export async function persistRecommendationExplanationPass(
     }
 
     if (orderedResultIds.length > 0) {
-      await tx.insert(recommendationExplanations).values(
-        orderedResultIds.map((recommendationResultId) => {
-          const explanation = explanationByResultId.get(recommendationResultId);
+      const explanations = await tx
+        .insert(recommendationExplanations)
+        .values(
+          orderedResultIds.map((recommendationResultId) => {
+            const explanation = explanationByResultId.get(
+              recommendationResultId
+            );
+
+            if (!explanation) {
+              throw new RecommendationExplanationOutputError(
+                `Missing explanation payload for recommendation result ${recommendationResultId}.`
+              );
+            }
+
+            return {
+              recommendationShortlistId: shortlist.id,
+              recommendationResultId,
+              whyRecommended: explanation.whyRecommended,
+              topBlockers: explanation.topBlockers,
+              nextRecommendedActions: explanation.nextRecommendedActions,
+              budgetSummary: explanation.budgetSummary,
+              assumptionChanges: explanation.assumptionChanges,
+              explanationConfidence: explanation.explanationConfidence,
+            };
+          })
+        )
+        .returning();
+
+      await tx.insert(recommendationExplanationShortlistItems).values(
+        orderedResultIds.map((recommendationResultId, index) => {
+          const explanation = explanations.find(
+            (entry) => entry.recommendationResultId === recommendationResultId
+          );
 
           if (!explanation) {
             throw new RecommendationExplanationOutputError(
-              `Missing explanation payload for recommendation result ${recommendationResultId}.`
+              `Missing persisted explanation for recommendation result ${recommendationResultId}.`
             );
           }
 
           return {
-            recommendationShortlistId: shortlist.id,
+            recommendationExplanationId: explanation.id,
             recommendationResultId,
-            whyRecommended: explanation.whyRecommended,
-            topBlockers: explanation.topBlockers,
-            nextRecommendedActions: explanation.nextRecommendedActions,
-            budgetSummary: explanation.budgetSummary,
-            assumptionChanges: explanation.assumptionChanges,
-            explanationConfidence: explanation.explanationConfidence,
+            rankOrder: index + 1,
           };
         })
       );
@@ -407,9 +431,9 @@ function validateRecommendationExplanationModelOutput(
     );
   }
 
-  if (shortlistIds.length > RECOMMENDATION_SHORTLIST_MAX_COUNT) {
+  if (shortlistIds.length > recommendationExplanationPolicy.shortlistLimit) {
     throw new RecommendationExplanationOutputError(
-      `The explanation pass may shortlist at most ${RECOMMENDATION_SHORTLIST_MAX_COUNT} schools.`
+      `The explanation pass may shortlist at most ${recommendationExplanationPolicy.shortlistLimit} schools.`
     );
   }
 
@@ -511,6 +535,17 @@ function assertStringArray(values: unknown, fieldName: string) {
   ) {
     throw new RecommendationExplanationOutputError(
       `Field ${fieldName} must be an array of strings.`
+    );
+  }
+
+  const tooLong = values.find(
+    (value) =>
+      typeof value === "string" &&
+      value.length > recommendationExplanationPolicy.maxRationaleCharacters
+  );
+  if (tooLong) {
+    throw new RecommendationExplanationOutputError(
+      `Field ${fieldName} entries must be at most ${recommendationExplanationPolicy.maxRationaleCharacters} characters.`
     );
   }
 }

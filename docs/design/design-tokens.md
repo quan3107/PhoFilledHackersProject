@@ -33,7 +33,7 @@ Example `components.json` baseline:
   "rsc": true,
   "tailwind": {
     "config": "",
-    "css": "apps/web/app/globals.css",
+    "css": "apps/student-onboarding/app/globals.css",
     "baseColor": "neutral",
     "cssVariables": true
   },
@@ -110,6 +110,6 @@ The token file sets `--radius: 1rem` so the system lands around a calm 16px defa
 
 ## Implementation note
 
-Copy the contents of [shadcn-tokens.css](/Users/Khoai/OneDrive/Desktop/Lotus%20hackathon/PhoFilledHackersProject/docs/design/shadcn-tokens.css) into `apps/web/app/globals.css` or import it from there once the monorepo scaffold exists.
+Copy the contents of [shadcn-tokens.css](/Users/Khoai/OneDrive/Desktop/Lotus%20hackathon/PhoFilledHackersProject/docs/design/shadcn-tokens.css) into `apps/student-onboarding/app/globals.css` or import it from there once the monorepo scaffold exists.
 
 The token file follows the current shadcn CSS-variable convention and exposes custom semantic colors through `@theme inline`, so utilities like `bg-target`, `text-warning-foreground`, and `border-surface-strong` will be available once the app is wired to Tailwind v4.

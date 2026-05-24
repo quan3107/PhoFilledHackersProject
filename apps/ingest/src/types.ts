@@ -2,10 +2,10 @@
 // Shared ingest-only types for the one-school runner.
 // Keeps the runner, clients, and repository boundary aligned without pulling in extra abstractions.
 
+import type { UniversitySourceKind } from "@etest/api-contracts";
 import type {
   CatalogImportItemPayload,
   CatalogImportStatus,
-  UniversitySourceKind,
   UniversityValidationReason,
 } from "@etest/db";
 
@@ -16,9 +16,19 @@ import type {
   UniversityPublishabilityResult,
 } from "@etest/catalog";
 
-export interface SeedSchool {
+export interface SchoolSeed {
   slug: string;
   schoolName: string;
+  rankingSource?: string;
+  rankingYear?: number;
+  officialUrls?: {
+    admissions?: string;
+    tuition?: string;
+    scholarships?: string;
+  };
+}
+
+export interface SeedSchool extends SchoolSeed {
   city: string;
   state: string;
   officialAdmissionsUrl: string;
@@ -44,6 +54,7 @@ export interface IngestConfig {
   openAiReasoningEffort: "minimal" | "low" | "medium" | "high" | "xhigh";
   triggeredBy: IngestTriggeredBy;
   schoolSlug: string | null;
+  sourceFetchConcurrency?: number;
 }
 
 export interface BrightDataPage {
@@ -53,6 +64,13 @@ export interface BrightDataPage {
   headers: Record<string, string>;
   body: string;
   fetchedAt: Date;
+}
+
+export interface BrightDataFetchResult {
+  sourceKind: BrightDataSourceKind;
+  sourceUrl: string;
+  page: BrightDataPage | null;
+  errorMessage: string | null;
 }
 
 export type BrightDataSourceKind = Exclude<
@@ -154,6 +172,7 @@ export class IngestStageError extends Error {
       | "fetching"
       | "extracting"
       | "normalizing"
+      | "validating"
       | "persisting",
     message: string,
     public readonly cause: unknown

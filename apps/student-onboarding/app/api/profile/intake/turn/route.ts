@@ -4,8 +4,10 @@
 
 import { NextResponse } from "next/server";
 
-import { getOptionalServerSession } from "@/lib/auth-session";
+import { jsonApiError } from "@/lib/api-errors";
+import { requireApiSession } from "@/lib/api-session";
 import { runIntakeTurn } from "@/lib/intake-turn-processor";
+import { getRequestId } from "@/lib/observability";
 
 export const runtime = "nodejs";
 
@@ -25,31 +27,28 @@ function parseBody(value: unknown): {
 }
 
 export async function POST(request: Request) {
-  const session = await getOptionalServerSession();
+  const requestId = getRequestId(request);
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
   const body = parseBody((await request.json().catch(() => null)) as unknown);
 
   try {
     const result = await runIntakeTurn({
-      userId: session.user.id,
+      userId: sessionResult.userId,
       locale: body.locale,
       message: body.message,
     });
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to continue the onboarding conversation.",
-      },
-      { status: 500 }
-    );
+    return jsonApiError(error, {
+      requestId,
+      operationId: requestId,
+      userId: sessionResult.userId,
+    });
   }
 }

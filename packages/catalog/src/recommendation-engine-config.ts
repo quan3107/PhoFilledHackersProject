@@ -124,59 +124,236 @@ export const defaultRecommendationEngineScoringConfig: RecommendationEngineScori
 export function resolveRecommendationEngineScoringConfig(
   overrides?: RecommendationEngineScoringConfigOverrides
 ): RecommendationEngineScoringConfig {
-  if (!overrides) {
-    return defaultRecommendationEngineScoringConfig;
+  const config = !overrides
+    ? defaultRecommendationEngineScoringConfig
+    : {
+        admissionFit: {
+          ...defaultRecommendationEngineScoringConfig.admissionFit,
+          ...overrides.admissionFit,
+        },
+        readinessFit: {
+          ...defaultRecommendationEngineScoringConfig.readinessFit,
+          ...overrides.readinessFit,
+        },
+        preferenceFit: {
+          ...defaultRecommendationEngineScoringConfig.preferenceFit,
+          ...overrides.preferenceFit,
+        },
+        improvementUpside: {
+          ...defaultRecommendationEngineScoringConfig.improvementUpside,
+          ...overrides.improvementUpside,
+        },
+        studentIndex: {
+          ...defaultRecommendationEngineScoringConfig.studentIndex,
+          ...overrides.studentIndex,
+          curriculumBonuses: {
+            ...defaultRecommendationEngineScoringConfig.studentIndex
+              .curriculumBonuses,
+            ...overrides.studentIndex?.curriculumBonuses,
+          },
+        },
+        schoolIndex: {
+          ...defaultRecommendationEngineScoringConfig.schoolIndex,
+          ...overrides.schoolIndex,
+        },
+        budgetFit: {
+          ...defaultRecommendationEngineScoringConfig.budgetFit,
+          ...overrides.budgetFit,
+          componentScores: {
+            ...defaultRecommendationEngineScoringConfig.budgetFit
+              .componentScores,
+            ...overrides.budgetFit?.componentScores,
+          },
+        },
+        tierThresholds: {
+          ...defaultRecommendationEngineScoringConfig.tierThresholds,
+          ...overrides.tierThresholds,
+        },
+        outlookThresholds: {
+          ...defaultRecommendationEngineScoringConfig.outlookThresholds,
+          ...overrides.outlookThresholds,
+        },
+        sizeBuckets: {
+          ...defaultRecommendationEngineScoringConfig.sizeBuckets,
+          ...overrides.sizeBuckets,
+        },
+      };
+
+  validateRecommendationEngineScoringConfig(config);
+  return config;
+}
+
+export class RecommendationEngineScoringConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RecommendationEngineScoringConfigError";
+  }
+}
+
+export function validateRecommendationEngineScoringConfig(
+  config: RecommendationEngineScoringConfig
+) {
+  const numbers: Array<[string, number]> = [
+    ["admissionFit.defaultScore", config.admissionFit.defaultScore],
+    [
+      "admissionFit.testingRequiredNoSubmissionPenalty",
+      config.admissionFit.testingRequiredNoSubmissionPenalty,
+    ],
+    ["readinessFit.perReadyItem", config.readinessFit.perReadyItem],
+    ["readinessFit.noEarlyRoundBonus", config.readinessFit.noEarlyRoundBonus],
+    [
+      "readinessFit.earlyRoundReadyBonus",
+      config.readinessFit.earlyRoundReadyBonus,
+    ],
+    [
+      "readinessFit.earlyRoundReadyThreshold",
+      config.readinessFit.earlyRoundReadyThreshold,
+    ],
+    ["preferenceFit.majorMatchScore", config.preferenceFit.majorMatchScore],
+    [
+      "preferenceFit.majorFallbackScore",
+      config.preferenceFit.majorFallbackScore,
+    ],
+    ["preferenceFit.stateMatchScore", config.preferenceFit.stateMatchScore],
+    ["preferenceFit.localeMatchScore", config.preferenceFit.localeMatchScore],
+    [
+      "preferenceFit.schoolControlMatchScore",
+      config.preferenceFit.schoolControlMatchScore,
+    ],
+    ["preferenceFit.sizeMatchScore", config.preferenceFit.sizeMatchScore],
+    [
+      "improvementUpside.gpaDeltaDivisor",
+      config.improvementUpside.gpaDeltaDivisor,
+    ],
+    [
+      "improvementUpside.assumptionBonusCap",
+      config.improvementUpside.assumptionBonusCap,
+    ],
+    ["studentIndex.gpaMultiplier", config.studentIndex.gpaMultiplier],
+    ["studentIndex.satPointsMax", config.studentIndex.satPointsMax],
+    ["studentIndex.actPointsMax", config.studentIndex.actPointsMax],
+    [
+      "schoolIndex.admissionRateNullScore",
+      config.schoolIndex.admissionRateNullScore,
+    ],
+    [
+      "schoolIndex.admissionRateMinScore",
+      config.schoolIndex.admissionRateMinScore,
+    ],
+    [
+      "schoolIndex.admissionRateMaxScore",
+      config.schoolIndex.admissionRateMaxScore,
+    ],
+    ["schoolIndex.satScoreMin", config.schoolIndex.satScoreMin],
+    ["schoolIndex.satScoreMax", config.schoolIndex.satScoreMax],
+    ["schoolIndex.actScoreMin", config.schoolIndex.actScoreMin],
+    ["schoolIndex.actScoreMax", config.schoolIndex.actScoreMax],
+    ["tierThresholds.safetyMin", config.tierThresholds.safetyMin],
+    ["tierThresholds.targetMin", config.tierThresholds.targetMin],
+    ["outlookThresholds.very_strong", config.outlookThresholds.very_strong],
+    ["outlookThresholds.strong", config.outlookThresholds.strong],
+    ["outlookThresholds.possible", config.outlookThresholds.possible],
+    ["outlookThresholds.stretch", config.outlookThresholds.stretch],
+    ["sizeBuckets.smallMaxExclusive", config.sizeBuckets.smallMaxExclusive],
+    ["sizeBuckets.mediumMaxInclusive", config.sizeBuckets.mediumMaxInclusive],
+  ];
+
+  for (const [field, value] of numbers) {
+    assertFiniteNumber(field, value);
+  }
+  for (const [key, value] of Object.entries(
+    config.studentIndex.curriculumBonuses
+  )) {
+    assertFiniteNumber(`studentIndex.curriculumBonuses.${key}`, value);
+  }
+  for (const [key, value] of Object.entries(config.budgetFit.componentScores)) {
+    assertScore(`budgetFit.componentScores.${key}`, value);
+  }
+  for (const [index, band] of config.admissionFit.scoreByMinGap.entries()) {
+    assertFiniteNumber(
+      `admissionFit.scoreByMinGap.${index}.minGap`,
+      band.minGap
+    );
+    assertScore(`admissionFit.scoreByMinGap.${index}.score`, band.score);
+  }
+  for (const [index, band] of config.studentIndex.classRankBands.entries()) {
+    assertFiniteNumber(
+      `studentIndex.classRankBands.${index}.maxPercentile`,
+      band.maxPercentile
+    );
+    assertFiniteNumber(
+      `studentIndex.classRankBands.${index}.bonus`,
+      band.bonus
+    );
   }
 
-  return {
-    admissionFit: {
-      ...defaultRecommendationEngineScoringConfig.admissionFit,
-      ...overrides.admissionFit,
-    },
-    readinessFit: {
-      ...defaultRecommendationEngineScoringConfig.readinessFit,
-      ...overrides.readinessFit,
-    },
-    preferenceFit: {
-      ...defaultRecommendationEngineScoringConfig.preferenceFit,
-      ...overrides.preferenceFit,
-    },
-    improvementUpside: {
-      ...defaultRecommendationEngineScoringConfig.improvementUpside,
-      ...overrides.improvementUpside,
-    },
-    studentIndex: {
-      ...defaultRecommendationEngineScoringConfig.studentIndex,
-      ...overrides.studentIndex,
-      curriculumBonuses: {
-        ...defaultRecommendationEngineScoringConfig.studentIndex
-          .curriculumBonuses,
-        ...overrides.studentIndex?.curriculumBonuses,
-      },
-    },
-    schoolIndex: {
-      ...defaultRecommendationEngineScoringConfig.schoolIndex,
-      ...overrides.schoolIndex,
-    },
-    budgetFit: {
-      ...defaultRecommendationEngineScoringConfig.budgetFit,
-      ...overrides.budgetFit,
-      componentScores: {
-        ...defaultRecommendationEngineScoringConfig.budgetFit.componentScores,
-        ...overrides.budgetFit?.componentScores,
-      },
-    },
-    tierThresholds: {
-      ...defaultRecommendationEngineScoringConfig.tierThresholds,
-      ...overrides.tierThresholds,
-    },
-    outlookThresholds: {
-      ...defaultRecommendationEngineScoringConfig.outlookThresholds,
-      ...overrides.outlookThresholds,
-    },
-    sizeBuckets: {
-      ...defaultRecommendationEngineScoringConfig.sizeBuckets,
-      ...overrides.sizeBuckets,
-    },
-  };
+  if (config.improvementUpside.gpaDeltaDivisor === 0) {
+    throw new RecommendationEngineScoringConfigError(
+      "improvementUpside.gpaDeltaDivisor must be nonzero."
+    );
+  }
+  assertDescending(
+    "admissionFit.scoreByMinGap",
+    config.admissionFit.scoreByMinGap.map((band) => band.minGap)
+  );
+  assertAscending(
+    "studentIndex.classRankBands",
+    config.studentIndex.classRankBands.map((band) => band.maxPercentile)
+  );
+  if (config.tierThresholds.safetyMin <= config.tierThresholds.targetMin) {
+    throw new RecommendationEngineScoringConfigError(
+      "tierThresholds must be ordered safetyMin > targetMin."
+    );
+  }
+  assertDescending("outlookThresholds", [
+    config.outlookThresholds.very_strong,
+    config.outlookThresholds.strong,
+    config.outlookThresholds.possible,
+    config.outlookThresholds.stretch,
+  ]);
+  if (
+    config.sizeBuckets.smallMaxExclusive <= 0 ||
+    config.sizeBuckets.mediumMaxInclusive < config.sizeBuckets.smallMaxExclusive
+  ) {
+    throw new RecommendationEngineScoringConfigError(
+      "sizeBuckets must be ordered and non-overlapping."
+    );
+  }
+}
+
+function assertFiniteNumber(field: string, value: number) {
+  if (!Number.isFinite(value)) {
+    throw new RecommendationEngineScoringConfigError(
+      `${field} must be a finite number.`
+    );
+  }
+}
+
+function assertScore(field: string, value: number) {
+  assertFiniteNumber(field, value);
+  if (value < 0 || value > 20) {
+    throw new RecommendationEngineScoringConfigError(
+      `${field} must be between 0 and 20.`
+    );
+  }
+}
+
+function assertDescending(field: string, values: number[]) {
+  for (let index = 1; index < values.length; index += 1) {
+    if (values[index] >= values[index - 1]) {
+      throw new RecommendationEngineScoringConfigError(
+        `${field} must be sorted descending.`
+      );
+    }
+  }
+}
+
+function assertAscending(field: string, values: number[]) {
+  for (let index = 1; index < values.length; index += 1) {
+    if (values[index] <= values[index - 1]) {
+      throw new RecommendationEngineScoringConfigError(
+        `${field} must be sorted ascending.`
+      );
+    }
+  }
 }

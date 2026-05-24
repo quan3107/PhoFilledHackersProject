@@ -12,7 +12,9 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@etest/api-contracts": "*",
     "@etest/auth": "*",
+    "@etest/backend-data": "*",
     "@etest/catalog": "*",
     "better-auth": "^1.6.11",
     "lucide-react": "^0.542.0",

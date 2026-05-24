@@ -2,6 +2,8 @@
 // Low-level parsing helpers used by ingest normalization.
 // Splitting these helpers keeps the main normalization module under the repo file-size limit.
 
+import { type ApplicationRound } from "@etest/api-contracts";
+import { extractionDraftSchema } from "@etest/api-contracts";
 import {
   academicSelectivityBands,
   aidModels,
@@ -19,7 +21,6 @@ import {
   schoolFitTags,
   schoolRiskTags,
   testingExpectations,
-  type ApplicationRound,
   type DeadlinesByRound,
   type EnglishRequirements,
   type UniversityExplanationInputs,
@@ -43,6 +44,16 @@ const roundAliases: Record<string, ApplicationRound> = {
   rolling: "rolling_admission",
   priority: "priority",
 };
+
+function applyExtractionDefaults(value: unknown) {
+  return value;
+}
+
+export function normalizeExtractionDraft(
+  value: unknown
+): SchoolExtractionDraft {
+  return extractionDraftSchema.parse(applyExtractionDefaults(value));
+}
 
 export function normalizeComparableText(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();

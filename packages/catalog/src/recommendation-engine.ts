@@ -14,7 +14,6 @@ import {
   type RecommendationResultRecord,
   type RecommendationRunRecord,
   type RecommendationTier,
-  type RecommendationRunStatus,
   type ScoreComponentBreakdown,
   type StudentProfileMissingField,
   type StudentProfileRecord,
@@ -30,6 +29,10 @@ import {
   type RecommendationEngineScoringConfigOverrides,
 } from "./recommendation-engine-config.js";
 import { listRecommendationCandidateSchools } from "./recommendation-catalog-read-path.js";
+import {
+  toRecommendationResultRecord,
+  toRecommendationRunRecord,
+} from "./recommendation-row-mappers.js";
 
 export type RecommendationEngineDb = PgDatabase<
   PgQueryResultHKT,
@@ -98,37 +101,41 @@ export async function runRecommendationEngineForUser(input: {
   const missingProfileFields = profileState.missingFields.map(
     (field) => `${field.snapshotKind}.${field.path}`
   );
+  const profile = profileState.profile;
+  const currentSnapshotId = currentSnapshot.id;
   const currentProfile = currentSnapshot.profile;
 
-  const [pendingRun] = await db
-    .insert(recommendationRuns)
-    .values({
-      userId,
-      studentProfileId: profileState.profile.id,
-      currentSnapshotId: currentSnapshot.id,
-      projectedSnapshotId: projectedSnapshot.id,
-      runStatus: "pending",
-      scoringConfigSnapshot: scoringConfig,
-      missingProfileFields,
-      candidateSchoolCount: 0,
-    })
-    .returning();
-
   if (profileState.missingFields.length > 0) {
-    const [failedRun] = await db
-      .update(recommendationRuns)
-      .set({
-        runStatus: "failed",
-        candidateSchoolCount: 0,
-        finishedAt: new Date(),
-      })
-      .where(eq(recommendationRuns.id, pendingRun.id))
-      .returning();
+    return db.transaction(async (tx) => {
+      const [pendingRun] = await tx
+        .insert(recommendationRuns)
+        .values({
+          userId,
+          studentProfileId: profile.id,
+          currentSnapshotId,
+          projectedSnapshotId: projectedSnapshot.id ?? undefined,
+          runStatus: "pending",
+          scoringConfigSnapshot: scoringConfig,
+          missingProfileFields,
+          candidateSchoolCount: 0,
+        })
+        .returning();
 
-    return {
-      run: toRecommendationRunRecord(failedRun),
-      results: [],
-    };
+      const [failedRun] = await tx
+        .update(recommendationRuns)
+        .set({
+          runStatus: "failed",
+          candidateSchoolCount: 0,
+          finishedAt: new Date(),
+        })
+        .where(eq(recommendationRuns.id, pendingRun.id))
+        .returning();
+
+      return {
+        run: toRecommendationRunRecord(failedRun),
+        results: [],
+      };
+    });
   }
 
   const candidateSchools = await listRecommendationCandidateSchools(db);
@@ -161,46 +168,63 @@ export async function runRecommendationEngineForUser(input: {
       return left.school.schoolName.localeCompare(right.school.schoolName);
     });
 
-  const insertedResults = scoredSchools.length
-    ? await db
-        .insert(recommendationResults)
-        .values(
-          scoredSchools.map((result, index) => ({
-            recommendationRunId: pendingRun.id,
-            universityId: result.school.universityId,
-            tier: result.tier,
-            currentOutlook: result.currentOutlook,
-            projectedOutlook: result.projectedOutlook,
-            confidenceLevel: result.confidenceLevel,
-            budgetFit: result.budgetFit,
-            deadlinePressure: result.deadlinePressure,
-            currentScore: result.currentScore,
-            projectedScore: result.projectedScore,
-            currentScoreBreakdown: result.currentScoreBreakdown,
-            projectedScoreBreakdown: result.projectedScoreBreakdown,
-            projectedAssumptionDelta: result.projectedAssumptionDelta,
-            rankOrder: index + 1,
-          }))
-        )
-        .returning()
-    : [];
+  return db.transaction(async (tx) => {
+    const [pendingRun] = await tx
+      .insert(recommendationRuns)
+      .values({
+        userId,
+        studentProfileId: profile.id,
+        currentSnapshotId,
+        projectedSnapshotId: projectedSnapshot.id ?? undefined,
+        runStatus: "pending",
+        scoringConfigSnapshot: scoringConfig,
+        missingProfileFields,
+        candidateSchoolCount: 0,
+      })
+      .returning();
 
-  const [succeededRun] = await db
-    .update(recommendationRuns)
-    .set({
-      runStatus: "succeeded",
-      candidateSchoolCount: candidateSchools.length,
-      finishedAt: new Date(),
-    })
-    .where(eq(recommendationRuns.id, pendingRun.id))
-    .returning();
+    const insertedResults = scoredSchools.length
+      ? await tx
+          .insert(recommendationResults)
+          .values(
+            scoredSchools.map((result, index) => ({
+              recommendationRunId: pendingRun.id,
+              universityId: result.school.universityId,
+              tier: result.tier,
+              currentOutlook: result.currentOutlook,
+              projectedOutlook: result.projectedOutlook,
+              confidenceLevel: result.confidenceLevel,
+              budgetFit: result.budgetFit,
+              deadlinePressure: result.deadlinePressure,
+              currentScore: result.currentScore,
+              projectedScore: result.projectedScore,
+              currentScoreBreakdown: result.currentScoreBreakdown,
+              projectedScoreBreakdown: result.projectedScoreBreakdown,
+              projectedAssumptionDelta: result.projectedAssumptionDelta,
+              candidateSchoolSnapshot: result.school,
+              rankOrder: index + 1,
+            }))
+          )
+          .returning()
+      : [];
 
-  return {
-    run: toRecommendationRunRecord(succeededRun),
-    results: insertedResults
-      .sort((left, right) => left.rankOrder - right.rankOrder)
-      .map(toRecommendationResultRecord),
-  };
+    const [succeededRun] = await tx
+      .update(recommendationRuns)
+      .set({
+        runStatus: "succeeded",
+        candidateSchoolCount: scoredSchools.length,
+        finishedAt: new Date(),
+      })
+      .where(eq(recommendationRuns.id, pendingRun.id))
+      .returning();
+
+    return {
+      run: toRecommendationRunRecord(succeededRun),
+      results: insertedResults
+        .sort((left, right) => left.rankOrder - right.rankOrder)
+        .map(toRecommendationResultRecord),
+    };
+  });
 }
 
 function scoreCandidateSchool(input: {
@@ -743,45 +767,4 @@ function clampScore(score: number) {
 
 function clampToRange(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
-}
-
-function toRecommendationRunRecord(
-  row: typeof recommendationRuns.$inferSelect
-): RecommendationRunRecord {
-  return {
-    id: row.id,
-    userId: row.userId,
-    studentProfileId: row.studentProfileId,
-    currentSnapshotId: row.currentSnapshotId,
-    projectedSnapshotId: row.projectedSnapshotId,
-    runStatus: row.runStatus as RecommendationRunStatus,
-    scoringConfigSnapshot: row.scoringConfigSnapshot,
-    missingProfileFields: row.missingProfileFields,
-    candidateSchoolCount: row.candidateSchoolCount,
-    createdAt: row.createdAt.toISOString(),
-    finishedAt: row.finishedAt?.toISOString() ?? null,
-  };
-}
-
-function toRecommendationResultRecord(
-  row: typeof recommendationResults.$inferSelect
-): RecommendationResultRecord {
-  return {
-    id: row.id,
-    recommendationRunId: row.recommendationRunId,
-    universityId: row.universityId,
-    tier: row.tier as RecommendationTier,
-    currentOutlook: row.currentOutlook as OutlookLabel,
-    projectedOutlook: row.projectedOutlook as OutlookLabel | null,
-    confidenceLevel: row.confidenceLevel as ConfidenceLevel,
-    budgetFit: row.budgetFit as BudgetFitLabel,
-    deadlinePressure: row.deadlinePressure as DeadlinePressureLabel,
-    currentScore: row.currentScore,
-    projectedScore: row.projectedScore,
-    currentScoreBreakdown: row.currentScoreBreakdown,
-    projectedScoreBreakdown: row.projectedScoreBreakdown,
-    projectedAssumptionDelta: row.projectedAssumptionDelta,
-    rankOrder: row.rankOrder,
-    createdAt: row.createdAt.toISOString(),
-  };
 }

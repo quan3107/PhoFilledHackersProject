@@ -4,23 +4,26 @@
 
 import type * as dbSchema from "@etest/db";
 import {
+  recommendationExplanationShortlistItems,
   recommendationExplanations,
   recommendationResults,
   recommendationRuns,
   recommendationShortlists,
   studentProfileSnapshots,
-  universities,
   type RecommendationExplanationRecord,
   type RecommendationResultRecord,
   type RecommendationRunRecord,
   type RecommendationShortlistRecord,
-  type RecommendationScoringConfigSnapshot,
   type StudentProfileSnapshotRecord,
 } from "@etest/db";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 import type { RecommendationCandidateSchool } from "./types.js";
+import {
+  toRecommendationResultRecord,
+  toRecommendationRunRecord,
+} from "./recommendation-row-mappers.js";
 
 export type RecommendationExplanationReadDb = PgDatabase<
   PgQueryResultHKT,
@@ -32,7 +35,8 @@ type RecommendationResultRow = typeof recommendationResults.$inferSelect;
 type RecommendationShortlistRow = typeof recommendationShortlists.$inferSelect;
 type RecommendationExplanationRow =
   typeof recommendationExplanations.$inferSelect;
-type UniversityRow = typeof universities.$inferSelect;
+type RecommendationExplanationShortlistItemRow =
+  typeof recommendationExplanationShortlistItems.$inferSelect;
 type StudentProfileSnapshotRow = typeof studentProfileSnapshots.$inferSelect;
 
 export interface RecommendationExplanationRunContext {
@@ -88,10 +92,7 @@ export async function loadRecommendationExplanationRunContext(
     );
   }
 
-  const schools = await loadPublishedCandidateSchoolsForResults(
-    db,
-    run.results
-  );
+  const schools = run.results.map((result) => result.candidateSchoolSnapshot);
 
   return {
     recommendationRun: toRecommendationRunRecord(run),
@@ -117,11 +118,8 @@ export async function getPersistedRecommendationExplanationBundle(
       recommendationRun: true,
       explanations: {
         with: {
-          recommendationResult: {
-            with: {
-              university: true,
-            },
-          },
+          recommendationResult: true,
+          shortlistItems: true,
         },
       },
     },
@@ -140,8 +138,16 @@ export async function getPersistedRecommendationExplanationBundle(
   const schoolById = new Map(
     shortlist.explanations.map((entry) => [
       entry.recommendationResult.id,
-      toRecommendationCandidateSchool(entry.recommendationResult.university),
+      entry.recommendationResult.candidateSchoolSnapshot,
     ])
+  );
+  const shortlistOrderByResultId = new Map(
+    shortlist.explanations.flatMap((entry) =>
+      entry.shortlistItems.map((item) => [
+        item.recommendationResultId,
+        item.rankOrder,
+      ])
+    )
   );
 
   return {
@@ -150,12 +156,12 @@ export async function getPersistedRecommendationExplanationBundle(
     explanations: shortlist.explanations
       .slice()
       .sort((left, right) => {
-        const leftIndex = shortlist.shortlistedRecommendationResultIds.indexOf(
-          left.recommendationResult.id
-        );
-        const rightIndex = shortlist.shortlistedRecommendationResultIds.indexOf(
-          right.recommendationResult.id
-        );
+        const leftIndex =
+          shortlistOrderByResultId.get(left.recommendationResult.id) ??
+          Number.MAX_SAFE_INTEGER;
+        const rightIndex =
+          shortlistOrderByResultId.get(right.recommendationResult.id) ??
+          Number.MAX_SAFE_INTEGER;
 
         return leftIndex - rightIndex;
       })
@@ -166,109 +172,8 @@ export async function getPersistedRecommendationExplanationBundle(
           toRecommendationResultRecord(entry.recommendationResult),
         school:
           schoolById.get(entry.recommendationResult.id) ??
-          toRecommendationCandidateSchool(
-            entry.recommendationResult.university
-          ),
+          entry.recommendationResult.candidateSchoolSnapshot,
       })),
-  };
-}
-
-async function loadPublishedCandidateSchoolsForResults(
-  db: RecommendationExplanationReadDb,
-  results: RecommendationResultRow[]
-): Promise<RecommendationCandidateSchool[]> {
-  if (results.length === 0) {
-    return [];
-  }
-
-  const universityIds = results.map((result) => result.universityId);
-  const schools = (await db.query.universities.findMany({
-    where: and(
-      eq(universities.validationStatus, "publishable"),
-      inArray(universities.id, universityIds)
-    ),
-    columns: {
-      id: true,
-      schoolName: true,
-      city: true,
-      state: true,
-      lastVerifiedAt: true,
-      tuitionAnnualUsd: true,
-      estimatedCostOfAttendanceUsd: true,
-      livingCostEstimateUsd: true,
-      scholarshipAvailabilityFlag: true,
-      scholarshipNotes: true,
-      recommendationInputs: true,
-      explanationInputs: true,
-      validationStatus: true,
-    },
-  })) as UniversityRowWithStatus[];
-
-  if (schools.length !== universityIds.length) {
-    throw new RecommendationExplanationLookupError(
-      "One or more explanation candidate schools could not be loaded from the published catalog."
-    );
-  }
-
-  const schoolById = new Map(
-    schools.map((school) => [
-      school.id,
-      toRecommendationCandidateSchool(school),
-    ])
-  );
-
-  return universityIds.map((universityId) => {
-    const school = schoolById.get(universityId);
-
-    if (!school) {
-      throw new RecommendationExplanationLookupError(
-        `Published candidate school ${universityId} could not be resolved.`
-      );
-    }
-
-    return school;
-  });
-}
-
-function toRecommendationRunRecord(
-  row: RecommendationRunRow
-): RecommendationRunRecord {
-  return {
-    id: row.id,
-    userId: row.userId,
-    studentProfileId: row.studentProfileId,
-    currentSnapshotId: row.currentSnapshotId,
-    projectedSnapshotId: row.projectedSnapshotId,
-    runStatus: row.runStatus,
-    scoringConfigSnapshot:
-      row.scoringConfigSnapshot as RecommendationScoringConfigSnapshot,
-    missingProfileFields: row.missingProfileFields,
-    candidateSchoolCount: row.candidateSchoolCount,
-    createdAt: row.createdAt.toISOString(),
-    finishedAt: row.finishedAt ? row.finishedAt.toISOString() : null,
-  };
-}
-
-function toRecommendationResultRecord(
-  row: RecommendationResultRow
-): RecommendationResultRecord {
-  return {
-    id: row.id,
-    recommendationRunId: row.recommendationRunId,
-    universityId: row.universityId,
-    tier: row.tier,
-    currentOutlook: row.currentOutlook,
-    projectedOutlook: row.projectedOutlook,
-    confidenceLevel: row.confidenceLevel,
-    budgetFit: row.budgetFit,
-    deadlinePressure: row.deadlinePressure,
-    currentScore: row.currentScore,
-    projectedScore: row.projectedScore,
-    currentScoreBreakdown: row.currentScoreBreakdown,
-    projectedScoreBreakdown: row.projectedScoreBreakdown ?? null,
-    projectedAssumptionDelta: row.projectedAssumptionDelta,
-    rankOrder: row.rankOrder,
-    createdAt: row.createdAt.toISOString(),
   };
 }
 
@@ -281,7 +186,10 @@ function toRecommendationShortlistRecord(
     model: row.model,
     promptVersion: row.promptVersion,
     systemPrompt: row.systemPrompt,
-    shortlistedRecommendationResultIds: row.shortlistedRecommendationResultIds,
+    shortlistedRecommendationResultIds: row.explanations
+      .flatMap((entry) => entry.shortlistItems)
+      .sort((left, right) => left.rankOrder - right.rankOrder)
+      .map((item) => item.recommendationResultId),
     shortlistRationale: row.shortlistRationale,
     createdAt: row.createdAt.toISOString(),
   };
@@ -317,25 +225,6 @@ function toStudentProfileSnapshotRecord(
   };
 }
 
-function toRecommendationCandidateSchool(
-  row: UniversityRow
-): RecommendationCandidateSchool {
-  return {
-    universityId: row.id,
-    schoolName: row.schoolName,
-    city: row.city,
-    state: row.state,
-    lastVerifiedAt: row.lastVerifiedAt.toISOString(),
-    tuitionAnnualUsd: row.tuitionAnnualUsd,
-    estimatedCostOfAttendanceUsd: row.estimatedCostOfAttendanceUsd,
-    livingCostEstimateUsd: row.livingCostEstimateUsd,
-    scholarshipAvailabilityFlag: row.scholarshipAvailabilityFlag,
-    scholarshipNotes: row.scholarshipNotes,
-    recommendationInputs: row.recommendationInputs,
-    explanationInputs: row.explanationInputs,
-  };
-}
-
 interface RecommendationRunQueryRow extends RecommendationRunRow {
   currentSnapshot: StudentProfileSnapshotRow;
   projectedSnapshot: StudentProfileSnapshotRow | null;
@@ -346,13 +235,8 @@ interface RecommendationShortlistQueryRow extends RecommendationShortlistRow {
   recommendationRun: RecommendationRunRow;
   explanations: Array<
     RecommendationExplanationRow & {
-      recommendationResult: RecommendationResultRow & {
-        university: UniversityRow;
-      };
+      shortlistItems: RecommendationExplanationShortlistItemRow[];
+      recommendationResult: RecommendationResultRow;
     }
   >;
-}
-
-interface UniversityRowWithStatus extends UniversityRow {
-  validationStatus: "draft" | "publishable" | "rejected";
 }

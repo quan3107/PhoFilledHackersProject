@@ -474,12 +474,9 @@ OpenAPI is required for server contracts.
 
 ### Suggested module boundaries
 
-- `apps/web/app/` for routes and layouts
-- `apps/web/features/profile/`
-- `apps/web/features/recommendations/`
-- `apps/web/features/chat/`
-- `apps/web/features/handoff/`
-- `apps/web/features/admin/`
+- `apps/student-onboarding/app/` for routes and layouts
+- `apps/student-onboarding/src/lib/` for profile, recommendation, chat, and API orchestration helpers
+- `apps/student-onboarding/src/components/` for student onboarding and dashboard UI
 - `apps/ingest/` for the offline catalog import pipeline
 - `packages/catalog/` for catalog schema, validation, and normalization
 - `packages/db/` for Drizzle schema and queries
@@ -524,6 +521,14 @@ OpenAPI is required for server contracts.
 - Time required for a counselor to review a new lead
 - Rate of recommendation runs blocked by missing data
 - Percentage of recommendation cards with source links and last-verified timestamps
+
+### Operational metrics ownership
+
+- Recommendation run success and failure logs are owned by `apps/student-onboarding` API routes and recommendation workflow services.
+- Source-backed catalog coverage is owned by `packages/catalog`, `packages/db`, and the catalog review workflow.
+- Ingest validation failures are owned by `apps/ingest` and the catalog publishability validators.
+- LLM provider unavailable and malformed-output counts are owned by the student onboarding intake/chat clients and the ingest extraction client.
+- Health endpoint checks are owned by `apps/student-onboarding/app/api/health` and deployment monitoring.
 
 ## 16. Risks and Mitigations
 

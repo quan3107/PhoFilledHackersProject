@@ -7,21 +7,157 @@ import {
   loadRecommendationChatContextForUser,
   type RecommendationChatContext,
 } from "./recommendation-chat-context";
+import { getBackendDb, type BackendDb } from "@etest/backend-data";
+import {
+  recommendationChatMessages,
+  recommendationChatSessions,
+  recommendationRuns,
+} from "@etest/db";
+import { and, eq, max } from "drizzle-orm";
 
 export interface RecommendationChatTranscriptMessage {
+  id?: string;
   role: "assistant" | "student";
   text: string;
+  createdAt?: string;
 }
 
 export interface RecommendationChatTurnInput {
   userId: string;
+  recommendationRunId: string;
   latestMessage: string | null;
-  transcript: RecommendationChatTranscriptMessage[];
 }
 
 export interface RecommendationChatTurnResult {
   assistantMessage: string;
   suggestedReplies: string[];
+  messages: RecommendationChatTranscriptMessage[];
+}
+
+export interface RecommendationChatModelClient {
+  generate(input: {
+    instructions: string;
+    prompt: string;
+  }): Promise<{ assistantMessage: string; suggestedReplies: string[] }>;
+}
+
+export interface RecommendationChatRepository {
+  loadOrCreateSession(input: {
+    userId: string;
+    recommendationRunId: string;
+    now: Date;
+  }): Promise<{ id: string }>;
+  appendMessage(input: {
+    sessionId: string;
+    role: "assistant" | "student";
+    text: string;
+    now: Date;
+  }): Promise<void>;
+  loadMessages(
+    sessionId: string
+  ): Promise<RecommendationChatTranscriptMessage[]>;
+}
+
+export interface RecommendationChatDependencies {
+  modelClient: RecommendationChatModelClient;
+  chatRepo: RecommendationChatRepository;
+  loadContext: typeof loadRecommendationChatContextForUser;
+  now: () => Date;
+}
+
+class DbRecommendationChatRepository implements RecommendationChatRepository {
+  constructor(private readonly db: BackendDb) {}
+
+  async loadOrCreateSession(input: {
+    userId: string;
+    recommendationRunId: string;
+    now: Date;
+  }) {
+    const ownedRun = await this.db.query.recommendationRuns.findFirst({
+      where: and(
+        eq(recommendationRuns.id, input.recommendationRunId),
+        eq(recommendationRuns.userId, input.userId),
+        eq(recommendationRuns.runStatus, "succeeded")
+      ),
+      columns: { id: true },
+    });
+
+    if (!ownedRun) {
+      throw new Error("Recommendation run was not found for this user.");
+    }
+
+    const existing = await this.db.query.recommendationChatSessions.findFirst({
+      where: eq(
+        recommendationChatSessions.recommendationRunId,
+        input.recommendationRunId
+      ),
+      columns: { id: true },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const [created] = await this.db
+      .insert(recommendationChatSessions)
+      .values({
+        userId: input.userId,
+        recommendationRunId: input.recommendationRunId,
+        createdAt: input.now,
+        updatedAt: input.now,
+      })
+      .returning({ id: recommendationChatSessions.id });
+
+    return created;
+  }
+
+  async appendMessage(input: {
+    sessionId: string;
+    role: "assistant" | "student";
+    text: string;
+    now: Date;
+  }) {
+    const [rankRow] = await this.db
+      .select({ maxRank: max(recommendationChatMessages.rankOrder) })
+      .from(recommendationChatMessages)
+      .where(
+        eq(
+          recommendationChatMessages.recommendationChatSessionId,
+          input.sessionId
+        )
+      );
+    const rankOrder = (rankRow?.maxRank ?? 0) + 1;
+
+    await this.db.insert(recommendationChatMessages).values({
+      recommendationChatSessionId: input.sessionId,
+      role: input.role,
+      text: input.text,
+      rankOrder,
+      createdAt: input.now,
+    });
+
+    await this.db
+      .update(recommendationChatSessions)
+      .set({ updatedAt: input.now })
+      .where(eq(recommendationChatSessions.id, input.sessionId));
+  }
+
+  async loadMessages(sessionId: string) {
+    const rows = await this.db.query.recommendationChatMessages.findMany({
+      where: eq(
+        recommendationChatMessages.recommendationChatSessionId,
+        sessionId
+      ),
+      orderBy: (table, { asc }) => [asc(table.rankOrder)],
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      role: row.role,
+      text: row.text,
+      createdAt: row.createdAt.toISOString(),
+    }));
+  }
 }
 
 const recommendationChatSystemPrompt = [
@@ -38,27 +174,64 @@ const recommendationChatSystemPrompt = [
 ].join(" ");
 
 export async function runRecommendationChatTurn(
-  input: RecommendationChatTurnInput
+  input: RecommendationChatTurnInput,
+  dependencies?: Partial<RecommendationChatDependencies>
 ): Promise<RecommendationChatTurnResult> {
-  const transcript = normalizeTranscript(input.transcript, input.latestMessage);
-  const context = await loadRecommendationChatContextForUser({
+  const chatRepo =
+    dependencies?.chatRepo ??
+    new DbRecommendationChatRepository(await getBackendDb());
+  const now = dependencies?.now ?? (() => new Date());
+  const client =
+    dependencies?.modelClient ?? createRecommendationChatOpenAiClient();
+  const loadContext =
+    dependencies?.loadContext ?? loadRecommendationChatContextForUser;
+  const session = await chatRepo.loadOrCreateSession({
     userId: input.userId,
-    latestMessage: input.latestMessage,
+    recommendationRunId: input.recommendationRunId,
+    now: now(),
+  });
+
+  const latestMessage = input.latestMessage?.trim() || null;
+  if (latestMessage) {
+    await chatRepo.appendMessage({
+      sessionId: session.id,
+      role: "student",
+      text: latestMessage,
+      now: now(),
+    });
+  }
+
+  const transcript = normalizeTranscript(
+    await chatRepo.loadMessages(session.id)
+  );
+  const context = await loadContext({
+    userId: input.userId,
+    recommendationRunId: input.recommendationRunId,
+    latestMessage,
     transcript,
   });
-  const client = createRecommendationChatOpenAiClient();
   const modelOutput = await client.generate({
     instructions: recommendationChatSystemPrompt,
     prompt: buildRecommendationChatPrompt({
       context,
       transcript,
-      latestMessage: input.latestMessage,
+      latestMessage,
     }),
+  });
+  const assistantMessage = normalizeAssistantMessage(
+    modelOutput.assistantMessage
+  );
+  await chatRepo.appendMessage({
+    sessionId: session.id,
+    role: "assistant",
+    text: assistantMessage,
+    now: now(),
   });
 
   return {
-    assistantMessage: normalizeAssistantMessage(modelOutput.assistantMessage),
+    assistantMessage,
     suggestedReplies: normalizeSuggestedReplies(modelOutput.suggestedReplies),
+    messages: await chatRepo.loadMessages(session.id),
   };
 }
 
@@ -84,8 +257,7 @@ function buildRecommendationChatPrompt(input: {
 }
 
 function normalizeTranscript(
-  transcript: RecommendationChatTranscriptMessage[],
-  latestMessage: string | null
+  transcript: RecommendationChatTranscriptMessage[]
 ) {
   const cleaned = transcript
     .filter(
@@ -96,23 +268,7 @@ function normalizeTranscript(
       text: message.text.trim(),
     }))
     .filter((message) => message.text.length > 0);
-
-  const latestText = latestMessage?.trim() ?? "";
-  if (!latestText) {
-    return cleaned.slice(-12);
-  }
-
-  if (
-    cleaned.length > 0 &&
-    cleaned[cleaned.length - 1].role === "student" &&
-    cleaned[cleaned.length - 1].text === latestText
-  ) {
-    return cleaned.slice(-12);
-  }
-
-  return [...cleaned, { role: "student" as const, text: latestText }].slice(
-    -12
-  );
+  return cleaned.slice(-12);
 }
 
 function normalizeAssistantMessage(message: string) {

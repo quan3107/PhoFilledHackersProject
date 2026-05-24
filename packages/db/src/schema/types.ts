@@ -2,25 +2,29 @@
 // Shared catalog and recommendation schema types for Drizzle tables and downstream packages.
 // Keeps the database and domain packages aligned on one canonical field model.
 
-export const catalogRequiredFields = [
-  "schoolName",
-  "city",
-  "state",
-  "officialAdmissionsUrl",
-  "applicationRounds",
-  "deadlinesByRound",
-  "englishRequirements",
-  "testPolicy",
-  "requiredMaterials",
-  "tuitionAnnualUsd",
-  "estimatedCostOfAttendanceUsd",
-  "livingCostEstimateUsd",
-  "scholarshipAvailabilityFlag",
-  "scholarshipNotes",
-  "lastVerifiedAt",
-] as const;
+import type {
+  ApplicationRound as ContractApplicationRound,
+  BudgetFit,
+  CatalogRequiredField as ContractCatalogRequiredField,
+  ConfidenceLevel as ContractConfidenceLevel,
+  DeadlinePressure,
+  RecommendationOutlook,
+  RecommendationTier as ContractRecommendationTier,
+  UniversitySourceKind as ContractUniversitySourceKind,
+} from "@etest/api-contracts";
 
-export type CatalogRequiredField = (typeof catalogRequiredFields)[number];
+export {
+  applicationRounds,
+  budgetFits as budgetFitLabels,
+  catalogRequiredFields,
+  confidenceLevels,
+  deadlinePressures as deadlinePressureLabels,
+  recommendationOutlooks as outlookLabels,
+  recommendationTiers,
+  universitySourceKinds,
+} from "@etest/api-contracts";
+
+export type CatalogRequiredField = ContractCatalogRequiredField;
 
 export const universityValidationStatuses = [
   "draft",
@@ -31,15 +35,7 @@ export const universityValidationStatuses = [
 export type UniversityValidationStatus =
   (typeof universityValidationStatuses)[number];
 
-export const universitySourceKinds = [
-  "official_admissions",
-  "official_tuition",
-  "official_cost_of_attendance",
-  "official_scholarship",
-  "manual_review",
-] as const;
-
-export type UniversitySourceKind = (typeof universitySourceKinds)[number];
+export type UniversitySourceKind = ContractUniversitySourceKind;
 
 export const catalogImportStatuses = [
   "pending",
@@ -62,12 +58,7 @@ export const universityValidationReasonCodes = [
 export type UniversityValidationReasonCode =
   (typeof universityValidationReasonCodes)[number];
 
-export type ApplicationRound =
-  | "early_action"
-  | "early_decision"
-  | "regular_decision"
-  | "rolling_admission"
-  | "priority";
+export type ApplicationRound = ContractApplicationRound;
 
 export type DeadlinesByRound = Partial<Record<ApplicationRound, string>>;
 
@@ -267,36 +258,11 @@ export const recommendationRunStatuses = [
 export type RecommendationRunStatus =
   (typeof recommendationRunStatuses)[number];
 
-export const recommendationTiers = ["reach", "target", "safety"] as const;
-
-export type RecommendationTier = (typeof recommendationTiers)[number];
-
-export const outlookLabels = [
-  "very_strong",
-  "strong",
-  "possible",
-  "stretch",
-  "unlikely",
-] as const;
-
-export type OutlookLabel = (typeof outlookLabels)[number];
-
-export const budgetFitLabels = [
-  "comfortable",
-  "stretch",
-  "high_risk",
-  "unknown",
-] as const;
-
-export type BudgetFitLabel = (typeof budgetFitLabels)[number];
-
-export const deadlinePressureLabels = ["low", "medium", "high"] as const;
-
-export type DeadlinePressureLabel = (typeof deadlinePressureLabels)[number];
-
-export const confidenceLevels = ["low", "medium", "high"] as const;
-
-export type ConfidenceLevel = (typeof confidenceLevels)[number];
+export type RecommendationTier = ContractRecommendationTier;
+export type OutlookLabel = RecommendationOutlook;
+export type BudgetFitLabel = BudgetFit;
+export type DeadlinePressureLabel = DeadlinePressure;
+export type ConfidenceLevel = ContractConfidenceLevel;
 
 export interface ScoreComponentBreakdown {
   admissionFit: number;
@@ -413,8 +379,24 @@ export interface RecommendationResultRecord {
   currentScoreBreakdown: ScoreComponentBreakdown;
   projectedScoreBreakdown: ScoreComponentBreakdown | null;
   projectedAssumptionDelta: string[];
+  candidateSchoolSnapshot: RecommendationCandidateSchoolSnapshot;
   rankOrder: number;
   createdAt: string;
+}
+
+export interface RecommendationCandidateSchoolSnapshot {
+  universityId: string;
+  schoolName: string;
+  city: string;
+  state: string;
+  lastVerifiedAt: string;
+  tuitionAnnualUsd: number;
+  estimatedCostOfAttendanceUsd: number;
+  livingCostEstimateUsd: number;
+  scholarshipAvailabilityFlag: boolean;
+  scholarshipNotes: string;
+  recommendationInputs: UniversityRecommendationInputs;
+  explanationInputs: UniversityExplanationInputs;
 }
 
 export interface RecommendationShortlistRecord {

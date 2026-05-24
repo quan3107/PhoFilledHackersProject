@@ -5,6 +5,7 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  foreignKey,
   integer,
   jsonb,
   pgEnum,
@@ -23,6 +24,7 @@ import {
   recommendationRunStatuses,
   recommendationTiers,
   type RecommendationScoringConfigSnapshot,
+  type RecommendationCandidateSchoolSnapshot,
   type ScoreComponentBreakdown,
 } from "./types.js";
 import {
@@ -59,6 +61,11 @@ export const deadlinePressureLabelEnum = pgEnum(
 export const confidenceLevelEnum = pgEnum(
   "recommendation_confidence_level",
   confidenceLevels
+);
+
+export const recommendationChatMessageRoleEnum = pgEnum(
+  "recommendation_chat_message_role",
+  ["student", "assistant"]
 );
 
 export const recommendationRuns = pgTable(
@@ -104,6 +111,15 @@ export const recommendationRuns = pgTable(
     createdAtIdx: index("recommendation_runs_created_at_idx").on(
       table.createdAt
     ),
+    idUserIdIdx: uniqueIndex("recommendation_runs_id_user_id_idx").on(
+      table.id,
+      table.userId
+    ),
+    profileOwnerFk: foreignKey({
+      columns: [table.studentProfileId, table.userId],
+      foreignColumns: [studentProfiles.id, studentProfiles.userId],
+      name: "recommendation_runs_profile_owner_fk",
+    }).onDelete("cascade"),
   })
 );
 
@@ -135,6 +151,9 @@ export const recommendationResults = pgTable(
       .$type<string[]>()
       .notNull()
       .default(sql`'[]'::jsonb`),
+    candidateSchoolSnapshot: jsonb("candidate_school_snapshot")
+      .$type<RecommendationCandidateSchoolSnapshot>()
+      .notNull(),
     rankOrder: integer("rank_order").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -164,12 +183,6 @@ export const recommendationShortlists = pgTable(
     model: text("model").notNull(),
     promptVersion: text("prompt_version").notNull(),
     systemPrompt: text("system_prompt").notNull(),
-    shortlistedRecommendationResultIds: jsonb(
-      "shortlisted_recommendation_result_ids"
-    )
-      .$type<string[]>()
-      .notNull()
-      .default(sql`'[]'::jsonb`),
     shortlistRationale: jsonb("shortlist_rationale")
       .$type<string[]>()
       .notNull()
@@ -229,5 +242,85 @@ export const recommendationExplanations = pgTable(
     resultIdIdx: uniqueIndex("recommendation_explanations_result_id_idx").on(
       table.recommendationResultId
     ),
+  })
+);
+
+export const recommendationExplanationShortlistItems = pgTable(
+  "recommendation_explanation_shortlist_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recommendationExplanationId: uuid("recommendation_explanation_id")
+      .notNull()
+      .references(() => recommendationExplanations.id, { onDelete: "cascade" }),
+    recommendationResultId: uuid("recommendation_result_id")
+      .notNull()
+      .references(() => recommendationResults.id, { onDelete: "cascade" }),
+    rankOrder: integer("rank_order").notNull(),
+  },
+  (table) => ({
+    explanationRankIdx: uniqueIndex(
+      "recommendation_explanation_shortlist_items_rank_idx"
+    ).on(table.recommendationExplanationId, table.rankOrder),
+    explanationResultIdx: uniqueIndex(
+      "recommendation_explanation_shortlist_items_result_idx"
+    ).on(table.recommendationExplanationId, table.recommendationResultId),
+  })
+);
+
+export const recommendationChatSessions = pgTable(
+  "recommendation_chat_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => studentProfiles.userId, { onDelete: "cascade" }),
+    recommendationRunId: uuid("recommendation_run_id")
+      .notNull()
+      .references(() => recommendationRuns.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    runIdIdx: uniqueIndex("recommendation_chat_sessions_run_id_idx").on(
+      table.recommendationRunId
+    ),
+    userIdIdx: index("recommendation_chat_sessions_user_id_idx").on(
+      table.userId
+    ),
+    runOwnerFk: foreignKey({
+      columns: [table.recommendationRunId, table.userId],
+      foreignColumns: [recommendationRuns.id, recommendationRuns.userId],
+      name: "recommendation_chat_sessions_run_owner_fk",
+    }).onDelete("cascade"),
+  })
+);
+
+export const recommendationChatMessages = pgTable(
+  "recommendation_chat_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recommendationChatSessionId: uuid("recommendation_chat_session_id")
+      .notNull()
+      .references(() => recommendationChatSessions.id, {
+        onDelete: "cascade",
+      }),
+    role: recommendationChatMessageRoleEnum("role").notNull(),
+    text: text("text").notNull(),
+    rankOrder: integer("rank_order").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    sessionIdIdx: index("recommendation_chat_messages_session_id_idx").on(
+      table.recommendationChatSessionId
+    ),
+    sessionRankIdx: uniqueIndex(
+      "recommendation_chat_messages_session_rank_idx"
+    ).on(table.recommendationChatSessionId, table.rankOrder),
   })
 );

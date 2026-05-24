@@ -8,6 +8,7 @@ import test from "node:test";
 import { asc, eq } from "drizzle-orm";
 
 import {
+  recommendationExplanationShortlistItems,
   recommendationExplanations,
   recommendationResults,
   recommendationRuns,
@@ -118,6 +119,7 @@ test("recommendation shortlists and explanations round-trip through the schema",
             improvementUpside: 20,
           },
           projectedAssumptionDelta: ["Projected GPA increased to 96"],
+          candidateSchoolSnapshot: toCandidateSchoolSnapshot(firstUniversity),
           rankOrder: 1,
         },
         {
@@ -146,6 +148,7 @@ test("recommendation shortlists and explanations round-trip through the schema",
             improvementUpside: 18,
           },
           projectedAssumptionDelta: ["Projected GPA increased to 96"],
+          candidateSchoolSnapshot: toCandidateSchoolSnapshot(secondUniversity),
           rankOrder: 2,
         },
       ])
@@ -158,7 +161,6 @@ test("recommendation shortlists and explanations round-trip through the schema",
         model: "gpt-5-nano",
         promptVersion: "v1",
         systemPrompt: "system prompt text",
-        shortlistedRecommendationResultIds: [secondResult.id, firstResult.id],
         shortlistRationale: [
           "Kept one reach and one target school.",
           "Balanced budget risk with strong projected fit.",
@@ -166,26 +168,47 @@ test("recommendation shortlists and explanations round-trip through the schema",
       })
       .returning();
 
-    await database.db.insert(recommendationExplanations).values([
+    const [secondExplanation, firstExplanation] = await database.db
+      .insert(recommendationExplanations)
+      .values([
+        {
+          recommendationShortlistId: insertedShortlist.id,
+          recommendationResultId: secondResult.id,
+          whyRecommended: ["Strong projected fit.", "Matches intended major."],
+          topBlockers: ["Higher budget stretch."],
+          nextRecommendedActions: ["Review merit aid deadlines."],
+          budgetSummary: ["Stretch but manageable."],
+          assumptionChanges: ["Projected GPA remains on track."],
+          explanationConfidence: "medium",
+        },
+        {
+          recommendationShortlistId: insertedShortlist.id,
+          recommendationResultId: firstResult.id,
+          whyRecommended: [
+            "Reliable target option.",
+            "Strong budget position.",
+          ],
+          topBlockers: [],
+          nextRecommendedActions: ["Submit by regular decision."],
+          budgetSummary: ["Comfortable within budget."],
+          assumptionChanges: [
+            "Projected GPA uplift helps maintain target fit.",
+          ],
+          explanationConfidence: "high",
+        },
+      ])
+      .returning();
+
+    await database.db.insert(recommendationExplanationShortlistItems).values([
       {
-        recommendationShortlistId: insertedShortlist.id,
+        recommendationExplanationId: secondExplanation.id,
         recommendationResultId: secondResult.id,
-        whyRecommended: ["Strong projected fit.", "Matches intended major."],
-        topBlockers: ["Higher budget stretch."],
-        nextRecommendedActions: ["Review merit aid deadlines."],
-        budgetSummary: ["Stretch but manageable."],
-        assumptionChanges: ["Projected GPA remains on track."],
-        explanationConfidence: "medium",
+        rankOrder: 1,
       },
       {
-        recommendationShortlistId: insertedShortlist.id,
+        recommendationExplanationId: firstExplanation.id,
         recommendationResultId: firstResult.id,
-        whyRecommended: ["Reliable target option.", "Strong budget position."],
-        topBlockers: [],
-        nextRecommendedActions: ["Submit by regular decision."],
-        budgetSummary: ["Comfortable within budget."],
-        assumptionChanges: ["Projected GPA uplift helps maintain target fit."],
-        explanationConfidence: "high",
+        rankOrder: 2,
       },
     ]);
 
@@ -209,10 +232,6 @@ test("recommendation shortlists and explanations round-trip through the schema",
     assert.ok(storedShortlist);
     assert.equal(storedShortlist?.model, "gpt-5-nano");
     assert.equal(storedShortlist?.promptVersion, "v1");
-    assert.deepEqual(storedShortlist?.shortlistedRecommendationResultIds, [
-      secondResult.id,
-      firstResult.id,
-    ]);
     assert.equal(storedShortlist?.recommendationRun.id, insertedRun.id);
     assert.equal(storedShortlist?.explanations.length, 2);
     assert.deepEqual(
@@ -252,6 +271,22 @@ test("recommendation shortlists and explanations round-trip through the schema",
     assert.deepEqual(
       storedExplanations.map((row) => row.explanationConfidence),
       ["medium", "high"]
+    );
+
+    const storedShortlistItems = await database.db
+      .select()
+      .from(recommendationExplanationShortlistItems)
+      .orderBy(asc(recommendationExplanationShortlistItems.rankOrder));
+
+    assert.deepEqual(
+      storedShortlistItems.map((row) => ({
+        recommendationResultId: row.recommendationResultId,
+        rankOrder: row.rankOrder,
+      })),
+      [
+        { recommendationResultId: secondResult.id, rankOrder: 1 },
+        { recommendationResultId: firstResult.id, rankOrder: 2 },
+      ]
     );
   } finally {
     await database.close();
@@ -304,6 +339,23 @@ function toSnapshotProfile(
     },
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
+  };
+}
+
+function toCandidateSchoolSnapshot(row: typeof universities.$inferSelect) {
+  return {
+    universityId: row.id,
+    schoolName: row.schoolName,
+    city: row.city,
+    state: row.state,
+    lastVerifiedAt: row.lastVerifiedAt.toISOString(),
+    tuitionAnnualUsd: row.tuitionAnnualUsd,
+    estimatedCostOfAttendanceUsd: row.estimatedCostOfAttendanceUsd,
+    livingCostEstimateUsd: row.livingCostEstimateUsd,
+    scholarshipAvailabilityFlag: row.scholarshipAvailabilityFlag,
+    scholarshipNotes: row.scholarshipNotes,
+    recommendationInputs: row.recommendationInputs,
+    explanationInputs: row.explanationInputs,
   };
 }
 

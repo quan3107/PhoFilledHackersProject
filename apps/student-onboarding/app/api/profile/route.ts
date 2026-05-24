@@ -7,44 +7,93 @@ import {
   saveStudentProfileStateForUser,
   type StudentProfileInput,
 } from "@etest/auth";
+import {
+  profilePutRequestSchema,
+  type ProfilePutRequest,
+} from "@etest/api-contracts";
 import { NextResponse } from "next/server";
-import { getOptionalServerSession } from "@/lib/auth-session";
+import { PublicApiError, jsonApiError } from "@/lib/api-errors";
+import { requireApiSession } from "@/lib/api-session";
+import { getRequestId, logApiError } from "@/lib/observability";
 
-type ProfileRoutePayload = {
-  currentProfile: StudentProfileInput;
-  projectedProfile: StudentProfileInput;
-  currentAssumptions: string[];
-  projectedAssumptions: string[];
-};
+function toAuthProfileInput(
+  profile: ProfilePutRequest["currentProfile"]
+): StudentProfileInput {
+  return profile as unknown as StudentProfileInput;
+}
 
 export async function GET() {
-  const session = await getOptionalServerSession();
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
-  const profileState = await getStudentProfileStateForUser(session.user.id);
+  const profileState = await getStudentProfileStateForUser(
+    sessionResult.userId
+  );
 
   return NextResponse.json(profileState);
 }
 
 export async function PUT(request: Request) {
-  const session = await getOptionalServerSession();
+  const requestId = getRequestId(request);
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
-  const body = (await request.json()) as ProfileRoutePayload;
+  const body = await request.json().catch(() => null);
+  const parsed = profilePutRequestSchema.safeParse(body);
 
-  const profileState = await saveStudentProfileStateForUser({
-    userId: session.user.id,
-    currentProfile: body.currentProfile,
-    projectedProfile: body.projectedProfile,
-    currentAssumptions: body.currentAssumptions,
-    projectedAssumptions: body.projectedAssumptions,
-  });
+  if (!parsed.success) {
+    logApiError(
+      {
+        requestId,
+        operationId: requestId,
+        userId: sessionResult.userId,
+        publicErrorCode: "invalid_request",
+      },
+      parsed.error
+    );
+    return NextResponse.json(
+      {
+        error: {
+          code: "invalid_request",
+          message: "Profile payload is invalid.",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  let profileState;
+  try {
+    profileState = await saveStudentProfileStateForUser({
+      userId: sessionResult.userId,
+      currentProfile: toAuthProfileInput(parsed.data.currentProfile),
+      projectedProfile: toAuthProfileInput(parsed.data.projectedProfile),
+      currentAssumptions: parsed.data.currentAssumptions,
+      projectedAssumptions: parsed.data.projectedAssumptions,
+    });
+  } catch (error) {
+    return jsonApiError(
+      error instanceof PublicApiError
+        ? error
+        : new PublicApiError(
+            "dependency_unavailable",
+            "Profile persistence is temporarily unavailable.",
+            503
+          ),
+      {
+        requestId,
+        operationId: requestId,
+        userId: sessionResult.userId,
+        internalError: error,
+      }
+    );
+  }
 
   return NextResponse.json(profileState);
 }

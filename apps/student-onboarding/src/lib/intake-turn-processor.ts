@@ -8,7 +8,7 @@ import {
   getStudentIntakeStateForUser,
   getStudentProfileStateForUser,
   saveStudentIntakeStateForUser,
-  saveStudentProfileStateForUser,
+  saveStudentIntakeTurnStateForUser,
   type StudentIntakeFieldStatusMap,
   type StudentIntakeStateRecord,
   type StudentProfileState,
@@ -25,14 +25,59 @@ import { parseLocationPreferences } from "@/lib/location-preferences";
 import { createIntakeOpenAiClient } from "@/lib/intake-openai";
 import { applyIntakeProfilePatches } from "@/lib/intake-profile-patch";
 
-function createMessage(role: "assistant" | "student", text: string) {
+function createMessage(
+  role: "assistant" | "student",
+  text: string,
+  dependencies?: Pick<IntakeTurnDependencies, "now" | "createId">
+) {
   return {
-    id: crypto.randomUUID(),
+    id: dependencies?.createId() ?? crypto.randomUUID(),
     role,
     text,
-    createdAt: new Date().toISOString(),
+    createdAt: (dependencies?.now() ?? new Date()).toISOString(),
   };
 }
+
+export interface IntakeModelClient {
+  generate(input: {
+    instructions: string;
+    prompt: string;
+  }): Promise<{ output: IntakeModelOutput; responseId: string | null }>;
+}
+
+export interface ProfileRepository {
+  getStudentProfileStateForUser(userId: string): Promise<StudentProfileState>;
+}
+
+export interface IntakeRepository {
+  getStudentIntakeStateForUser(
+    userId: string
+  ): Promise<StudentIntakeStateRecord | null>;
+  saveStudentIntakeStateForUser(
+    input: Parameters<typeof saveStudentIntakeStateForUser>[0]
+  ): ReturnType<typeof saveStudentIntakeStateForUser>;
+  saveStudentIntakeTurnStateForUser(
+    input: Parameters<typeof saveStudentIntakeTurnStateForUser>[0]
+  ): ReturnType<typeof saveStudentIntakeTurnStateForUser>;
+}
+
+export interface IntakeTurnDependencies {
+  modelClient: IntakeModelClient;
+  profileRepo: ProfileRepository;
+  intakeRepo: IntakeRepository;
+  now: () => Date;
+  createId: () => string;
+}
+
+const defaultProfileRepo: ProfileRepository = {
+  getStudentProfileStateForUser,
+};
+
+const defaultIntakeRepo: IntakeRepository = {
+  getStudentIntakeStateForUser,
+  saveStudentIntakeStateForUser,
+  saveStudentIntakeTurnStateForUser,
+};
 
 function isResolvedStatus(resolution: string | undefined) {
   return (
@@ -1165,19 +1210,56 @@ function buildAssistantText(input: {
   return input.output.assistantMessage.trim();
 }
 
-export async function runIntakeTurn(input: {
+async function persistTurnState(input: {
   userId: string;
-  message: string | null;
-  locale: "en" | "vi";
+  shouldApplyModelUpdates: boolean;
+  profileState: StudentProfileState;
+  nextDocument: ReturnType<typeof buildStudentProfileDocumentFromState>;
+  intakeState: Parameters<typeof saveStudentIntakeStateForUser>[0];
+  intakeRepo: IntakeRepository;
 }) {
+  if (!input.shouldApplyModelUpdates) {
+    return {
+      profileState: input.profileState,
+      intakeState: await input.intakeRepo.saveStudentIntakeStateForUser(
+        input.intakeState
+      ),
+    };
+  }
+
+  return input.intakeRepo.saveStudentIntakeTurnStateForUser({
+    userId: input.userId,
+    currentProfile: input.nextDocument.current.profile,
+    projectedProfile: input.nextDocument.projected.profile,
+    currentAssumptions: input.nextDocument.current.assumptions,
+    projectedAssumptions: input.nextDocument.projected.assumptions,
+    intakeState: input.intakeState,
+  });
+}
+
+// eslint-disable-next-line complexity
+export async function runIntakeTurn(
+  input: {
+    userId: string;
+    message: string | null;
+    locale: "en" | "vi";
+  },
+  dependencies?: Partial<IntakeTurnDependencies>
+) {
+  const profileRepo = dependencies?.profileRepo ?? defaultProfileRepo;
+  const intakeRepo = dependencies?.intakeRepo ?? defaultIntakeRepo;
+  const turnDependencies = {
+    now: dependencies?.now ?? (() => new Date()),
+    createId: dependencies?.createId ?? (() => crypto.randomUUID()),
+  };
   const [profileState, existingIntakeState] = await Promise.all([
-    getStudentProfileStateForUser(input.userId),
-    getStudentIntakeStateForUser(input.userId),
+    profileRepo.getStudentProfileStateForUser(input.userId),
+    intakeRepo.getStudentIntakeStateForUser(input.userId),
   ]);
   const document = buildStudentProfileDocumentFromState(profileState);
   const userMessage = input.message?.trim() || null;
   const nextUserMessage = userMessage
-    ? createMessage("student", userMessage)
+    ? createMessage("student", userMessage, turnDependencies)
     : null;
   const transcript = [
     ...(existingIntakeState?.messages ?? []),
@@ -1189,7 +1271,7 @@ export async function runIntakeTurn(input: {
     transcript,
     outstandingFields,
   });
-  const client = createIntakeOpenAiClient();
+  const client = dependencies?.modelClient ?? createIntakeOpenAiClient();
 
   const { output, responseId } = await client.generate({
     instructions:
@@ -1238,16 +1320,6 @@ export async function runIntakeTurn(input: {
       })
     : currentStatuses;
 
-  const savedProfileState = shouldApplyModelUpdates
-    ? await saveStudentProfileStateForUser({
-        userId: input.userId,
-        currentProfile: nextDocument.current.profile,
-        projectedProfile: nextDocument.projected.profile,
-        currentAssumptions: nextDocument.current.assumptions,
-        projectedAssumptions: nextDocument.projected.assumptions,
-      })
-    : profileState;
-
   const readiness = evaluateRecommendationRunReadinessFromDocument(
     nextDocument,
     {
@@ -1279,8 +1351,12 @@ export async function runIntakeTurn(input: {
     );
   }
 
-  const assistantMessage = createMessage("assistant", assistantText);
-  const savedIntakeState = await saveStudentIntakeStateForUser({
+  const assistantMessage = createMessage(
+    "assistant",
+    assistantText,
+    turnDependencies
+  );
+  const intakeStateInput = {
     userId: input.userId,
     currentStepIndex: resolvedFieldCount,
     conversationDone: nextOutstandingFields.length === 0,
@@ -1290,15 +1366,23 @@ export async function runIntakeTurn(input: {
     progressCompletedCount: resolvedFieldCount,
     progressTotalCount: totalIntakeFieldCount,
     messages: [...transcript, assistantMessage],
+  };
+  const savedTurnState = await persistTurnState({
+    userId: input.userId,
+    shouldApplyModelUpdates,
+    profileState,
+    nextDocument,
+    intakeState: intakeStateInput,
+    intakeRepo,
   });
 
   const nextProfileState: StudentProfileState = {
-    ...savedProfileState,
+    ...savedTurnState.profileState,
     missingFields: readiness.missingFields,
   };
 
   return {
-    intakeState: savedIntakeState,
+    intakeState: savedTurnState.intakeState,
     profileState: nextProfileState,
     resolvedWithCaveatFields: readiness.resolvedWithCaveatFields,
   };

@@ -4,11 +4,11 @@
 
 import {
   buildStudentProfileDocumentFromState,
-  getAuthDb,
   getStudentProfileStateForUser,
   type StudentProfileDocument,
   type StudentProfileState,
 } from "@etest/auth";
+import { getBackendDb } from "@etest/backend-data";
 import {
   recommendationRuns,
   studentProfileSnapshots,
@@ -77,20 +77,21 @@ interface StudentProfileSnapshotRowSummary {
 
 export async function loadRecommendationChatContextForUser(input: {
   userId: string;
+  recommendationRunId: string;
   latestMessage: string | null;
   transcript: RecommendationChatTranscriptMessage[];
 }): Promise<RecommendationChatContext> {
   const [authDb, profileState] = await Promise.all([
-    getAuthDb(),
+    getBackendDb(),
     getStudentProfileStateForUser(input.userId),
   ]);
 
   const latestSuccessfulRun = (await authDb.query.recommendationRuns.findFirst({
     where: and(
       eq(recommendationRuns.userId, input.userId),
+      eq(recommendationRuns.id, input.recommendationRunId),
       eq(recommendationRuns.runStatus, "succeeded")
     ),
-    orderBy: (table, { desc: sortDesc }) => [sortDesc(table.createdAt)],
     with: {
       currentSnapshot: true,
       projectedSnapshot: true,

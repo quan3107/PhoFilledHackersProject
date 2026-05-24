@@ -1,48 +1,19 @@
 // apps/student-onboarding/app/api/recommendations/chat/route.ts
 // Authenticated post-recommendation assistant endpoint.
-// Accepts the latest user message plus transcript and answers from local backend data only.
+// Accepts the latest user message and answers from server-owned chat history.
 
 import { NextResponse } from "next/server";
 
-import { getOptionalServerSession } from "@/lib/auth-session";
-import {
-  runRecommendationChatTurn,
-  type RecommendationChatTranscriptMessage,
-} from "@/lib/recommendation-chat-processor";
+import { PublicApiError, jsonApiError } from "@/lib/api-errors";
+import { requireApiSession } from "@/lib/api-session";
+import { getRequestId, logApiError } from "@/lib/observability";
+import { runRecommendationChatTurn } from "@/lib/recommendation-chat-processor";
 
 export const runtime = "nodejs";
 
 interface RecommendationChatRequestBody {
+  recommendationRunId?: unknown;
   message?: unknown;
-  messages?: unknown;
-}
-
-function parseTranscript(
-  value: unknown
-): RecommendationChatTranscriptMessage[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== "object") {
-        return null;
-      }
-
-      const record = entry as Record<string, unknown>;
-      if (record.role !== "assistant" && record.role !== "student") {
-        return null;
-      }
-
-      return {
-        role: record.role as "assistant" | "student",
-        text: typeof record.text === "string" ? record.text : "",
-      };
-    })
-    .filter((entry): entry is RecommendationChatTranscriptMessage =>
-      Boolean(entry)
-    );
 }
 
 function parseBody(value: unknown) {
@@ -52,40 +23,66 @@ function parseBody(value: unknown) {
       : {};
 
   return {
+    recommendationRunId:
+      typeof record.recommendationRunId === "string" &&
+      record.recommendationRunId.trim()
+        ? record.recommendationRunId.trim()
+        : null,
     message:
       typeof record.message === "string" && record.message.trim()
         ? record.message.trim()
         : null,
-    messages: parseTranscript(record.messages),
   };
 }
 
 export async function POST(request: Request) {
-  const session = await getOptionalServerSession();
+  const requestId = getRequestId(request);
+  const sessionResult = await requireApiSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionResult.ok) {
+    return sessionResult.response;
   }
 
   const body = parseBody(await request.json().catch(() => null));
+  if (!body.recommendationRunId) {
+    logApiError(
+      {
+        requestId,
+        operationId: requestId,
+        userId: sessionResult.userId,
+        publicErrorCode: "validation_failed",
+      },
+      new PublicApiError(
+        "invalid_request",
+        "recommendationRunId is required.",
+        400
+      )
+    );
+    return NextResponse.json(
+      {
+        error: {
+          code: "validation_failed",
+          message: "recommendationRunId is required.",
+        },
+      },
+      { status: 400 }
+    );
+  }
 
   try {
     const result = await runRecommendationChatTurn({
-      userId: session.user.id,
+      userId: sessionResult.userId,
+      recommendationRunId: body.recommendationRunId,
       latestMessage: body.message,
-      transcript: body.messages,
     });
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to answer the recommendation question.",
-      },
-      { status: 500 }
-    );
+    return jsonApiError(error, {
+      requestId,
+      operationId: requestId,
+      userId: sessionResult.userId,
+      recommendationRunId: body.recommendationRunId,
+    });
   }
 }

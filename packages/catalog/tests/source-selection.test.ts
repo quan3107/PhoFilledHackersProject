@@ -89,3 +89,35 @@ test("source selection reports missing required candidates", () => {
     )
   );
 });
+
+test("source selection falls back to allowed sources and explains conflicts", () => {
+  const result = selectUniversityFieldSources([
+    {
+      fieldKey: "tuitionAnnualUsd",
+      sourceKind: "official_cost_of_attendance",
+      sourceUrl: "https://example.edu/cost",
+      value: 55000,
+      excerpt: "Tuition appears in the cost table.",
+    },
+    {
+      fieldKey: "tuitionAnnualUsd",
+      sourceKind: "official_admissions",
+      sourceUrl: "https://example.edu/admissions",
+      value: 54000,
+      excerpt: "Old tuition value.",
+    },
+  ]);
+
+  const tuitionSource = result.selectedSources.find(
+    (source) => source.fieldKey === "tuitionAnnualUsd"
+  );
+
+  assert.equal(tuitionSource?.sourceKind, "official_cost_of_attendance");
+  assert.ok(
+    result.diagnostics.some(
+      (diagnostic) =>
+        diagnostic.fieldKey === "tuitionAnnualUsd" &&
+        diagnostic.code === "rejected_source_candidate"
+    )
+  );
+});

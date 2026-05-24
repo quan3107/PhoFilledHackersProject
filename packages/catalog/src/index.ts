@@ -5,6 +5,7 @@
 export * from "./types.js";
 export * from "./source-selection.js";
 export * from "./normalize.js";
+export * from "./catalog-persistence.js";
 export * from "./publishability.js";
 export * from "./recommendation-catalog-read-path.js";
 export * from "./recommendation-engine-config.js";
