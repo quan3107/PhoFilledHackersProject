@@ -2,9 +2,7 @@
 
 ## Naming Conventions
 
-This project enforces consistent naming conventions via ESLint with @typescript-eslint/naming-convention rules. The configuration is located in `apps/student-onboarding/eslint.config.mjs`.
-
-### TypeScript Naming Rules
+This project enforces consistent naming conventions via ESLint with `@typescript-eslint/naming-convention` rules. The configuration is located in `apps/student-onboarding/eslint.config.mjs`.
 
 | Element                           | Convention                           | Examples                                   |
 | --------------------------------- | ------------------------------------ | ------------------------------------------ |
@@ -14,52 +12,48 @@ This project enforces consistent naming conventions via ESLint with @typescript-
 | Properties                        | camelCase, PascalCase, or UPPER_CASE | `firstName`, `userId`, `CONTENT_TYPE`      |
 | Enum Members                      | PascalCase or UPPER_CASE             | `GradeLevel.Nine`, `HTTP_STATUS.OK`        |
 
-### Specific Conventions
+## Module Organization
 
-- **Type-like elements** (types, interfaces, classes, enums, type parameters): Must use PascalCase
-- **Variables and functions**: Use camelCase or PascalCase; leading underscores are allowed
-- **Parameters**: Use camelCase or PascalCase; leading underscores are allowed
-- **Properties**: Can use camelCase, PascalCase, or UPPER_CASE; leading underscores are allowed
-- **Enum members**: Use PascalCase or UPPER_CASE
-- **String-keyed properties** in `Record<string, ...>` types: Allowed any format (display labels, path strings, etc.)
+- `apps/student-onboarding`: Next.js student app and BFF routes. Local dev port: `3001`.
+- `apps/ingest`: offline catalog ingest and curated artifact tooling.
+- `packages/*`: shared libraries for auth, database, catalog, and API contracts.
 
-### Module Organization
-
-- **Apps**: `apps/*` - Deployable applications (e.g., `student-onboarding`, `ingest`)
-- **Packages**: `packages/*` - Shared libraries (e.g., `@etest/auth`, `@etest/db`)
-
-### File Naming
-
-- TypeScript files: Match the primary exported class or function name (e.g., `student-profile.ts` exports `StudentProfile`)
-- Component files: PascalCase matching component name (e.g., `StudentOnboardingApp.tsx`)
-- Test files: Same name as the file being tested with `.test` suffix (e.g., `location-preferences.test.ts`)
-
-## Development
-
-### Linting
-
-Run linting for the student-onboarding app:
+## Local Development
 
 ```bash
-cd apps/student-onboarding && npm run lint
+npm ci
+npm --workspace student-onboarding run dev
 ```
 
-### Building
+Set `STUDENT_ONBOARDING_AUTH_DEV=true` for local auth development. Full backend flows also require `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, OAuth provider credentials, `OPENAI_API_KEY`, `BRIGHT_DATA_API_KEY`, and `BRIGHT_DATA_ZONE`.
 
-Build all apps and packages:
+## Database and Ingest
 
 ```bash
-npm run build
+npm --workspace @etest/db run build
+npm --workspace @etest/db run migrate
+npm --workspace @phofilledhackers/ingest run curate -- next
+npm --workspace @phofilledhackers/ingest run curate -- prompt <school-slug>
+npm --workspace @phofilledhackers/ingest run curate -- validate data/curated-schools/<school-slug>.json
+npm --workspace @phofilledhackers/ingest run import:curated -- data/curated-schools/<school-slug>.json
 ```
 
-### Testing
+## Predeploy Gate
 
-Run tests:
+Run the same gate locally before opening or updating a deployment PR:
 
 ```bash
-# Run all tests
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
 npm test
+npm run build
+npm run qa
+```
 
-# Run tests in a specific app
-cd apps/student-onboarding && npm test
+For the Vercel student app build graph, use:
+
+```bash
+npm run build -- --filter=student-onboarding...
 ```

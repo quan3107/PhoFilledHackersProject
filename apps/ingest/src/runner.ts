@@ -13,6 +13,11 @@ import {
   selectFieldSources,
 } from "./normalize.js";
 import { resolveSeedSchool } from "./manifest.js";
+import {
+  consoleIngestLogger,
+  serializeIngestError,
+  type IngestLogger,
+} from "./observability.js";
 import type {
   BrightDataClient,
   BrightDataFetchResult,
@@ -32,6 +37,7 @@ export interface RunIngestDependencies {
   repository: IngestRepository;
   brightData: BrightDataClient;
   openAi: OpenAiExtractionClient;
+  logger?: IngestLogger;
   now?: () => Date;
   evaluatePublishability?: (
     record: NormalizedUniversityCatalogRecord,
@@ -237,10 +243,22 @@ export async function runIngest(
     const stage = classifyStageError(error);
     const failureMessage =
       error instanceof Error ? error.message : String(error);
+    const failureCode = toFailureCode(stage);
+
+    (deps.logger ?? consoleIngestLogger).error({
+      event: "ingest.run_failed",
+      operationId: importRun.id,
+      ingestRunId: importRun.id,
+      publicErrorCode: failureCode,
+      stage,
+      schoolSlug: seedSchool.slug,
+      triggeredBy: config.triggeredBy,
+      internalError: serializeIngestError(error),
+    });
 
     await deps.repository.persistFailedImport({
       runId: importRun.id,
-      failureCode: toFailureCode(stage),
+      failureCode,
       failureMessage,
       finishedAt: deps.now?.() ?? new Date(),
     });

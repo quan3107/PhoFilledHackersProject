@@ -6,11 +6,13 @@ import { NextResponse } from "next/server";
 
 import { PublicApiError, jsonApiError } from "@/lib/api-errors";
 import { requireApiSession } from "@/lib/api-session";
+import { getRequestId, logApiError } from "@/lib/observability";
 import { runRecommendationWorkflowForUser } from "@/lib/recommendation-run-workflow";
 
 export const runtime = "nodejs";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const requestId = getRequestId(request);
   const sessionResult = await requireApiSession();
 
   if (!sessionResult.ok) {
@@ -23,6 +25,15 @@ export async function POST() {
     );
 
     if (!workflowResult.ok) {
+      logApiError(
+        {
+          requestId,
+          operationId: requestId,
+          userId: sessionResult.userId,
+          publicErrorCode: workflowResult.code,
+        },
+        new PublicApiError(workflowResult.code, workflowResult.message, 400)
+      );
       return NextResponse.json(
         {
           error: {
@@ -51,6 +62,11 @@ export async function POST() {
       })),
     });
   } catch (error) {
+    const context = {
+      requestId,
+      operationId: requestId,
+      userId: sessionResult.userId,
+    };
     const databaseError =
       typeof error === "object" && error !== null
         ? {
@@ -77,10 +93,11 @@ export async function POST() {
           "dependency_unavailable",
           "Recommendations backend is not fully provisioned yet. The UI remains available, but recommendation runs are temporarily disabled.",
           503
-        )
+        ),
+        { ...context, internalError: error }
       );
     }
 
-    return jsonApiError(error);
+    return jsonApiError(error, context);
   }
 }
